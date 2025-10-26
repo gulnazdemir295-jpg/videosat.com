@@ -1,0 +1,42 @@
+{
+  "name": "dunyanin-en-acayip-sitesi",
+  "version": "1.0.0",
+  "description": "E-Ticaret ve Canlı Yayın Platformu - AWS WebRTC Tabanlı",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "deploy": "aws s3 sync . s3://your-bucket-name --exclude '*.md' --exclude '.git/*'",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "e-commerce",
+    "live-streaming",
+    "webrtc",
+    "aws",
+    "turkish",
+    "supply-chain"
+  ],
+  "author": "Dünyanın En Acayip Sitesi Team",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/dunyanin-en-acayip-sitesi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/dunyanin-en-acayip-sitesi/issues"
+  },
+  "homepage": "https://your-bucket-name.s3-website-us-east-1.amazonaws.com",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
