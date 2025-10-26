@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Canlı Yayın Başlat - Gerçek Zamanlı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .category-option {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .category-option:hover {
+            border-color: #4ecdc4;
+            background: #f0fdfc;
+        }
+
+        .category-option.selected {
+            border-color: #4ecdc4;
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .product-selection {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.offline {
+            background: #ff6b6b;
+        }
+
+        .status-indicator.online {
+            background: #4ecdc4;
+        }
+
+        .status-indicator.broadcasting {
+            background: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .video-preview {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .video-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Ana Sayfaya Dön</a>
+        
+        <div class="header">
+            <h1>🎥 Modern Canlı Yayın</h1>
+            <p>Kategorize edilmiş, profesyonel canlı yayın deneyimi</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📹 Yayın Ayarları</h2>
+                
+                <div class="form-group">
+                    <label for="broadcastTitle">Yayın Başlığı</label>
+                    <input type="text" id="broadcastTitle" placeholder="Yayınınız için bir başlık girin" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="broadcastDescription">Açıklama</label>
+                    <textarea id="broadcastDescription" placeholder="Yayınınız hakkında kısa bir açıklama yazın"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Kategori Seçin</label>
+                    <div class="category-grid" id="categoryGrid">
+                        <div class="category-option" data-category="teknoloji">💻 Teknoloji</div>
+                        <div class="category-option" data-category="moda">👗 Moda</div>
+                        <div class="category-option" data-category="ev-yasam">🏠 Ev & Yaşam</div>
+                        <div class="category-option" data-category="spor">⚽ Spor</div>
+                        <div class="category-option" data-category="sanat">🎨 Sanat</div>
+                        <div class="category-option" data-category="yemek">🍳 Yemek</div>
+                        <div class="category-option" data-category="egitim">📚 Eğitim</div>
+                        <div class="category-option" data-category="saglik">💊 Sağlık</div>
+                        <div class="category-option" data-category="otomotiv">🚗 Otomotiv</div>
+                        <div class="category-option" data-category="oyuncak">🧸 Oyuncak</div>
+                        <div class="category-option" data-category="diger">📦 Diğer</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="slogan">Slogan</label>
+                    <input type="text" id="slogan" placeholder="Yayınınız için bir slogan yazın" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Ürün Seçimi (Opsiyonel)</label>
+                    <div class="product-selection" id="productSelection">
+                        <p style="text-align: center; color: #666; padding: 20px;">
+                            Ürün seçimi artık opsiyonel! Ürün seçmeden de yayın yapabilirsiniz.
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn" id="startBroadcastBtn">🚀 Yayını Başlat</button>
+            </div>
+
+            <div class="card">
+                <h2>📺 Yayın Önizleme</h2>
+                
+                <div class="video-preview" id="videoPreview">
+                    <div>Kamera erişimi bekleniyor...</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Yayın Durumu</label>
+                    <div class="status" id="broadcastStatus">
+                        <span class="status-indicator offline"></span>
+                        <span>Yayın kapalı</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>İzleyici Sayısı</label>
+                    <div style="text-align: center; font-size: 2em; color: #4ecdc4; font-weight: bold;" id="viewerCount">0</div>
+                </div>
+
+                <button class="btn" id="stopBroadcastBtn" style="display: none; background: #ff6b6b;">⏹️ Yayını Durdur</button>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="canli-yayin-gercek.html" class="btn" style="background: #667eea; text-decoration: none; display: inline-block; text-align: center;">🎥 Gerçek Yayın</a>
+                    <a href="canli-yayin-izle-modern.html" class="btn" style="background: #45b7d1; text-decoration: none; display: inline-block; text-align: center;">👀 Yayınları İzle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://localhost:3001/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3001', {
+            transports: ['websocket', 'polling'],
+            timeout: 20000,
+            forceNew: true
+        });
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
+            email: 'test@example.com', 
+            panel: 'toptancilar',
+            name: 'Test Kullanıcı'
+        };
+
+        let localStream = null;
+        let isBroadcasting = false;
+        let currentBroadcastId = null;
+        let selectedCategory = 'diger';
+
+        // DOM elements
+        const startBtn = document.getElementById('startBroadcastBtn');
+        const stopBtn = document.getElementById('stopBroadcastBtn');
+        const statusDiv = document.getElementById('broadcastStatus');
+        const viewerCountDiv = document.getElementById('viewerCount');
+        const videoPreview = document.getElementById('videoPreview');
+        const categoryGrid = document.getElementById('categoryGrid');
+
+        // Category selection
+        categoryGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-option')) {
+                // Remove previous selection
+                document.querySelectorAll('.category-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                e.target.classList.add('selected');
+                selectedCategory = e.target.dataset.category;
+            }
+        });
+
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            updateStatus('online', 'Sunucuya bağlandı');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            updateStatus('offline', 'Sunucu bağlantısı kesildi');
+        });
+
+        socket.on('broadcastStarted', (data) => {
+            currentBroadcastId = data.broadcastId;
+            isBroadcasting = true;
+            updateStatus('broadcasting', 'Yayın aktif');
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
+            console.log('Broadcast started with ID:', data.broadcastId);
+            
+            // Add chat functionality for broadcaster
+            addBroadcasterChat();
+        });
+
+        socket.on('viewerJoined', (data) => {
+            if (data.broadcastId === currentBroadcastId) {
+                viewerCountDiv.textContent = data.viewers;
+                console.log('Viewer joined:', data);
+            }
+        });
+
+        socket.on('viewerLeft', (data) => {
+            if (data.broadcastId === currentBroadcastId) {
+                viewerCountDiv.textContent = data.viewers;
+                console.log('Viewer left:', data);
+            }
+        });
+
+
+        // Start broadcast
+        startBtn.addEventListener('click', async () => {
+            const title = document.getElementById('broadcastTitle').value;
+            const description = document.getElementById('broadcastDescription').value;
+            const slogan = document.getElementById('slogan').value;
+
+            if (!title || !slogan) {
+                alert('Lütfen yayın başlığı ve slogan girin.');
+                return;
+            }
+
+            try {
+                // Get camera access
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+
+                // Show video preview
+                const video = document.createElement('video');
+                video.srcObject = localStream;
+                video.autoplay = true;
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.style.borderRadius = '8px';
+                videoPreview.innerHTML = '';
+                videoPreview.appendChild(video);
+                
+                // Add live indicator
+                const liveIndicator = document.createElement('div');
+                liveIndicator.style.position = 'absolute';
+                liveIndicator.style.top = '10px';
+                liveIndicator.style.right = '10px';
+                liveIndicator.style.background = 'rgba(255,0,0,0.8)';
+                liveIndicator.style.color = 'white';
+                liveIndicator.style.padding = '5px 10px';
+                liveIndicator.style.borderRadius = '15px';
+                liveIndicator.style.fontSize = '0.8em';
+                liveIndicator.style.fontWeight = 'bold';
+                liveIndicator.textContent = 'CANLI';
+                videoPreview.style.position = 'relative';
+                videoPreview.appendChild(liveIndicator);
+
+                // Start broadcast
+                socket.emit('startBroadcast', {
+                    title: title,
+                    description: description,
+                    category: selectedCategory,
+                    slogan: slogan,
+                    seller: currentUser.email,
+                    products: [], // Empty for now
+                    tags: [selectedCategory, 'canlı-yayın']
+                });
+
+                updateStatus('broadcasting', 'Yayın başlatılıyor...');
+
+            } catch (error) {
+                console.error('Error starting broadcast:', error);
+                alert('Kamera erişimi reddedildi: ' + error.message);
+            }
+        });
+
+        // Stop broadcast
+        stopBtn.addEventListener('click', () => {
+            if (currentBroadcastId) {
+                socket.emit('endBroadcast', { broadcastId: currentBroadcastId });
+                
+                // Stop local stream
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+
+                // Reset UI
+                isBroadcasting = false;
+                currentBroadcastId = null;
+                updateStatus('offline', 'Yayın durduruldu');
+                startBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                viewerCountDiv.textContent = '0';
+                videoPreview.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 18px;">Kamera erişimi bekleniyor...</div>';
+                
+                // Remove broadcaster chat
+                const chatContainer = document.querySelector('.card:last-child div:last-child');
+                if (chatContainer && chatContainer.innerHTML.includes('Canlı Sohbet')) {
+                    chatContainer.remove();
+                }
+            }
+        });
+
+        function updateStatus(type, message) {
+            const indicator = statusDiv.querySelector('.status-indicator');
+            const text = statusDiv.querySelector('span:last-child');
+            
+            indicator.className = `status-indicator ${type}`;
+            text.textContent = message;
+        }
+
+        // Load user products (optional)
+        function loadUserProducts() {
+            const products = JSON.parse(localStorage.getItem('products-toptancilar')) || [];
+            const userProducts = products.filter(p => p.owner === currentUser.email);
+            
+            const productSelection = document.getElementById('productSelection');
+            
+            if (userProducts.length === 0) {
+                productSelection.innerHTML = `
+                    <p style="text-align: center; color: #666; padding: 20px;">
+                        Henüz ürün eklenmemiş. Ürün seçimi opsiyonel olduğu için yayın yapabilirsiniz.
+                    </p>
+                `;
+                return;
+            }
+
+            productSelection.innerHTML = '';
+            userProducts.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product-item';
+                productDiv.innerHTML = `
+                    <input type="checkbox" id="product-${product.id}" value="${product.id}">
+                    <label for="product-${product.id}">${product.name} - ${product.price} TL</label>
+                `;
+                productSelection.appendChild(productDiv);
+            });
+        }
+
+        // Add broadcaster chat functionality
+        function addBroadcasterChat() {
+            const chatContainer = document.createElement('div');
+            chatContainer.innerHTML = `
+                <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <h3 style="color: #4ecdc4; margin-bottom: 15px;">💬 Canlı Sohbet</h3>
+                    <div id="broadcasterChat" style="height: 200px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 10px; background: white; margin-bottom: 10px;"></div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="broadcasterMessage" placeholder="İzleyicilere mesaj gönder..." style="flex: 1; padding: 10px; border: 1px solid #e1e5e9; border-radius: 20px; outline: none;">
+                        <button onclick="sendBroadcasterMessage()" style="padding: 10px 20px; background: #4ecdc4; color: white; border: none; border-radius: 20px; cursor: pointer;">Gönder</button>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.card:last-child').appendChild(chatContainer);
+        }
+
+        // Send message as broadcaster
+        function sendBroadcasterMessage() {
+            const messageInput = document.getElementById('broadcasterMessage');
+            const message = messageInput.value.trim();
+            
+            if (message && currentBroadcastId) {
+                socket.emit('broadcastMessage', {
+                    broadcastId: currentBroadcastId,
+                    message: message,
+                    sender: 'Yayıncı'
+                });
+                messageInput.value = '';
+            }
+        }
+
+        // Listen for messages
+        socket.on('broadcastMessage', (data) => {
+            if (data.broadcastId === currentBroadcastId) {
+                const chatDiv = document.getElementById('broadcasterChat');
+                if (chatDiv) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.marginBottom = '10px';
+                    messageDiv.style.padding = '8px';
+                    messageDiv.style.background = data.sender === 'Yayıncı' ? '#e3f2fd' : '#f5f5f5';
+                    messageDiv.style.borderRadius = '8px';
+                    messageDiv.innerHTML = `
+                        <strong style="color: #4ecdc4;">${data.sender}:</strong> ${data.message}
+                        <small style="float: right; color: #666;">${new Date(data.timestamp).toLocaleTimeString('tr-TR')}</small>
+                    `;
+                    chatDiv.appendChild(messageDiv);
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                }
+            }
+        });
+
+        // Initialize
+        loadUserProducts();
+        
+        // Set default category
+        document.querySelector('[data-category="diger"]').classList.add('selected');
+    </script>
+</body>
+</html>

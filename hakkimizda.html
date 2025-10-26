@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakkımızda - Modern Canlı Yayın Platformu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 30px;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .content h2 {
+            color: #4ecdc4;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .content p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #4ecdc4;
+        }
+
+        .feature-card .icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+
+        .tech-stack {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .tech-stack h3 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tech-item .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .tech-item h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .tech-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .stats-section {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Ana Sayfaya Dön</a>
+        
+        <div class="header">
+            <h1>🚀 Hakkımızda</h1>
+            <p>Modern Canlı Yayın Platformu - Geleceğin Teknolojisi</p>
+        </div>
+
+        <div class="content">
+            <h2>🎯 Misyonumuz</h2>
+            <p>Modern Canlı Yayın Platformu olarak, gerçek zamanlı video akışı teknolojisini kullanarak dünya çapında kullanıcılara düşük gecikme, yüksek kalite ve senkronize yayın deneyimi sunuyoruz.</p>
+            
+            <p>WebRTC tabanlı P2P (Peer-to-Peer) bağlantı teknolojimiz sayesinde, geleneksel sunucu tabanlı yayın sistemlerinden çok daha hızlı ve verimli bir deneyim yaşatıyoruz.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="icon">⚡</span>
+                    <h3>Düşük Gecikme</h3>
+                    <p>WebRTC P2P bağlantı ile milisaniye seviyesinde gecikme. Artık simülasyon değil, gerçek zamanlı yayın!</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">🌐</span>
+                    <h3>Global Erişim</h3>
+                    <p>STUN sunucuları ile NAT geçişi sağlayarak dünya çapında erişilebilirlik.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">🔒</span>
+                    <h3>Güvenli Bağlantı</h3>
+                    <p>End-to-end şifreleme ile güvenli video akışı ve veri koruması.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">📱</span>
+                    <h3>Çoklu Platform</h3>
+                    <p>Web, mobil ve masaüstü platformlarda mükemmel performans.</p>
+                </div>
+            </div>
+
+            <h2>🛠️ Teknoloji Altyapımız</h2>
+            <div class="tech-stack">
+                <h3>Modern Web Teknolojileri</h3>
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <span class="icon">🌐</span>
+                        <h4>WebRTC</h4>
+                        <p>Gerçek zamanlı iletişim</p>
+                    </div>
+                    <div class="tech-item">
+                        <span class="icon">⚡</span>
+                        <h4>Socket.IO</h4>
+                        <p>Gerçek zamanlı mesajlaşma</p>
+                    </div>
+                    <div class="tech-item">
+                        <span class="icon">🚀</span>
+                        <h4>Node.js</h4>
+                        <p>Yüksek performanslı sunucu</p>
+                    </div>
+                    <div class="tech-item">
+                        <span class="icon">🎥</span>
+                        <h4>H.264 Codec</h4>
+                        <p>Optimize video sıkıştırma</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2>📊 Platform İstatistikleri</h2>
+            <div class="stats-section">
+                <h3>Gerçek Zamanlı Performans</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">&lt;50ms</span>
+                        <span class="stat-label">Ortalama Gecikme</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">4K</span>
+                        <span class="stat-label">Maksimum Çözünürlük</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">∞</span>
+                        <span class="stat-label">Eş Zamanlı Kullanıcı</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2>🎯 Vizyonumuz</h2>
+            <p>Gelecekte, yapay zeka destekli akıllı yayın önerileri, otomatik kalite optimizasyonu ve gelişmiş analitik özellikler ile platformumuzu daha da geliştirmeyi hedefliyoruz.</p>
+            
+            <p>Amacımız, canlı yayın teknolojisinde yeni standartlar belirleyerek, kullanıcılarımıza en iyi deneyimi sunmaktır.</p>
+        </div>
+
+        <div class="footer">
+            <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap;">
+                <a href="index.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Ana Sayfa</a>
+                <a href="iletisim.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">İletişim</a>
+                <a href="canli-yayin-gercek.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Gerçek Yayın</a>
+                <a href="canli-yayin-izle-modern.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Yayınları İzle</a>
+            </div>
+            <p>© 2024 Modern Canlı Yayın Platformu - Gerçek Zamanlı, Senkronize, Modern</p>
+        </div>
+    </div>
+</body>
+</html>
