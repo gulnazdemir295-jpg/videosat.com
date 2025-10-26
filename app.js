@@ -84,6 +84,8 @@ function showPage(pageId) {
 
 // Test kullanıcıları oluştur (sayfa yüklendiğinde)
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM yüklendi!');
+    
     // Test kullanıcıları oluştur
     const testUsers = [
         {
@@ -114,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     localStorage.setItem('users', JSON.stringify(users));
+    console.log('Test kullanıcıları hazır!');
 });
 
 // Kullanıcı kayıt sistemi
@@ -434,7 +437,12 @@ function showSidebarContent(contentType) {
 // Rol bazlı panelleri yükle
 function loadRoleSpecificPanels() {
     const rolePanels = document.getElementById('roleSpecificPanels');
-    if (!rolePanels) return;
+    if (!rolePanels) {
+        console.log('roleSpecificPanels bulunamadı!');
+        return;
+    }
+    
+    console.log('loadRoleSpecificPanels çağrıldı, currentUser:', currentUser);
     
     let panelHTML = '';
     
