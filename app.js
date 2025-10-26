@@ -222,6 +222,152 @@ function updateLiveStreamBalance() {
     }
 }
 
+// Sol sidebar içerik gösterme fonksiyonu
+function showSidebarContent(contentType) {
+    const sidebarContent = document.getElementById('sidebarContent');
+    if (!sidebarContent) return;
+    
+    let contentHTML = '';
+    
+    switch (contentType) {
+        case 'addProduct':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-plus"></i> Ürün Ekle</h3>
+                    <form id="addProductForm" class="product-form">
+                        <div class="form-group">
+                            <label for="productName">Ürün Adı:</label>
+                            <input type="text" id="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Fiyat:</label>
+                            <input type="number" id="productPrice" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productUnit">Birim:</label>
+                            <select id="productUnit" required>
+                                <option value="adet">Adet</option>
+                                <option value="kg">Kilogram</option>
+                                <option value="m2">Metrekare</option>
+                                <option value="m3">Metreküp</option>
+                                <option value="litre">Litre</option>
+                                <option value="gram">Gram</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productDescription">Açıklama:</label>
+                            <textarea id="productDescription"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ürün Ekle</button>
+                    </form>
+                </div>
+            `;
+            break;
+            
+        case 'listProducts':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-list"></i> Ürün Listele</h3>
+                    <div id="productsList" class="products-list">
+                        <!-- Ürünler buraya yüklenecek -->
+                    </div>
+                </div>
+            `;
+            loadUserProducts();
+            loadProductsList();
+            break;
+            
+        case 'liveSell':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-video"></i> Canlı Sat</h3>
+                    <div class="live-sell-content">
+                        <p>Canlı yayın satış özelliği burada olacak.</p>
+                        <button class="btn btn-primary" onclick="showPage('liveStreamSetupPage')">Canlı Yayın Kurulumu</button>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'posSales':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-cash-register"></i> POS'tan Satış Yap</h3>
+                    <div class="pos-sales-content">
+                        <p>POS satış sistemi burada olacak.</p>
+                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış Sayfası</button>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'liveInvites':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-envelope"></i> Canlı Yayın Davetleri</h3>
+                    <div class="invites-content">
+                        <p>Canlı yayın davetleri burada görünecek.</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'sendOffer':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-file-contract"></i> Teklif Formu Yolla</h3>
+                    <div class="offer-content">
+                        <p>Teklif formu gönderme özelliği burada olacak.</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'receivedOffers':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-inbox"></i> Gelen Teklif Formları</h3>
+                    <div class="received-offers-content">
+                        <p>Gelen teklif formları burada görünecek.</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'sendRequest':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-shopping-cart"></i> Ürün Talep Formu Yolla</h3>
+                    <div class="request-content">
+                        <p>Ürün talep formu gönderme özelliği burada olacak.</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'receivedRequests':
+            contentHTML = `
+                <div class="content-section">
+                    <h3><i class="fas fa-clipboard-list"></i> Gelen Ürün Talep Formları</h3>
+                    <div class="received-requests-content">
+                        <p>Gelen ürün talep formları burada görünecek.</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        default:
+            contentHTML = `
+                <div class="content-placeholder">
+                    <h3>Sol menüden bir seçenek seçin</h3>
+                    <p>Yukarıdaki butonlardan birine tıklayarak işlem yapabilirsiniz.</p>
+                </div>
+            `;
+    }
+    
+    sidebarContent.innerHTML = contentHTML;
+}
+
 // Rol bazlı panelleri yükle
 function loadRoleSpecificPanels() {
     const rolePanels = document.getElementById('roleSpecificPanels');
@@ -232,27 +378,44 @@ function loadRoleSpecificPanels() {
     switch (currentUser.role) {
         case 'hammadeci':
             panelHTML = `
-                <h3><i class="fas fa-industry"></i> Hammadeci Paneli</h3>
-                <div class="role-features">
-                    <div class="feature-item">
-                        <i class="fas fa-users"></i>
-                        <span>Üreticilerle İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('producerCommunicationPage')">İletişim</button>
+                <div class="panel-layout">
+                    <div class="left-sidebar">
+                        <h3><i class="fas fa-industry"></i> Hammadeci Paneli</h3>
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-primary" onclick="showSidebarContent('addProduct')">
+                                <i class="fas fa-plus"></i> Ürün Ekle
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('listProducts')">
+                                <i class="fas fa-list"></i> Ürün Listele
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('liveSell')">
+                                <i class="fas fa-video"></i> Canlı Sat
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('posSales')">
+                                <i class="fas fa-cash-register"></i> POS'tan Satış Yap
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('liveInvites')">
+                                <i class="fas fa-envelope"></i> Canlı Yayın Davetleri
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendOffer')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedOffers')">
+                                <i class="fas fa-inbox"></i> Gelen Teklif Formları
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendRequest')">
+                                <i class="fas fa-shopping-cart"></i> Ürün Talep Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedRequests')">
+                                <i class="fas fa-clipboard-list"></i> Gelen Ürün Talep Formları
+                            </button>
+                        </div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-file-contract"></i>
-                        <span>Teklif Formları</span>
-                        <button class="btn btn-secondary" onclick="showPage('offerFormsPage')">Formlar</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-shipping-fast"></i>
-                        <span>Sipariş Takibi</span>
-                        <button class="btn btn-secondary" onclick="showPage('orderTrackingPage')">Takip</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-cash-register"></i>
-                        <span>POS Satış Yap</span>
-                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
+                    <div class="right-content" id="sidebarContent">
+                        <div class="content-placeholder">
+                            <h3>Sol menüden bir seçenek seçin</h3>
+                            <p>Yukarıdaki butonlardan birine tıklayarak işlem yapabilirsiniz.</p>
+                        </div>
                     </div>
                 </div>
             `;
@@ -260,27 +423,44 @@ function loadRoleSpecificPanels() {
             
         case 'uretici':
             panelHTML = `
-                <h3><i class="fas fa-cogs"></i> Üretici Paneli</h3>
-                <div class="role-features">
-                    <div class="feature-item">
-                        <i class="fas fa-industry"></i>
-                        <span>Hammadecilerle İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('supplierCommunicationPage')">İletişim</button>
+                <div class="panel-layout">
+                    <div class="left-sidebar">
+                        <h3><i class="fas fa-cogs"></i> Üretici Paneli</h3>
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-primary" onclick="showSidebarContent('addProduct')">
+                                <i class="fas fa-plus"></i> Ürün Ekle
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('listProducts')">
+                                <i class="fas fa-list"></i> Ürün Listele
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('liveSell')">
+                                <i class="fas fa-video"></i> Canlı Sat
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('posSales')">
+                                <i class="fas fa-cash-register"></i> POS'tan Satış Yap
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('liveInvites')">
+                                <i class="fas fa-envelope"></i> Canlı Yayın Davetleri
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendOffer')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedOffers')">
+                                <i class="fas fa-inbox"></i> Gelen Teklif Formları
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendRequest')">
+                                <i class="fas fa-shopping-cart"></i> Ürün Talep Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedRequests')">
+                                <i class="fas fa-clipboard-list"></i> Gelen Ürün Talep Formları
+                            </button>
+                        </div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-store"></i>
-                        <span>Toptancılarla İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('wholesalerCommunicationPage')">İletişim</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-file-contract"></i>
-                        <span>Teklif Formları</span>
-                        <button class="btn btn-secondary" onclick="showPage('offerFormsPage')">Formlar</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-cash-register"></i>
-                        <span>POS Satış Yap</span>
-                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
+                    <div class="right-content" id="sidebarContent">
+                        <div class="content-placeholder">
+                            <h3>Sol menüden bir seçenek seçin</h3>
+                            <p>Yukarıdaki butonlardan birine tıklayarak işlem yapabilirsiniz.</p>
+                        </div>
                     </div>
                 </div>
             `;
@@ -288,27 +468,44 @@ function loadRoleSpecificPanels() {
             
         case 'toptanci':
             panelHTML = `
-                <h3><i class="fas fa-warehouse"></i> Toptancı Paneli</h3>
-                <div class="role-features">
-                    <div class="feature-item">
-                        <i class="fas fa-cogs"></i>
-                        <span>Üreticilerle İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('producerCommunicationPage')">İletişim</button>
+                <div class="panel-layout">
+                    <div class="left-sidebar">
+                        <h3><i class="fas fa-warehouse"></i> Toptancı Paneli</h3>
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-primary" onclick="showSidebarContent('addProduct')">
+                                <i class="fas fa-plus"></i> Ürün Ekle
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('listProducts')">
+                                <i class="fas fa-list"></i> Ürün Listele
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('liveSell')">
+                                <i class="fas fa-video"></i> Canlı Sat
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('posSales')">
+                                <i class="fas fa-cash-register"></i> POS'tan Satış Yap
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('liveInvites')">
+                                <i class="fas fa-envelope"></i> Canlı Yayın Davetleri
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendOffer')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedOffers')">
+                                <i class="fas fa-inbox"></i> Gelen Teklif Formları
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendRequest')">
+                                <i class="fas fa-shopping-cart"></i> Ürün Talep Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedRequests')">
+                                <i class="fas fa-clipboard-list"></i> Gelen Ürün Talep Formları
+                            </button>
+                        </div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-store"></i>
-                        <span>Satıcılarla İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('sellerCommunicationPage')">İletişim</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Satış Raporları</span>
-                        <button class="btn btn-secondary" onclick="showPage('salesReportsPage')">Raporlar</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-cash-register"></i>
-                        <span>POS Satış Yap</span>
-                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
+                    <div class="right-content" id="sidebarContent">
+                        <div class="content-placeholder">
+                            <h3>Sol menüden bir seçenek seçin</h3>
+                            <p>Yukarıdaki butonlardan birine tıklayarak işlem yapabilirsiniz.</p>
+                        </div>
                     </div>
                 </div>
             `;
@@ -316,22 +513,44 @@ function loadRoleSpecificPanels() {
             
         case 'satici':
             panelHTML = `
-                <h3><i class="fas fa-store"></i> Satıcı Paneli</h3>
-                <div class="role-features">
-                    <div class="feature-item">
-                        <i class="fas fa-warehouse"></i>
-                        <span>Toptancılarla İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('wholesalerCommunicationPage')">İletişim</button>
+                <div class="panel-layout">
+                    <div class="left-sidebar">
+                        <h3><i class="fas fa-store"></i> Satıcı Paneli</h3>
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-primary" onclick="showSidebarContent('addProduct')">
+                                <i class="fas fa-plus"></i> Ürün Ekle
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('listProducts')">
+                                <i class="fas fa-list"></i> Ürün Listele
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('liveSell')">
+                                <i class="fas fa-video"></i> Canlı Sat
+                            </button>
+                            <button class="btn btn-primary" onclick="showSidebarContent('posSales')">
+                                <i class="fas fa-cash-register"></i> POS'tan Satış Yap
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('liveInvites')">
+                                <i class="fas fa-envelope"></i> Canlı Yayın Davetleri
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendOffer')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedOffers')">
+                                <i class="fas fa-inbox"></i> Gelen Teklif Formları
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('sendRequest')">
+                                <i class="fas fa-shopping-cart"></i> Ürün Talep Formu Yolla
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSidebarContent('receivedRequests')">
+                                <i class="fas fa-clipboard-list"></i> Gelen Ürün Talep Formları
+                            </button>
+                        </div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-users"></i>
-                        <span>Müşterilerle İletişim</span>
-                        <button class="btn btn-secondary" onclick="showPage('customerCommunicationPage')">İletişim</button>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-cash-register"></i>
-                        <span>POS Satışları</span>
-                        <button class="btn btn-secondary" onclick="showPage('posSalesPage')">POS</button>
+                    <div class="right-content" id="sidebarContent">
+                        <div class="content-placeholder">
+                            <h3>Sol menüden bir seçenek seçin</h3>
+                            <p>Yukarıdaki butonlardan birine tıklayarak işlem yapabilirsiniz.</p>
+                        </div>
                     </div>
                 </div>
             `;
