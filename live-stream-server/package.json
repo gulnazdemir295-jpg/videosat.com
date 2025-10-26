@@ -1,0 +1,14 @@
+{
+  "name": "live-stream-server",
+  "version": "1.0.0",
+  "description": "Simple live streaming server for testing",
+  "main": "modern-server.js",
+  "scripts": {
+    "start": "node modern-server.js",
+    "dev": "node modern-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}

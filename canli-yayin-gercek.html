@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerçek Canlı Yayın - WebRTC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.offline {
+            background: #ff6b6b;
+        }
+
+        .status-indicator.online {
+            background: #4ecdc4;
+        }
+
+        .status-indicator.broadcasting {
+            background: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .viewer-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+
+        .viewer-item {
+            padding: 8px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viewer-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Ana Sayfaya Dön</a>
+        
+        <div class="header">
+            <h1>🎥 Gerçek Canlı Yayın</h1>
+            <p>WebRTC ile gerçek zamanlı video paylaşımı</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📹 Yayıncı</h2>
+                
+                <div class="video-container" id="localVideoContainer">
+                    <div class="video-placeholder">
+                        <div>
+                            <div style="font-size: 3em; margin-bottom: 15px;">📹</div>
+                            <div>Kameranızı başlatın</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="broadcastTitle">Yayın Başlığı</label>
+                    <input type="text" id="broadcastTitle" placeholder="Yayınınız için bir başlık girin" value="Canlı Yayın">
+                </div>
+
+                <button class="btn" id="startCameraBtn">📷 Kamerayı Başlat</button>
+                <button class="btn" id="startBroadcastBtn" style="display: none; background: #4ecdc4;">🚀 Yayını Başlat</button>
+                <button class="btn" id="stopBroadcastBtn" style="display: none; background: #ff6b6b;">⏹️ Yayını Durdur</button>
+            </div>
+
+            <div class="card">
+                <h2>👀 İzleyici</h2>
+                
+                <div class="video-container" id="remoteVideoContainer">
+                    <div class="video-placeholder">
+                        <div>
+                            <div style="font-size: 3em; margin-bottom: 15px;">👀</div>
+                            <div>Yayın bekleniyor...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="broadcastId">Yayın ID</label>
+                    <input type="text" id="broadcastId" placeholder="Yayın ID'sini girin">
+                </div>
+
+                <button class="btn" id="joinBroadcastBtn">🔗 Yayına Katıl</button>
+                <button class="btn" id="leaveBroadcastBtn" style="display: none; background: #ff6b6b;">❌ Yayından Ayrıl</button>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="canli-yayin-izle-modern.html" class="btn" style="background: #667eea; text-decoration: none; display: inline-block; text-align: center;">📺 Modern İzleyici</a>
+                    <a href="canli-yayin-yap-modern.html" class="btn" style="background: #45b7d1; text-decoration: none; display: inline-block; text-align: center;">🎬 Modern Yayın</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="status" id="statusContainer">
+            <span class="status-indicator offline"></span>
+            <span id="statusText">Bağlantı bekleniyor...</span>
+        </div>
+
+        <div class="card">
+            <h2>👥 İzleyiciler</h2>
+            <div class="viewer-list" id="viewerList">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    Henüz izleyici yok
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://localhost:3001/socket.io/socket.io.js"></script>
+    <script>
+        // WebRTC Configuration
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        // Socket connection
+        const socket = io('http://localhost:3001', {
+            transports: ['websocket', 'polling'],
+            timeout: 20000,
+            forceNew: true
+        });
+
+        // Global variables
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let isBroadcasting = false;
+        let isViewing = false;
+        let currentBroadcastId = null;
+        let viewers = new Set();
+
+        // DOM elements
+        const localVideoContainer = document.getElementById('localVideoContainer');
+        const remoteVideoContainer = document.getElementById('remoteVideoContainer');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const startBroadcastBtn = document.getElementById('startBroadcastBtn');
+        const stopBroadcastBtn = document.getElementById('stopBroadcastBtn');
+        const joinBroadcastBtn = document.getElementById('joinBroadcastBtn');
+        const leaveBroadcastBtn = document.getElementById('leaveBroadcastBtn');
+        const statusContainer = document.getElementById('statusContainer');
+        const statusText = document.getElementById('statusText');
+        const viewerList = document.getElementById('viewerList');
+
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            updateStatus('online', 'Sunucuya bağlandı');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            updateStatus('offline', 'Sunucu bağlantısı kesildi');
+        });
+
+        socket.on('broadcastStarted', (data) => {
+            currentBroadcastId = data.broadcastId;
+            isBroadcasting = true;
+            updateStatus('broadcasting', 'Yayın aktif');
+            startBroadcastBtn.style.display = 'none';
+            stopBroadcastBtn.style.display = 'block';
+            console.log('Broadcast started with ID:', data.broadcastId);
+        });
+
+        socket.on('viewerJoined', (data) => {
+            viewers.add(data.viewerId);
+            updateViewerList();
+            console.log('Viewer joined:', data.viewerId);
+        });
+
+        socket.on('viewerLeft', (data) => {
+            viewers.delete(data.viewerId);
+            updateViewerList();
+            console.log('Viewer left:', data.viewerId);
+        });
+
+        socket.on('offer', async (data) => {
+            console.log('Received offer from broadcaster');
+            await handleOffer(data);
+        });
+
+        socket.on('answer', async (data) => {
+            console.log('Received answer from viewer');
+            await handleAnswer(data);
+        });
+
+        socket.on('iceCandidate', async (data) => {
+            console.log('Received ICE candidate');
+            await handleIceCandidate(data);
+        });
+
+        // Start camera
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 720 },
+                    audio: true
+                });
+
+                const video = document.createElement('video');
+                video.srcObject = localStream;
+                video.autoplay = true;
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.style.borderRadius = '10px';
+
+                localVideoContainer.innerHTML = '';
+                localVideoContainer.appendChild(video);
+
+                startCameraBtn.style.display = 'none';
+                startBroadcastBtn.style.display = 'block';
+
+                updateStatus('online', 'Kamera hazır');
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Kamera erişimi reddedildi: ' + error.message);
+            }
+        });
+
+        // Start broadcast
+        startBroadcastBtn.addEventListener('click', async () => {
+            const title = document.getElementById('broadcastTitle').value;
+            if (!title) {
+                alert('Lütfen yayın başlığı girin.');
+                return;
+            }
+
+            try {
+                // Create peer connection
+                peerConnection = new RTCPeerConnection(rtcConfig);
+
+                // Add local stream to peer connection
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('iceCandidate', {
+                            broadcastId: currentBroadcastId,
+                            candidate: event.candidate
+                        });
+                    }
+                };
+
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('Received remote stream');
+                    remoteStream = event.streams[0];
+                    const video = document.createElement('video');
+                    video.srcObject = remoteStream;
+                    video.autoplay = true;
+                    video.style.width = '100%';
+                    video.style.height = '100%';
+                    video.style.objectFit = 'cover';
+                    video.style.borderRadius = '10px';
+                    remoteVideoContainer.innerHTML = '';
+                    remoteVideoContainer.appendChild(video);
+                };
+
+                // Start broadcast on server
+                socket.emit('startBroadcast', {
+                    title: title,
+                    type: 'webrtc'
+                });
+
+            } catch (error) {
+                console.error('Error starting broadcast:', error);
+                alert('Yayın başlatma hatası: ' + error.message);
+            }
+        });
+
+        // Stop broadcast
+        stopBroadcastBtn.addEventListener('click', () => {
+            if (currentBroadcastId) {
+                socket.emit('endBroadcast', { broadcastId: currentBroadcastId });
+                
+                // Stop local stream
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+
+                // Close peer connection
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+
+                // Reset UI
+                isBroadcasting = false;
+                currentBroadcastId = null;
+                viewers.clear();
+                updateStatus('offline', 'Yayın durduruldu');
+                startCameraBtn.style.display = 'block';
+                startBroadcastBtn.style.display = 'none';
+                stopBroadcastBtn.style.display = 'none';
+                localVideoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        <div>
+                            <div style="font-size: 3em; margin-bottom: 15px;">📹</div>
+                            <div>Kameranızı başlatın</div>
+                        </div>
+                    </div>
+                `;
+                updateViewerList();
+            }
+        });
+
+        // Join broadcast
+        joinBroadcastBtn.addEventListener('click', async () => {
+            const broadcastId = document.getElementById('broadcastId').value;
+            if (!broadcastId) {
+                alert('Lütfen yayın ID girin.');
+                return;
+            }
+
+            try {
+                // Create peer connection
+                peerConnection = new RTCPeerConnection(rtcConfig);
+
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('iceCandidate', {
+                            broadcastId: broadcastId,
+                            candidate: event.candidate
+                        });
+                    }
+                };
+
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('Received remote stream');
+                    remoteStream = event.streams[0];
+                    const video = document.createElement('video');
+                    video.srcObject = remoteStream;
+                    video.autoplay = true;
+                    video.style.width = '100%';
+                    video.style.height = '100%';
+                    video.style.objectFit = 'cover';
+                    video.style.borderRadius = '10px';
+                    remoteVideoContainer.innerHTML = '';
+                    remoteVideoContainer.appendChild(video);
+                };
+
+                // Join broadcast
+                socket.emit('joinBroadcast', { broadcastId: broadcastId });
+                isViewing = true;
+                joinBroadcastBtn.style.display = 'none';
+                leaveBroadcastBtn.style.display = 'block';
+                updateStatus('online', 'Yayına katıldı');
+
+            } catch (error) {
+                console.error('Error joining broadcast:', error);
+                alert('Yayına katılma hatası: ' + error.message);
+            }
+        });
+
+        // Leave broadcast
+        leaveBroadcastBtn.addEventListener('click', () => {
+            if (currentBroadcastId) {
+                socket.emit('leaveBroadcast', { broadcastId: currentBroadcastId });
+                
+                // Close peer connection
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+
+                // Reset UI
+                isViewing = false;
+                currentBroadcastId = null;
+                updateStatus('offline', 'Yayından ayrıldı');
+                joinBroadcastBtn.style.display = 'block';
+                leaveBroadcastBtn.style.display = 'none';
+                remoteVideoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        <div>
+                            <div style="font-size: 3em; margin-bottom: 15px;">👀</div>
+                            <div>Yayın bekleniyor...</div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        // Handle WebRTC offer
+        async function handleOffer(data) {
+            try {
+                await peerConnection.setRemoteDescription(data.offer);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                socket.emit('answer', {
+                    broadcastId: data.broadcastId,
+                    answer: answer
+                });
+            } catch (error) {
+                console.error('Error handling offer:', error);
+            }
+        }
+
+        // Handle WebRTC answer
+        async function handleAnswer(data) {
+            try {
+                await peerConnection.setRemoteDescription(data.answer);
+            } catch (error) {
+                console.error('Error handling answer:', error);
+            }
+        }
+
+        // Handle ICE candidate
+        async function handleIceCandidate(data) {
+            try {
+                await peerConnection.addIceCandidate(data.candidate);
+            } catch (error) {
+                console.error('Error handling ICE candidate:', error);
+            }
+        }
+
+        // Update status
+        function updateStatus(type, message) {
+            const indicator = statusContainer.querySelector('.status-indicator');
+            indicator.className = `status-indicator ${type}`;
+            statusText.textContent = message;
+        }
+
+        // Update viewer list
+        function updateViewerList() {
+            if (viewers.size === 0) {
+                viewerList.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        Henüz izleyici yok
+                    </div>
+                `;
+            } else {
+                viewerList.innerHTML = '';
+                viewers.forEach(viewerId => {
+                    const viewerDiv = document.createElement('div');
+                    viewerDiv.className = 'viewer-item';
+                    viewerDiv.innerHTML = `
+                        <span>👤 İzleyici ${viewerId.substring(0, 8)}</span>
+                        <span style="color: #4ecdc4;">● Canlı</span>
+                    `;
+                    viewerList.appendChild(viewerDiv);
+                });
+            }
+        }
+
+        // Initialize
+        updateStatus('offline', 'Bağlantı bekleniyor...');
+    </script>
+</body>
+</html>
