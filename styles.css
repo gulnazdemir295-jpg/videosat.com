@@ -168,6 +168,115 @@
     border-color: #bd2130;
 }
 
+/* POS Satış Sidebar Stilleri */
+.pos-sales-content {
+    max-width: 800px;
+}
+
+.sale-type-section {
+    margin-bottom: 30px;
+}
+
+.sale-type-section h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.sale-type-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.sale-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.sale-form h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.cart-section {
+    background: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.cart-section h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.cart-items {
+    margin-bottom: 15px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.cart-total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.sales-history h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.sales-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sale-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #007bff;
+}
+
 /* POS Satış Sistemi Stilleri */
 .pos-sales-container {
     background: white;

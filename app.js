@@ -294,11 +294,74 @@ function showSidebarContent(contentType) {
                 <div class="content-section">
                     <h3><i class="fas fa-cash-register"></i> POS'tan Satış Yap</h3>
                     <div class="pos-sales-content">
-                        <p>POS satış sistemi burada olacak.</p>
-                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış Sayfası</button>
+                        <div class="sale-type-section">
+                            <h4>Satış Türü Seçin</h4>
+                            <div class="sale-type-buttons">
+                                <button class="btn btn-outline" onclick="selectSaleType('reel')">
+                                    <i class="fas fa-store"></i> Reel Satış (Dükkandan)
+                                </button>
+                                <button class="btn btn-outline" onclick="selectSaleType('online')">
+                                    <i class="fas fa-globe"></i> Site Satışı
+                                </button>
+                                <button class="btn btn-outline" onclick="selectSaleType('live')">
+                                    <i class="fas fa-video"></i> Canlı Yayın Satışı
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="saleForm" class="sale-form hidden">
+                            <h4>Satış Yap</h4>
+                            <form id="posSaleForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="saleProduct">Ürün Seçin:</label>
+                                        <select id="saleProduct" required>
+                                            <option value="">Ürün seçin...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="saleQuantity">Miktar:</label>
+                                        <input type="number" id="saleQuantity" min="1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="salePrice">Birim Fiyat:</label>
+                                        <input type="number" id="salePrice" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" onclick="addToCart()">
+                                        <i class="fas fa-cart-plus"></i> Sepete Ekle
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check"></i> Satışı Tamamla
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div id="cartSection" class="cart-section hidden">
+                            <h4>Sepet</h4>
+                            <div id="cartItems" class="cart-items">
+                                <!-- Sepet öğeleri buraya eklenecek -->
+                            </div>
+                            <div class="cart-total">
+                                <h5>Toplam: <span id="cartTotal">₺0.00</span></h5>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-history">
+                            <h4>Son Satışlar</h4>
+                            <div id="salesHistory" class="sales-list">
+                                <!-- Satış geçmişi buraya eklenecek -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
+            // POS satış fonksiyonlarını başlat
+            loadUserProducts();
+            updateProductSelect();
+            loadSalesHistory();
             break;
             
         case 'liveInvites':
