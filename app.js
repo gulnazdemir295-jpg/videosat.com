@@ -215,6 +215,11 @@ function loadRoleSpecificPanels() {
                         <span>Sipariş Takibi</span>
                         <button class="btn btn-secondary" onclick="showPage('orderTrackingPage')">Takip</button>
                     </div>
+                    <div class="feature-item">
+                        <i class="fas fa-cash-register"></i>
+                        <span>POS Satış Yap</span>
+                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
+                    </div>
                 </div>
             `;
             break;
@@ -238,6 +243,11 @@ function loadRoleSpecificPanels() {
                         <span>Teklif Formları</span>
                         <button class="btn btn-secondary" onclick="showPage('offerFormsPage')">Formlar</button>
                     </div>
+                    <div class="feature-item">
+                        <i class="fas fa-cash-register"></i>
+                        <span>POS Satış Yap</span>
+                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
+                    </div>
                 </div>
             `;
             break;
@@ -260,6 +270,11 @@ function loadRoleSpecificPanels() {
                         <i class="fas fa-chart-line"></i>
                         <span>Satış Raporları</span>
                         <button class="btn btn-secondary" onclick="showPage('salesReportsPage')">Raporlar</button>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-cash-register"></i>
+                        <span>POS Satış Yap</span>
+                        <button class="btn btn-primary" onclick="showPage('posSalesPage')">POS Satış</button>
                     </div>
                 </div>
             `;
