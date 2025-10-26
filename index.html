@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dünyanın En Acayip Sitesi - Canlı Yayın Platformu</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Ana Sayfa -->
+    <div id="homePage" class="page active">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-globe"></i> Dünyanın En Acayip Sitesi</h1>
+                    <p>E-Ticaret ve Canlı Yayın Platformu</p>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('homePage')">Ana Sayfa</button>
+                    <button class="nav-btn" onclick="showPage('loginPage')">Giriş Yap</button>
+                    <button class="nav-btn" onclick="showPage('registerPage')">Kayıt Ol</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="hero">
+                <div class="container">
+                    <h2>Canlı Yayın ile Satış Yapın!</h2>
+                    <p>Tedarik zinciri boyunca tüm kullanıcılar için özel canlı yayın platformu</p>
+                    <div class="cta-buttons">
+                        <button class="btn btn-primary" onclick="showPage('loginPage')">
+                            <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                        </button>
+                        <button class="btn btn-secondary" onclick="showPage('registerPage')">
+                            <i class="fas fa-user-plus"></i> Kayıt Ol
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="features">
+                <div class="container">
+                    <h3>Platform Özellikleri</h3>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-video"></i>
+                            <h4>Canlı Yayın</h4>
+                            <p>Ürünlerinizi canlı olarak tanıtın ve satış yapın</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-users"></i>
+                            <h4>Çoklu Rol</h4>
+                            <p>Hammadeci, Üretici, Toptancı, Satıcı rolleri</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-globe-americas"></i>
+                            <h4>Uluslararası</h4>
+                            <p>Döviz çevirici ve AI çeviri desteği</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h4>Mobil Uyumlu</h4>
+                            <p>Her cihazdan erişim imkanı</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="live-streams">
+                <div class="container">
+                    <h3>Aktif Canlı Yayınlar</h3>
+                    <div class="streams-grid" id="liveStreamsGrid">
+                        <!-- Canlı yayınlar buraya dinamik olarak eklenecek -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2024 Dünyanın En Acayip Sitesi. Tüm hakları saklıdır.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Giriş Sayfası -->
+    <div id="loginPage" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2><i class="fas fa-sign-in-alt"></i> Giriş Yap</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">E-posta:</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Şifre:</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userRole">Rol Seçin:</label>
+                        <select id="userRole" required>
+                            <option value="">Rol seçin</option>
+                            <option value="hammadeci">Hammadeci</option>
+                            <option value="uretici">Üretici</option>
+                            <option value="toptanci">Toptancı</option>
+                            <option value="satici">Satıcı</option>
+                            <option value="musteri">Müşteri</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                </form>
+                <p class="auth-link">
+                    Hesabınız yok mu? <a href="#" onclick="showPage('registerPage')">Kayıt olun</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kayıt Sayfası -->
+    <div id="registerPage" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2><i class="fas fa-user-plus"></i> Kayıt Ol</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="regName">Ad Soyad:</label>
+                        <input type="text" id="regName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">E-posta:</label>
+                        <input type="email" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Şifre:</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regRole">Rol Seçin:</label>
+                        <select id="regRole" required>
+                            <option value="">Rol seçin</option>
+                            <option value="hammadeci">Hammadeci</option>
+                            <option value="uretici">Üretici</option>
+                            <option value="toptanci">Toptancı</option>
+                            <option value="satici">Satıcı</option>
+                            <option value="musteri">Müşteri</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+                </form>
+                <p class="auth-link">
+                    Zaten hesabınız var mı? <a href="#" onclick="showPage('loginPage')">Giriş yapın</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Sayfası -->
+    <div id="dashboardPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                </div>
+                <nav class="nav">
+                    <span id="userInfo" class="user-info"></span>
+                    <button class="nav-btn" onclick="logout()">Çıkış</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <!-- Canlı Yayın Bakiyesi -->
+                <div class="balance-section">
+                    <div class="balance-card">
+                        <h3><i class="fas fa-clock"></i> Canlı Yayın Bakiyesi</h3>
+                        <div class="balance-info">
+                            <span class="balance-time" id="balanceTime">00:00:00</span>
+                            <p>Kalan Süre</p>
+                        </div>
+                        <button class="btn btn-success" onclick="showPage('buyTimePage')">
+                            <i class="fas fa-plus"></i> Yeni Süre Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-video"></i> Canlı Yayın</h3>
+                        <p>Yeni bir canlı yayın başlatın</p>
+                        <button class="btn btn-primary" onclick="showPage('liveStreamSetupPage')">
+                            <i class="fas fa-play"></i> Yayın Başlat
+                        </button>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-eye"></i> Yayınları İzle</h3>
+                        <p>Aktif yayınları görüntüleyin</p>
+                        <button class="btn btn-secondary" onclick="showLiveStreams()">
+                            <i class="fas fa-tv"></i> Yayınları Görüntüle
+                        </button>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-box"></i> Ürün Yönetimi</h3>
+                        <p>Ürünlerinizi yönetin</p>
+                        <button class="btn btn-secondary" onclick="showPage('productManagementPage')">
+                            <i class="fas fa-cogs"></i> Ürünleri Yönet
+                        </button>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-chart-line"></i> İstatistikler</h3>
+                        <p>Satış ve yayın istatistikleri</p>
+                        <button class="btn btn-secondary" onclick="showStats()">
+                            <i class="fas fa-chart-bar"></i> İstatistikleri Görüntüle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rol Bazlı Özel Paneller -->
+                <div id="roleSpecificPanels" class="role-panels">
+                    <!-- Bu bölüm JavaScript ile dinamik olarak doldurulacak -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Canlı Yayın Kurulum Sayfası -->
+    <div id="liveStreamSetupPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-video"></i> Canlı Yayın Kurulumu</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="setup-container">
+                    <div class="setup-card">
+                        <h2><i class="fas fa-cog"></i> Yayın Ayarları</h2>
+                        
+                        <!-- Ürün Seçimi -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-box"></i> Satılacak Ürünleri Seçin</h3>
+                            <div class="product-selection">
+                                <div class="product-list" id="productList">
+                                    <!-- Ürünler JavaScript ile yüklenecek -->
+                                </div>
+                                <div class="selected-products">
+                                    <h4>Seçilen Ürünler:</h4>
+                                    <div id="selectedProductsList"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slogan Sistemi -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-quote-left"></i> Slogan Cümleleri</h3>
+                            <div class="slogan-inputs">
+                                <div class="slogan-item">
+                                    <label>Slogan 1:</label>
+                                    <input type="text" id="slogan1" placeholder="Örnek: Taze ve doğal ürünlerimizle tanışın!">
+                                </div>
+                                <div class="slogan-item">
+                                    <label>Slogan 2:</label>
+                                    <input type="text" id="slogan2" placeholder="Örnek: Özel fiyatlarla sadece bugün!">
+                                </div>
+                                <div class="slogan-item">
+                                    <label>Slogan 3:</label>
+                                    <input type="text" id="slogan3" placeholder="Örnek: Kalite garantili ürünler!">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yayın Başlatma -->
+                        <div class="form-section">
+                            <button class="btn btn-primary btn-large" onclick="startLiveStreamWithSettings()">
+                                <i class="fas fa-play"></i> Canlı Yayını Başlat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Süre Satın Alma Sayfası -->
+    <div id="buyTimePage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-clock"></i> Canlı Yayın Süresi Satın Al</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="time-packages">
+                    <h2>Canlı Yayın Paketleri</h2>
+                    <div class="package-grid">
+                        <div class="package-card">
+                            <h3>1 Saat Paketi</h3>
+                            <div class="package-price">₺50</div>
+                            <ul>
+                                <li>1 saat canlı yayın</li>
+                                <li>Temel özellikler</li>
+                                <li>Canlı sohbet</li>
+                            </ul>
+                            <button class="btn btn-primary" onclick="buyTimePackage(1, 50)">Satın Al</button>
+                        </div>
+                        <div class="package-card featured">
+                            <h3>5 Saat Paketi</h3>
+                            <div class="package-price">₺200</div>
+                            <div class="package-save">%20 İndirim</div>
+                            <ul>
+                                <li>5 saat canlı yayın</li>
+                                <li>Tüm özellikler</li>
+                                <li>Öncelikli destek</li>
+                            </ul>
+                            <button class="btn btn-primary" onclick="buyTimePackage(5, 200)">Satın Al</button>
+                        </div>
+                        <div class="package-card">
+                            <h3>10 Saat Paketi</h3>
+                            <div class="package-price">₺350</div>
+                            <div class="package-save">%30 İndirim</div>
+                            <ul>
+                                <li>10 saat canlı yayın</li>
+                                <li>Tüm özellikler</li>
+                                <li>Premium destek</li>
+                            </ul>
+                            <button class="btn btn-primary" onclick="buyTimePackage(10, 350)">Satın Al</button>
+                        </div>
+                    </div>
+                    <div class="skip-section">
+                        <p>Şu anda alışveriş yapmaya gerek olmadığından:</p>
+                        <button class="btn btn-secondary" onclick="skipPurchase()">
+                            <i class="fas fa-forward"></i> Bu Adımı Atla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Ürün Yönetimi Sayfası -->
+    <div id="productManagementPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-box"></i> Ürün Yönetimi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="product-management">
+                    <div class="management-header">
+                        <h2>Ürünlerinizi Yönetin</h2>
+                        <button class="btn btn-primary" onclick="showAddProductForm()">
+                            <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                        </button>
+                    </div>
+
+                    <!-- Ürün Ekleme Formu -->
+                    <div id="addProductForm" class="product-form hidden">
+                        <h3>Yeni Ürün Ekle</h3>
+                        <form id="productForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="productName">Ürün Adı:</label>
+                                    <input type="text" id="productName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="productPrice">Fiyat:</label>
+                                    <input type="number" id="productPrice" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="productUnit">Birim:</label>
+                                    <select id="productUnit" required>
+                                        <option value="adet">Adet</option>
+                                        <option value="kg">Kilogram (kg)</option>
+                                        <option value="m2">Metrekare (m²)</option>
+                                        <option value="m3">Metreküp (m³)</option>
+                                        <option value="litre">Litre</option>
+                                        <option value="gram">Gram</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="productStock">Stok:</label>
+                                    <input type="number" id="productStock" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="productDescription">Açıklama:</label>
+                                <textarea id="productDescription" rows="3"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Ürün Ekle</button>
+                                <button type="button" class="btn btn-secondary" onclick="hideAddProductForm()">İptal</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Ürün Listesi -->
+                    <div class="product-list-section">
+                        <h3>Mevcut Ürünleriniz</h3>
+                        <div id="productsList" class="products-grid">
+                            <!-- Ürünler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Canlı Yayın Sayfası -->
+    <div id="liveStreamPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-video"></i> Canlı Yayın</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                    <button class="nav-btn" onclick="endStream()">Yayını Sonlandır</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="stream-container">
+                    <div class="stream-main">
+                        <div class="video-container">
+                            <video id="localVideo" autoplay muted></video>
+                            <div class="stream-controls">
+                                <button id="toggleCamera" class="control-btn" onclick="toggleCamera()">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                                <button id="toggleMic" class="control-btn" onclick="toggleMicrophone()">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button id="toggleScreen" class="control-btn" onclick="toggleScreenShare()">
+                                    <i class="fas fa-desktop"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="stream-info">
+                            <h3 id="streamTitle">Canlı Yayın</h3>
+                            <p id="viewerCount">İzleyici: 0</p>
+                        </div>
+                    </div>
+                    <div class="stream-sidebar">
+                        <div class="chat-container">
+                            <h4>Canlı Sohbet</h4>
+                            <div id="chatMessages" class="chat-messages"></div>
+                            <div class="chat-input">
+                                <input type="text" id="chatInput" placeholder="Mesajınızı yazın...">
+                                <button onclick="sendMessage()">Gönder</button>
+                            </div>
+                        </div>
+                        <div class="products-container">
+                            <h4>Satış Ürünleri</h4>
+                            <div id="streamProducts" class="products-list">
+                                <!-- Ürünler buraya eklenecek -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hammadeciler - Üretici İletişim Sayfası -->
+    <div id="producerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-industry"></i> Üreticilerle İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Üretici Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Üretici Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="producerSearch" placeholder="Üretici adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchProducers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="cityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="productTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Üretici Listesi -->
+                    <div class="producers-section">
+                        <h3>Üretici Listesi</h3>
+                        <div id="producersList" class="producers-grid">
+                            <!-- Üreticiler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('offerFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('bulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('messageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Teklif Formları Sayfası -->
+    <div id="offerFormsPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-file-contract"></i> Teklif Formları</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="forms-container">
+                    <!-- Yeni Teklif Formu -->
+                    <div class="form-section">
+                        <h2><i class="fas fa-plus"></i> Yeni Teklif Formu Oluştur</h2>
+                        <form id="offerForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="offerTo">Teklif Gönderilecek:</label>
+                                    <select id="offerTo" required>
+                                        <option value="">Üretici Seçin</option>
+                                        <!-- Üreticiler JavaScript ile yüklenecek -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="offerType">Teklif Türü:</label>
+                                    <select id="offerType" required>
+                                        <option value="satis">Satış Teklifi</option>
+                                        <option value="alis">Alış Teklifi</option>
+                                        <option value="ortaklik">Ortaklık Teklifi</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offerTitle">Teklif Başlığı:</label>
+                                <input type="text" id="offerTitle" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offerDescription">Teklif Açıklaması:</label>
+                                <textarea id="offerDescription" rows="4" required></textarea>
+                            </div>
+                            
+                            <!-- Ürün Seçimi -->
+                            <div class="form-group">
+                                <label>Teklif Edilen Ürünler:</label>
+                                <div class="product-selection-mini">
+                                    <div id="offerProductList" class="product-list-mini">
+                                        <!-- Ürünler JavaScript ile yüklenecek -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="offerPrice">Teklif Fiyatı (₺):</label>
+                                    <input type="number" id="offerPrice" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="offerQuantity">Miktar:</label>
+                                    <input type="number" id="offerQuantity" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="offerValidUntil">Geçerlilik Tarihi:</label>
+                                    <input type="date" id="offerValidUntil" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="offerPaymentTerms">Ödeme Koşulları:</label>
+                                    <select id="offerPaymentTerms">
+                                        <option value="pesin">Peşin</option>
+                                        <option value="30gun">30 Gün Vadeli</option>
+                                        <option value="60gun">60 Gün Vadeli</option>
+                                        <option value="90gun">90 Gün Vadeli</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Teklif Gönder</button>
+                                <button type="button" class="btn btn-secondary" onclick="saveDraftOffer()">Taslak Kaydet</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Gönderilen Teklifler -->
+                    <div class="sent-offers-section">
+                        <h3>Gönderilen Teklifler</h3>
+                        <div id="sentOffersList" class="offers-list">
+                            <!-- Teklifler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Gelen Teklifler -->
+                    <div class="received-offers-section">
+                        <h3>Gelen Teklifler</h3>
+                        <div id="receivedOffersList" class="offers-list">
+                            <!-- Teklifler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sipariş Takibi Sayfası -->
+    <div id="orderTrackingPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-shipping-fast"></i> Sipariş Takibi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="tracking-container">
+                    <!-- Sipariş Durumu Özeti -->
+                    <div class="order-summary">
+                        <h2>Sipariş Durumu Özeti</h2>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <i class="fas fa-clock"></i>
+                                <h3 id="pendingOrders">0</h3>
+                                <p>Bekleyen Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-cog"></i>
+                                <h3 id="processingOrders">0</h3>
+                                <p>Hazırlanan Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-truck"></i>
+                                <h3 id="shippedOrders">0</h3>
+                                <p>Kargoya Verilen</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-check"></i>
+                                <h3 id="deliveredOrders">0</h3>
+                                <p>Teslim Edilen</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Filtreleri -->
+                    <div class="order-filters">
+                        <h3>Sipariş Filtreleri</h3>
+                        <div class="filter-controls">
+                            <select id="orderStatusFilter">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="pending">Bekleyen</option>
+                                <option value="processing">Hazırlanan</option>
+                                <option value="shipped">Kargoya Verilen</option>
+                                <option value="delivered">Teslim Edilen</option>
+                                <option value="cancelled">İptal Edilen</option>
+                            </select>
+                            <input type="date" id="orderDateFrom" placeholder="Başlangıç Tarihi">
+                            <input type="date" id="orderDateTo" placeholder="Bitiş Tarihi">
+                            <button class="btn btn-primary" onclick="filterOrders()">Filtrele</button>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Listesi -->
+                    <div class="orders-section">
+                        <h3>Siparişler</h3>
+                        <div id="ordersList" class="orders-list">
+                            <!-- Siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Kargo Takip -->
+                    <div class="tracking-section">
+                        <h3>Kargo Takip</h3>
+                        <div class="tracking-form">
+                            <input type="text" id="trackingNumber" placeholder="Kargo Takip Numarası">
+                            <button class="btn btn-secondary" onclick="trackShipment()">Takip Et</button>
+                        </div>
+                        <div id="trackingResult" class="tracking-result">
+                            <!-- Takip sonucu buraya gelecek -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Üreticiler - Hammadeci İletişim Sayfası -->
+    <div id="supplierCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-industry"></i> Hammadecilerle İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Hammadeci Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Hammadeci Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="supplierSearch" placeholder="Hammadeci adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchSuppliers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="supplierCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="supplierProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="ham-madde">Ham Madde</option>
+                                <option value="yarı-mamul">Yarı Mamul</option>
+                                <option value="hammadde">Hammadde</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hammadeci Listesi -->
+                    <div class="suppliers-section">
+                        <h3>Hammadeci Listesi</h3>
+                        <div id="suppliersList" class="suppliers-grid">
+                            <!-- Hammadeciler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('supplierOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('supplierBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('supplierMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Üreticiler - Toptancı İletişim Sayfası -->
+    <div id="wholesalerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-warehouse"></i> Toptancılarla İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Toptancı Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Toptancı Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="wholesalerSearch" placeholder="Toptancı adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchWholesalers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="wholesalerCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="wholesalerProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Toptancı Listesi -->
+                    <div class="wholesalers-section">
+                        <h3>Toptancı Listesi</h3>
+                        <div id="wholesalersList" class="wholesalers-grid">
+                            <!-- Toptancılar JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('wholesalerOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Üreticiler - Sipariş Yönetimi Sayfası -->
+    <div id="producerOrderManagementPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-clipboard-list"></i> Sipariş Yönetimi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="order-management-container">
+                    <!-- Sipariş Durumu Özeti -->
+                    <div class="order-summary">
+                        <h2>Sipariş Durumu Özeti</h2>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <i class="fas fa-clock"></i>
+                                <h3 id="producerPendingOrders">0</h3>
+                                <p>Bekleyen Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-cog"></i>
+                                <h3 id="producerProcessingOrders">0</h3>
+                                <p>Hazırlanan Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-truck"></i>
+                                <h3 id="producerShippedOrders">0</h3>
+                                <p>Kargoya Verilen</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-check"></i>
+                                <h3 id="producerDeliveredOrders">0</h3>
+                                <p>Teslim Edilen</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Türleri -->
+                    <div class="order-types">
+                        <h3>Sipariş Türleri</h3>
+                        <div class="type-tabs">
+                            <button class="tab-btn active" onclick="showOrderType('received')">Gelen Siparişler</button>
+                            <button class="tab-btn" onclick="showOrderType('sent')">Verdiğim Siparişler</button>
+                        </div>
+                    </div>
+
+                    <!-- Gelen Siparişler -->
+                    <div id="receivedOrdersTab" class="order-tab active">
+                        <h3>Gelen Siparişler (Toptancılardan)</h3>
+                        <div id="receivedOrdersList" class="orders-list">
+                            <!-- Gelen siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Verdiğim Siparişler -->
+                    <div id="sentOrdersTab" class="order-tab">
+                        <h3>Verdiğim Siparişler (Hammadecilere)</h3>
+                        <div id="sentOrdersList" class="orders-list">
+                            <!-- Verdiğim siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Sipariş İşlemleri -->
+                    <div class="order-actions-section">
+                        <h3>Sipariş İşlemleri</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('producerOrderTrackingPage')">
+                                <i class="fas fa-shipping-fast"></i> Kargo Takibi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('producerInventoryPage')">
+                                <i class="fas fa-boxes"></i> Stok Yönetimi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('producerProductionPage')">
+                                <i class="fas fa-industry"></i> Üretim Planlama
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toptancılar - Üretici İletişim Sayfası -->
+    <div id="wholesalerProducerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-industry"></i> Üreticilerle İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Üretici Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Üretici Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="wholesalerProducerSearch" placeholder="Üretici adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchWholesalerProducers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="wholesalerProducerCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="wholesalerProducerProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Üretici Listesi -->
+                    <div class="producers-section">
+                        <h3>Üretici Listesi</h3>
+                        <div id="wholesalerProducersList" class="producers-grid">
+                            <!-- Üreticiler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('wholesalerProducerOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerProducerBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerProducerMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toptancılar - Satıcı İletişim Sayfası -->
+    <div id="wholesalerSellerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-store"></i> Satıcılarla İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Satıcı Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Satıcı Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="wholesalerSellerSearch" placeholder="Satıcı adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchWholesalerSellers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="wholesalerSellerCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="wholesalerSellerProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Satıcı Listesi -->
+                    <div class="sellers-section">
+                        <h3>Satıcı Listesi</h3>
+                        <div id="wholesalerSellersList" class="sellers-grid">
+                            <!-- Satıcılar JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('wholesalerSellerOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerSellerBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerSellerMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toptancılar - Sipariş Yönetimi Sayfası -->
+    <div id="wholesalerOrderManagementPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-clipboard-list"></i> Sipariş Yönetimi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="order-management-container">
+                    <!-- Sipariş Durumu Özeti -->
+                    <div class="order-summary">
+                        <h2>Sipariş Durumu Özeti</h2>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <i class="fas fa-clock"></i>
+                                <h3 id="wholesalerPendingOrders">0</h3>
+                                <p>Bekleyen Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-cog"></i>
+                                <h3 id="wholesalerProcessingOrders">0</h3>
+                                <p>Hazırlanan Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-truck"></i>
+                                <h3 id="wholesalerShippedOrders">0</h3>
+                                <p>Kargoya Verilen</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-check"></i>
+                                <h3 id="wholesalerDeliveredOrders">0</h3>
+                                <p>Teslim Edilen</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Türleri -->
+                    <div class="order-types">
+                        <h3>Sipariş Türleri</h3>
+                        <div class="type-tabs">
+                            <button class="tab-btn active" onclick="showWholesalerOrderType('received')">Gelen Siparişler</button>
+                            <button class="tab-btn" onclick="showWholesalerOrderType('sent')">Verdiğim Siparişler</button>
+                        </div>
+                    </div>
+
+                    <!-- Gelen Siparişler -->
+                    <div id="wholesalerReceivedOrdersTab" class="order-tab active">
+                        <h3>Gelen Siparişler (Satıcılardan)</h3>
+                        <div id="wholesalerReceivedOrdersList" class="orders-list">
+                            <!-- Gelen siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Verdiğim Siparişler -->
+                    <div id="wholesalerSentOrdersTab" class="order-tab">
+                        <h3>Verdiğim Siparişler (Üreticilere)</h3>
+                        <div id="wholesalerSentOrdersList" class="orders-list">
+                            <!-- Verdiğim siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Sipariş İşlemleri -->
+                    <div class="order-actions-section">
+                        <h3>Sipariş İşlemleri</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('wholesalerOrderTrackingPage')">
+                                <i class="fas fa-shipping-fast"></i> Kargo Takibi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerInventoryPage')">
+                                <i class="fas fa-boxes"></i> Stok Yönetimi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('wholesalerSalesPage')">
+                                <i class="fas fa-chart-line"></i> Satış Raporları
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Satıcılar - Toptancı İletişim Sayfası -->
+    <div id="sellerWholesalerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-warehouse"></i> Toptancılarla İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Toptancı Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Toptancı Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="sellerWholesalerSearch" placeholder="Toptancı adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchSellerWholesalers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="sellerWholesalerCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="sellerWholesalerProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Toptancı Listesi -->
+                    <div class="wholesalers-section">
+                        <h3>Toptancı Listesi</h3>
+                        <div id="sellerWholesalersList" class="wholesalers-grid">
+                            <!-- Toptancılar JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('sellerWholesalerOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerWholesalerBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerWholesalerMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Satıcılar - Müşteri İletişim Sayfası -->
+    <div id="sellerCustomerCommunicationPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-users"></i> Müşterilerle İletişim</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="communication-container">
+                    <!-- Müşteri Arama ve Filtreleme -->
+                    <div class="search-section">
+                        <h2><i class="fas fa-search"></i> Müşteri Ara</h2>
+                        <div class="search-controls">
+                            <input type="text" id="sellerCustomerSearch" placeholder="Müşteri adı, şehir veya ürün türü ara...">
+                            <button class="btn btn-primary" onclick="searchSellerCustomers()">Ara</button>
+                        </div>
+                        <div class="filter-options">
+                            <select id="sellerCustomerCityFilter">
+                                <option value="">Tüm Şehirler</option>
+                                <option value="istanbul">İstanbul</option>
+                                <option value="ankara">Ankara</option>
+                                <option value="izmir">İzmir</option>
+                                <option value="bursa">Bursa</option>
+                            </select>
+                            <select id="sellerCustomerProductTypeFilter">
+                                <option value="">Tüm Ürün Türleri</option>
+                                <option value="gida">Gıda</option>
+                                <option value="tekstil">Tekstil</option>
+                                <option value="elektronik">Elektronik</option>
+                                <option value="kimya">Kimya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Müşteri Listesi -->
+                    <div class="customers-section">
+                        <h3>Müşteri Listesi</h3>
+                        <div id="sellerCustomersList" class="customers-grid">
+                            <!-- Müşteriler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Hızlı İşlemler -->
+                    <div class="quick-actions">
+                        <h3>Hızlı İşlemler</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('sellerCustomerOfferFormsPage')">
+                                <i class="fas fa-file-contract"></i> Teklif Formu Gönder
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerCustomerBulkInvitePage')">
+                                <i class="fas fa-bullhorn"></i> Toplu Canlı Yayın Daveti
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerCustomerMessageCenterPage')">
+                                <i class="fas fa-envelope"></i> Mesaj Merkezi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Satıcılar - Sipariş Yönetimi Sayfası -->
+    <div id="sellerOrderManagementPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-clipboard-list"></i> Sipariş Yönetimi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="order-management-container">
+                    <!-- Sipariş Durumu Özeti -->
+                    <div class="order-summary">
+                        <h2>Sipariş Durumu Özeti</h2>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <i class="fas fa-clock"></i>
+                                <h3 id="sellerPendingOrders">0</h3>
+                                <p>Bekleyen Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-cog"></i>
+                                <h3 id="sellerProcessingOrders">0</h3>
+                                <p>Hazırlanan Siparişler</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-truck"></i>
+                                <h3 id="sellerShippedOrders">0</h3>
+                                <p>Kargoya Verilen</p>
+                            </div>
+                            <div class="summary-card">
+                                <i class="fas fa-check"></i>
+                                <h3 id="sellerDeliveredOrders">0</h3>
+                                <p>Teslim Edilen</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Türleri -->
+                    <div class="order-types">
+                        <h3>Sipariş Türleri</h3>
+                        <div class="type-tabs">
+                            <button class="tab-btn active" onclick="showSellerOrderType('received')">Gelen Siparişler</button>
+                            <button class="tab-btn" onclick="showSellerOrderType('sent')">Verdiğim Siparişler</button>
+                        </div>
+                    </div>
+
+                    <!-- Gelen Siparişler -->
+                    <div id="sellerReceivedOrdersTab" class="order-tab active">
+                        <h3>Gelen Siparişler (Müşterilerden)</h3>
+                        <div id="sellerReceivedOrdersList" class="orders-list">
+                            <!-- Gelen siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Verdiğim Siparişler -->
+                    <div id="sellerSentOrdersTab" class="order-tab">
+                        <h3>Verdiğim Siparişler (Toptancılara)</h3>
+                        <div id="sellerSentOrdersList" class="orders-list">
+                            <!-- Verdiğim siparişler JavaScript ile yüklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Sipariş İşlemleri -->
+                    <div class="order-actions-section">
+                        <h3>Sipariş İşlemleri</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showPage('sellerOrderTrackingPage')">
+                                <i class="fas fa-shipping-fast"></i> Kargo Takibi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerInventoryPage')">
+                                <i class="fas fa-boxes"></i> Stok Yönetimi
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('sellerSalesPage')">
+                                <i class="fas fa-chart-line"></i> Satış Raporları
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- İzleyici Sayfası -->
+    <div id="viewerPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-tv"></i> Yayın İzleme</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="viewer-container">
+                    <div class="viewer-main">
+                        <div class="video-container">
+                            <video id="remoteVideo" autoplay></video>
+                        </div>
+                        <div class="stream-info">
+                            <h3 id="viewerStreamTitle">Canlı Yayın</h3>
+                            <p id="viewerCount">İzleyici: 0</p>
+                        </div>
+                    </div>
+                    <div class="viewer-sidebar">
+                        <div class="chat-container">
+                            <h4>Canlı Sohbet</h4>
+                            <div id="viewerChatMessages" class="chat-messages"></div>
+                            <div class="chat-input">
+                                <input type="text" id="viewerChatInput" placeholder="Mesajınızı yazın...">
+                                <button onclick="sendViewerMessage()">Gönder</button>
+                            </div>
+                        </div>
+                        <div class="products-container">
+                            <h4>Satış Ürünleri</h4>
+                            <div id="viewerProducts" class="products-list">
+                                <!-- Ürünler buraya eklenecek -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- AWS WebRTC ve diğer scriptler -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
