@@ -82,6 +82,28 @@ function showPage(pageId) {
     }
 }
 
+// Test kullanıcısı oluştur (sayfa yüklendiğinde)
+document.addEventListener('DOMContentLoaded', function() {
+    // Test kullanıcısı oluştur
+    const testUser = {
+        id: 'test_hammadeci_001',
+        name: 'Gülnaz Hammadeci',
+        email: 'gulnaz@hammaddeci.com',
+        password: 'test123',
+        role: 'hammadeci'
+    };
+    
+    // localStorage'da test kullanıcısı var mı kontrol et
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const existingUser = users.find(u => u.email === testUser.email);
+    
+    if (!existingUser) {
+        users.push(testUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        console.log('Test kullanıcısı oluşturuldu:', testUser);
+    }
+});
+
 // Kullanıcı kayıt sistemi
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     e.preventDefault();
