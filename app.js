@@ -53,6 +53,7 @@ function showPage(pageId) {
     } else if (pageId === 'liveStreamSetupPage') {
         loadLiveStreamSetup();
     } else if (pageId === 'productManagementPage') {
+        loadUserProducts();
         loadProductsList();
     } else if (pageId === 'buyTimePage') {
         // Süre satın alma sayfası için özel işlem yok
@@ -319,7 +320,10 @@ function hideAddProductForm() {
     const form = document.getElementById('addProductForm');
     if (form) {
         form.classList.add('hidden');
-        document.getElementById('productForm').reset();
+        const productForm = document.getElementById('productForm');
+        if (productForm) {
+            productForm.reset();
+        }
     }
 }
 
