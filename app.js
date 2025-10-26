@@ -82,26 +82,38 @@ function showPage(pageId) {
     }
 }
 
-// Test kullanıcısı oluştur (sayfa yüklendiğinde)
+// Test kullanıcıları oluştur (sayfa yüklendiğinde)
 document.addEventListener('DOMContentLoaded', function() {
-    // Test kullanıcısı oluştur
-    const testUser = {
-        id: 'test_hammadeci_001',
-        name: 'Gülnaz Hammadeci',
-        email: 'gulnaz@hammaddeci.com',
-        password: 'test123',
-        role: 'hammadeci'
-    };
+    // Test kullanıcıları oluştur
+    const testUsers = [
+        {
+            id: 'test_hammadeci_001',
+            name: 'Gülnaz Hammadeci',
+            email: 'gulnaz@hammaddeci.com',
+            password: 'test123',
+            role: 'hammadeci'
+        },
+        {
+            id: 'test_admin_001',
+            name: 'Admin Gülnaz',
+            email: 'admin@basvideo.com',
+            password: 'admin123',
+            role: 'admin'
+        }
+    ];
     
-    // localStorage'da test kullanıcısı var mı kontrol et
+    // localStorage'da test kullanıcıları var mı kontrol et
     const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find(u => u.email === testUser.email);
     
-    if (!existingUser) {
-        users.push(testUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        console.log('Test kullanıcısı oluşturuldu:', testUser);
-    }
+    testUsers.forEach(testUser => {
+        const existingUser = users.find(u => u.email === testUser.email);
+        if (!existingUser) {
+            users.push(testUser);
+            console.log('Test kullanıcısı oluşturuldu:', testUser);
+        }
+    });
+    
+    localStorage.setItem('users', JSON.stringify(users));
 });
 
 // Kullanıcı kayıt sistemi
