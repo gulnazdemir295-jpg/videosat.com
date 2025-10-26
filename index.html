@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Canlı Yayın Platformu - Gerçek Zamanlı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .hero-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-content h2 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .hero-content p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #4ecdc4;
+        }
+
+        .feature-card .icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4ecdc4;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .live-streams {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stream-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stream-item:hover {
+            border-color: #4ecdc4;
+            background: #f0fdfc;
+            transform: translateX(5px);
+        }
+
+        .stream-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .stream-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+
+        .stream-info p {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .stream-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #ff6b6b;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
+
+    <div class="real-time-indicator">
+        <div class="connection-status"></div>
+        <span>Gerçek Zamanlı Bağlantı</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="live-indicator">🔴 CANLI</div>
+            <h1>Modern Canlı Yayın Platformu</h1>
+            <p>Gerçek zamanlı, senkronize ve modern yayın deneyimi</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h2>🚀 Geleceğin Yayın Teknolojisi</h2>
+                    <p>WebRTC tabanlı gerçek zamanlı video akışı ile düşük gecikme, yüksek kalite ve senkronize deneyim sunuyoruz. Artık simülasyon değil, gerçek canlı yayın!</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <span class="icon">⚡</span>
+                            <h3>Düşük Gecikme</h3>
+                            <p>WebRTC P2P bağlantı ile milisaniye seviyesinde gecikme</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="icon">🎥</span>
+                            <h3>Gerçek Video</h3>
+                            <p>Simülasyon değil, gerçek kamera akışı</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="icon">🌐</span>
+                            <h3>Global Erişim</h3>
+                            <p>STUN sunucuları ile NAT geçişi</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="icon">📱</span>
+                            <h3>Mobil Uyumlu</h3>
+                            <p>Tüm cihazlarda mükemmel performans</p>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="canli-yayin-gercek.html" class="btn btn-primary">
+                            🎬 Gerçek Yayın Başlat
+                        </a>
+                        <a href="canli-yayin-izle-modern.html" class="btn btn-secondary">
+                            👀 Yayınları İzle
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <a href="canli-yayin-yap-modern.html" class="btn" style="background: linear-gradient(45deg, #45b7d1, #96ceb4); text-decoration: none; display: inline-block; text-align: center; padding: 12px 20px; font-size: 0.9em;">
+                            🎥 Modern Yayın
+                        </a>
+                        <a href="hakkimizda.html" class="btn" style="background: linear-gradient(45deg, #96ceb4, #feca57); text-decoration: none; display: inline-block; text-align: center; padding: 12px 20px; font-size: 0.9em;">
+                            ℹ️ Hakkımızda
+                        </a>
+                        <a href="iletisim.html" class="btn" style="background: linear-gradient(45deg, #feca57, #ff9ff3); text-decoration: none; display: inline-block; text-align: center; padding: 12px 20px; font-size: 0.9em;">
+                            📞 İletişim
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h3>📊 Canlı İstatistikler</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="activeStreams">0</span>
+                            <span class="stat-label">Aktif Yayın</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalViewers">0</span>
+                            <span class="stat-label">Toplam İzleyici</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="avgLatency">0ms</span>
+                            <span class="stat-label">Ortalama Gecikme</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="uptime">99.9%</span>
+                            <span class="stat-label">Sistem Uptime</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔴 Canlı Yayınlar</h3>
+                    <div class="live-streams" id="liveStreams">
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            Yayınlar yükleniyor...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⚡ Sistem Durumu</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>WebRTC Bağlantısı</span>
+                            <span style="color: #4ecdc4; font-weight: bold;">✓ Aktif</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>STUN Sunucuları</span>
+                            <span style="color: #4ecdc4; font-weight: bold;">✓ Çalışıyor</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Socket.IO</span>
+                            <span style="color: #4ecdc4; font-weight: bold;">✓ Bağlı</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Video Codec</span>
+                            <span style="color: #4ecdc4; font-weight: bold;">H.264</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap;">
+                <a href="hakkimizda.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Hakkımızda</a>
+                <a href="iletisim.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">İletişim</a>
+                <a href="canli-yayin-gercek.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Gerçek Yayın</a>
+                <a href="canli-yayin-izle-modern.html" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;">Yayınları İzle</a>
+            </div>
+            <p>© 2024 Modern Canlı Yayın Platformu - Gerçek Zamanlı, Senkronize, Modern</p>
+        </div>
+    </div>
+
+    <script src="http://localhost:3001/socket.io/socket.io.js"></script>
+    <script>
+        // Socket connection for real-time updates
+        const socket = io('http://localhost:3001', {
+            transports: ['websocket', 'polling'],
+            timeout: 20000,
+            forceNew: true
+        });
+
+        // Real-time statistics
+        let stats = {
+            activeStreams: 0,
+            totalViewers: 0,
+            avgLatency: 0,
+            uptime: 99.9
+        };
+
+        // DOM elements
+        const activeStreamsEl = document.getElementById('activeStreams');
+        const totalViewersEl = document.getElementById('totalViewers');
+        const avgLatencyEl = document.getElementById('avgLatency');
+        const uptimeEl = document.getElementById('uptime');
+        const liveStreamsEl = document.getElementById('liveStreams');
+
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            updateConnectionStatus(true);
+            loadLiveStreams();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            updateConnectionStatus(false);
+        });
+
+        socket.on('activeBroadcasts', (broadcasts) => {
+            updateLiveStreams(broadcasts);
+            updateStats(broadcasts);
+        });
+
+        socket.on('newBroadcast', (broadcast) => {
+            console.log('New broadcast:', broadcast);
+            loadLiveStreams();
+        });
+
+        socket.on('broadcastEnded', (data) => {
+            console.log('Broadcast ended:', data.broadcastId);
+            loadLiveStreams();
+        });
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const indicator = document.querySelector('.connection-status');
+            if (connected) {
+                indicator.style.background = '#4ecdc4';
+            } else {
+                indicator.style.background = '#ff6b6b';
+            }
+        }
+
+        // Load live streams
+        function loadLiveStreams() {
+            socket.emit('getActiveBroadcasts');
+        }
+
+        // Update live streams display
+        function updateLiveStreams(broadcasts) {
+            if (broadcasts.length === 0) {
+                liveStreamsEl.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        Henüz aktif yayın yok
+                    </div>
+                `;
+                return;
+            }
+
+            liveStreamsEl.innerHTML = '';
+            broadcasts.forEach(broadcast => {
+                const streamItem = document.createElement('div');
+                streamItem.className = 'stream-item';
+                streamItem.innerHTML = `
+                    <div class="stream-avatar">
+                        ${broadcast.title.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="stream-info">
+                        <h4>${broadcast.title}</h4>
+                        <p>${broadcast.categoryName} • ${broadcast.viewers} izleyici</p>
+                    </div>
+                    <div class="stream-status">
+                        <div class="status-dot"></div>
+                        CANLI
+                    </div>
+                `;
+                
+                streamItem.addEventListener('click', () => {
+                    window.location.href = `canli-yayin-izle-modern.html?broadcast=${broadcast.id}`;
+                });
+                
+                liveStreamsEl.appendChild(streamItem);
+            });
+        }
+
+        // Update statistics
+        function updateStats(broadcasts) {
+            stats.activeStreams = broadcasts.length;
+            stats.totalViewers = broadcasts.reduce((sum, broadcast) => sum + broadcast.viewers, 0);
+            
+            // Simulate latency measurement
+            const startTime = Date.now();
+            socket.emit('ping', () => {
+                stats.avgLatency = Date.now() - startTime;
+                updateStatsDisplay();
+            });
+            
+            updateStatsDisplay();
+        }
+
+        // Update statistics display
+        function updateStatsDisplay() {
+            activeStreamsEl.textContent = stats.activeStreams;
+            totalViewersEl.textContent = stats.totalViewers;
+            avgLatencyEl.textContent = `${stats.avgLatency}ms`;
+            uptimeEl.textContent = `${stats.uptime}%`;
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            loadLiveStreams();
+        }, 5000);
+
+        // Initialize
+        updateStatsDisplay();
+        
+        // Add some visual effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate stats on load
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.animation = 'fadeInUp 0.6s ease-out';
+                }, index * 100);
+            });
+        });
+
+        // Handle ping response
+        socket.on('pong', () => {
+            // Latency already calculated in ping callback
+        });
+    </script>
+</body>
+</html>
