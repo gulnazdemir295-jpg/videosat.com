@@ -55,6 +55,10 @@ function showPage(pageId) {
     } else if (pageId === 'productManagementPage') {
         loadUserProducts();
         loadProductsList();
+    } else if (pageId === 'posSalesPage') {
+        loadPOSSales();
+    } else if (pageId === 'reportingPage') {
+        loadReporting();
     } else if (pageId === 'buyTimePage') {
         // Süre satın alma sayfası için özel işlem yok
     } else if (pageId === 'producerCommunicationPage') {
@@ -138,6 +142,18 @@ function loadDashboard() {
         return;
     }
     
+    // Kullanıcı bilgilerini göster
+    const userInfo = document.getElementById('userInfo');
+    if (userInfo) {
+        userInfo.innerHTML = `
+            <div class="user-info">
+                <h3>Hoş geldiniz, ${currentUser.name}!</h3>
+                <p>Rol: ${getRoleDisplayName(currentUser.role)}</p>
+                <p>Email: ${currentUser.email}</p>
+            </div>
+        `;
+    }
+    
     // Kullanıcı rolüne göre dashboard özelleştirme
     const dashboardCards = document.querySelectorAll('.dashboard-card');
     dashboardCards.forEach(card => {
@@ -158,8 +174,6 @@ function loadDashboard() {
     
     // Kullanıcı ürünlerini yükle
     loadUserProducts();
-    
-    loadLiveStreams();
 }
 
 // Canlı yayın bakiyesini güncelle
@@ -420,6 +434,350 @@ function deleteProduct(productId) {
         showNotification('Ürün başarıyla silindi!', 'success');
         loadProductsList();
     }
+}
+
+// POS Satış Sistemi Fonksiyonları
+let currentSaleType = '';
+let cartItems = [];
+let salesHistory = [];
+
+// POS Satış sayfasını yükle
+function loadPOSSales() {
+    loadUserProducts();
+    loadSalesHistory();
+    updateProductSelect();
+}
+
+// Satış türü seçimi
+function selectSaleType(type) {
+    currentSaleType = type;
+    
+    // Tüm butonları normal hale getir
+    document.querySelectorAll('.sale-type-buttons .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Seçilen butonu aktif hale getir
+    event.target.classList.add('active');
+    
+    // Satış formunu göster
+    document.getElementById('saleForm').classList.remove('hidden');
+}
+
+// Ürün seçimini güncelle
+function updateProductSelect() {
+    const productSelect = document.getElementById('saleProduct');
+    if (!productSelect) return;
+    
+    productSelect.innerHTML = '<option value="">Ürün seçin...</option>';
+    
+    userProducts.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.id;
+        option.textContent = `${product.name} - ₺${product.price.toFixed(2)} (${product.unit})`;
+        productSelect.appendChild(option);
+    });
+}
+
+// Sepete ekle
+function addToCart() {
+    const productId = document.getElementById('saleProduct').value;
+    const quantity = parseInt(document.getElementById('saleQuantity').value);
+    const price = parseFloat(document.getElementById('salePrice').value);
+    
+    if (!productId || !quantity || !price) {
+        showNotification('Lütfen tüm alanları doldurun!', 'error');
+        return;
+    }
+    
+    const product = userProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    const cartItem = {
+        id: Date.now().toString(),
+        productId: productId,
+        productName: product.name,
+        quantity: quantity,
+        unitPrice: price,
+        totalPrice: quantity * price,
+        unit: product.unit
+    };
+    
+    cartItems.push(cartItem);
+    updateCartDisplay();
+    updateCartTotal();
+    
+    // Formu temizle
+    document.getElementById('saleProduct').value = '';
+    document.getElementById('saleQuantity').value = '';
+    document.getElementById('salePrice').value = '';
+    
+    showNotification('Ürün sepete eklendi!', 'success');
+}
+
+// Sepet görünümünü güncelle
+function updateCartDisplay() {
+    const cartItemsDiv = document.getElementById('cartItems');
+    if (!cartItemsDiv) return;
+    
+    cartItemsDiv.innerHTML = '';
+    
+    cartItems.forEach(item => {
+        const cartItemDiv = document.createElement('div');
+        cartItemDiv.className = 'cart-item';
+        cartItemDiv.innerHTML = `
+            <div>
+                <strong>${item.productName}</strong><br>
+                <small>${item.quantity} ${item.unit} × ₺${item.unitPrice.toFixed(2)}</small>
+            </div>
+            <div>
+                <strong>₺${item.totalPrice.toFixed(2)}</strong>
+                <button class="btn btn-danger btn-small" onclick="removeFromCart('${item.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        cartItemsDiv.appendChild(cartItemDiv);
+    });
+    
+    // Sepet bölümünü göster
+    document.getElementById('cartSection').classList.remove('hidden');
+}
+
+// Sepetten çıkar
+function removeFromCart(itemId) {
+    cartItems = cartItems.filter(item => item.id !== itemId);
+    updateCartDisplay();
+    updateCartTotal();
+}
+
+// Sepet toplamını güncelle
+function updateCartTotal() {
+    const total = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const cartTotal = document.getElementById('cartTotal');
+    if (cartTotal) {
+        cartTotal.textContent = `₺${total.toFixed(2)}`;
+    }
+}
+
+// Satışı tamamla
+function completeSale() {
+    if (cartItems.length === 0) {
+        showNotification('Sepetiniz boş!', 'error');
+        return;
+    }
+    
+    if (!currentSaleType) {
+        showNotification('Lütfen satış türünü seçin!', 'error');
+        return;
+    }
+    
+    const total = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    
+    const sale = {
+        id: Date.now().toString(),
+        type: currentSaleType,
+        items: [...cartItems],
+        total: total,
+        date: new Date().toISOString(),
+        userId: currentUser.id
+    };
+    
+    salesHistory.push(sale);
+    localStorage.setItem(`sales_${currentUser.id}`, JSON.stringify(salesHistory));
+    
+    // Stok güncelle
+    cartItems.forEach(cartItem => {
+        const product = userProducts.find(p => p.id === cartItem.productId);
+        if (product) {
+            product.stock -= cartItem.quantity;
+        }
+    });
+    
+    localStorage.setItem(`products_${currentUser.id}`, JSON.stringify(userProducts));
+    
+    // Sepeti temizle
+    cartItems = [];
+    updateCartDisplay();
+    updateCartTotal();
+    document.getElementById('saleForm').classList.add('hidden');
+    
+    showNotification('Satış başarıyla tamamlandı!', 'success');
+    loadSalesHistory();
+}
+
+// Satış geçmişini yükle
+function loadSalesHistory() {
+    const sales = JSON.parse(localStorage.getItem(`sales_${currentUser.id}`) || '[]');
+    salesHistory = sales;
+    
+    const salesHistoryDiv = document.getElementById('salesHistory');
+    if (!salesHistoryDiv) return;
+    
+    salesHistoryDiv.innerHTML = '';
+    
+    sales.slice(-10).reverse().forEach(sale => {
+        const saleDiv = document.createElement('div');
+        saleDiv.className = 'sale-item';
+        saleDiv.innerHTML = `
+            <div>
+                <strong>${getSaleTypeName(sale.type)}</strong><br>
+                <small>${new Date(sale.date).toLocaleDateString('tr-TR')}</small>
+            </div>
+            <div>
+                <strong>₺${sale.total.toFixed(2)}</strong><br>
+                <small>${sale.items.length} ürün</small>
+            </div>
+        `;
+        salesHistoryDiv.appendChild(saleDiv);
+    });
+}
+
+// Satış türü adını al
+function getSaleTypeName(type) {
+    switch (type) {
+        case 'reel': return 'Reel Satış';
+        case 'online': return 'Site Satışı';
+        case 'live': return 'Canlı Yayın Satışı';
+        default: return 'Bilinmeyen';
+    }
+}
+
+// Yeni satış başlat
+function startNewSale() {
+    cartItems = [];
+    currentSaleType = '';
+    document.getElementById('saleForm').classList.add('hidden');
+    document.getElementById('cartSection').classList.add('hidden');
+    
+    // Tüm satış türü butonlarını normal hale getir
+    document.querySelectorAll('.sale-type-buttons .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    showNotification('Yeni satış başlatıldı!', 'success');
+}
+
+// Satış raporu göster
+function showSalesReport() {
+    showPage('reportingPage');
+}
+
+// Raporlama Sistemi Fonksiyonları
+function loadReporting() {
+    loadSalesHistory();
+    generateReport();
+}
+
+// Rapor oluştur
+function generateReport() {
+    const totalSales = salesHistory.reduce((sum, sale) => sum + sale.total, 0);
+    const totalQuantity = salesHistory.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+    const averageOrder = salesHistory.length > 0 ? totalSales / salesHistory.length : 0;
+    
+    // En çok satan ürün
+    const productSales = {};
+    salesHistory.forEach(sale => {
+        sale.items.forEach(item => {
+            if (!productSales[item.productName]) {
+                productSales[item.productName] = 0;
+            }
+            productSales[item.productName] += item.quantity;
+        });
+    });
+    
+    const topProduct = Object.keys(productSales).reduce((a, b) => 
+        productSales[a] > productSales[b] ? a : b, '-');
+    
+    // Özet bilgileri güncelle
+    document.getElementById('totalSales').textContent = `₺${totalSales.toFixed(2)}`;
+    document.getElementById('totalQuantity').textContent = totalQuantity.toString();
+    document.getElementById('averageOrder').textContent = `₺${averageOrder.toFixed(2)}`;
+    document.getElementById('topProduct').textContent = topProduct;
+    
+    // Detaylı rapor tablosu
+    generateReportTable();
+}
+
+// Rapor tablosu oluştur
+function generateReportTable() {
+    const reportTable = document.getElementById('reportTable');
+    if (!reportTable) return;
+    
+    let tableHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Satış Türü</th>
+                    <th>Ürün Sayısı</th>
+                    <th>Toplam</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    salesHistory.slice(-20).reverse().forEach(sale => {
+        tableHTML += `
+            <tr>
+                <td>${new Date(sale.date).toLocaleDateString('tr-TR')}</td>
+                <td>${getSaleTypeName(sale.type)}</td>
+                <td>${sale.items.length}</td>
+                <td>₺${sale.total.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    reportTable.innerHTML = tableHTML;
+}
+
+// Günlük rapor
+function generateDailyReport() {
+    const today = new Date().toDateString();
+    const todaySales = salesHistory.filter(sale => 
+        new Date(sale.date).toDateString() === today
+    );
+    
+    showNotification(`Bugün ${todaySales.length} satış yapıldı!`, 'success');
+}
+
+// Aylık rapor
+function generateMonthlyReport() {
+    const thisMonth = new Date().getMonth();
+    const thisYear = new Date().getFullYear();
+    const monthlySales = salesHistory.filter(sale => {
+        const saleDate = new Date(sale.date);
+        return saleDate.getMonth() === thisMonth && saleDate.getFullYear() === thisYear;
+    });
+    
+    showNotification(`Bu ay ${monthlySales.length} satış yapıldı!`, 'success');
+}
+
+// Ürün raporu
+function generateProductReport() {
+    const productSales = {};
+    salesHistory.forEach(sale => {
+        sale.items.forEach(item => {
+            if (!productSales[item.productName]) {
+                productSales[item.productName] = { quantity: 0, revenue: 0 };
+            }
+            productSales[item.productName].quantity += item.quantity;
+            productSales[item.productName].revenue += item.totalPrice;
+        });
+    });
+    
+    showNotification(`Toplam ${Object.keys(productSales).length} farklı ürün satıldı!`, 'success');
+}
+
+// Filtreleri uygula
+function applyFilters() {
+    generateReport();
+    showNotification('Filtreler uygulandı!', 'success');
 }
 
 // Canlı yayın kurulum sayfasını yükle

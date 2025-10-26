@@ -10,6 +10,274 @@
     display: none !important;
 }
 
+/* POS Satış Sistemi Stilleri */
+.pos-sales-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.pos-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.sale-type-section {
+    margin-bottom: 20px;
+}
+
+.sale-type-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sale-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.cart-section {
+    background: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.cart-items {
+    margin-bottom: 15px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.cart-total {
+    text-align: right;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.sales-history {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.sales-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sale-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Raporlama Sistemi Stilleri */
+.reporting-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reporting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.report-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.report-filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.report-results {
+    margin-top: 20px;
+}
+
+.report-summary {
+    margin-bottom: 30px;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 4px solid #007bff;
+}
+
+.summary-card h4 {
+    margin-bottom: 10px;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.summary-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.report-details {
+    margin-bottom: 30px;
+}
+
+.report-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.report-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.report-charts {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+    text-align: center;
+}
+
+/* Rol Panelleri Stilleri */
+.role-panels {
+    margin-bottom: 30px;
+}
+
+.role-panel {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.role-panel h3 {
+    color: #007bff;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.role-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.role-panel-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+    transition: transform 0.2s;
+}
+
+.role-panel-card:hover {
+    transform: translateY(-2px);
+}
+
+.role-panel-card h4 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.role-panel-card p {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+/* Buton Stilleri */
+.btn-outline {
+    background: transparent;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-outline:hover {
+    background: #007bff;
+    color: white;
+}
+
+.btn-outline.active {
+    background: #007bff;
+    color: white;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
