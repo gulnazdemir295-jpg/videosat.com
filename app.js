@@ -53,13 +53,18 @@ function showPage(pageId) {
     } else if (pageId === 'liveStreamSetupPage') {
         loadLiveStreamSetup();
     } else if (pageId === 'productManagementPage') {
+        loadUserProducts();
         loadProductsList();
+    } else if (pageId === 'posSalesPage') {
+        loadPOSSales();
+    } else if (pageId === 'reportingPage') {
+        loadReporting();
     } else if (pageId === 'buyTimePage') {
         // Süre satın alma sayfası için özel işlem yok
     } else if (pageId === 'producerCommunicationPage') {
         loadProducers();
     } else if (pageId === 'offerFormsPage') {
-        loadOfferForm();
+        loadOffers();
     } else if (pageId === 'orderTrackingPage') {
         loadOrderTracking();
     } else if (pageId === 'supplierCommunicationPage') {
@@ -137,6 +142,18 @@ function loadDashboard() {
         return;
     }
     
+    // Kullanıcı bilgilerini göster
+    const userInfo = document.getElementById('userInfo');
+    if (userInfo) {
+        userInfo.innerHTML = `
+            <div class="user-info">
+                <h3>Hoş geldiniz, ${currentUser.name}!</h3>
+                <p>Rol: ${getRoleDisplayName(currentUser.role)}</p>
+                <p>Email: ${currentUser.email}</p>
+            </div>
+        `;
+    }
+    
     // Kullanıcı rolüne göre dashboard özelleştirme
     const dashboardCards = document.querySelectorAll('.dashboard-card');
     dashboardCards.forEach(card => {
@@ -157,8 +174,6 @@ function loadDashboard() {
     
     // Kullanıcı ürünlerini yükle
     loadUserProducts();
-    
-    loadLiveStreams();
 }
 
 // Canlı yayın bakiyesini güncelle
@@ -319,7 +334,10 @@ function hideAddProductForm() {
     const form = document.getElementById('addProductForm');
     if (form) {
         form.classList.add('hidden');
-        document.getElementById('productForm').reset();
+        const productForm = document.getElementById('productForm');
+        if (productForm) {
+            productForm.reset();
+        }
     }
 }
 
@@ -416,6 +434,1308 @@ function deleteProduct(productId) {
         showNotification('Ürün başarıyla silindi!', 'success');
         loadProductsList();
     }
+}
+
+// POS Satış Sistemi Fonksiyonları
+let currentSaleType = '';
+let cartItems = [];
+let salesHistory = [];
+
+// POS Satış sayfasını yükle
+function loadPOSSales() {
+    loadUserProducts();
+    loadSalesHistory();
+    updateProductSelect();
+}
+
+// Satış türü seçimi
+function selectSaleType(type) {
+    currentSaleType = type;
+    
+    // Tüm butonları normal hale getir
+    document.querySelectorAll('.sale-type-buttons .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Seçilen butonu aktif hale getir
+    event.target.classList.add('active');
+    
+    // Satış formunu göster
+    document.getElementById('saleForm').classList.remove('hidden');
+}
+
+// Ürün seçimini güncelle
+function updateProductSelect() {
+    const productSelect = document.getElementById('saleProduct');
+    if (!productSelect) return;
+    
+    productSelect.innerHTML = '<option value="">Ürün seçin...</option>';
+    
+    userProducts.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.id;
+        option.textContent = `${product.name} - ₺${product.price.toFixed(2)} (${product.unit})`;
+        productSelect.appendChild(option);
+    });
+}
+
+// Sepete ekle
+function addToCart() {
+    const productId = document.getElementById('saleProduct').value;
+    const quantity = parseInt(document.getElementById('saleQuantity').value);
+    const price = parseFloat(document.getElementById('salePrice').value);
+    
+    if (!productId || !quantity || !price) {
+        showNotification('Lütfen tüm alanları doldurun!', 'error');
+        return;
+    }
+    
+    const product = userProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    const cartItem = {
+        id: Date.now().toString(),
+        productId: productId,
+        productName: product.name,
+        quantity: quantity,
+        unitPrice: price,
+        totalPrice: quantity * price,
+        unit: product.unit
+    };
+    
+    cartItems.push(cartItem);
+    updateCartDisplay();
+    updateCartTotal();
+    
+    // Formu temizle
+    document.getElementById('saleProduct').value = '';
+    document.getElementById('saleQuantity').value = '';
+    document.getElementById('salePrice').value = '';
+    
+    showNotification('Ürün sepete eklendi!', 'success');
+}
+
+// Sepet görünümünü güncelle
+function updateCartDisplay() {
+    const cartItemsDiv = document.getElementById('cartItems');
+    if (!cartItemsDiv) return;
+    
+    cartItemsDiv.innerHTML = '';
+    
+    cartItems.forEach(item => {
+        const cartItemDiv = document.createElement('div');
+        cartItemDiv.className = 'cart-item';
+        cartItemDiv.innerHTML = `
+            <div>
+                <strong>${item.productName}</strong><br>
+                <small>${item.quantity} ${item.unit} × ₺${item.unitPrice.toFixed(2)}</small>
+            </div>
+            <div>
+                <strong>₺${item.totalPrice.toFixed(2)}</strong>
+                <button class="btn btn-danger btn-small" onclick="removeFromCart('${item.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        cartItemsDiv.appendChild(cartItemDiv);
+    });
+    
+    // Sepet bölümünü göster
+    document.getElementById('cartSection').classList.remove('hidden');
+}
+
+// Sepetten çıkar
+function removeFromCart(itemId) {
+    cartItems = cartItems.filter(item => item.id !== itemId);
+    updateCartDisplay();
+    updateCartTotal();
+}
+
+// Sepet toplamını güncelle
+function updateCartTotal() {
+    const total = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const cartTotal = document.getElementById('cartTotal');
+    if (cartTotal) {
+        cartTotal.textContent = `₺${total.toFixed(2)}`;
+    }
+}
+
+// Satışı tamamla
+function completeSale() {
+    if (cartItems.length === 0) {
+        showNotification('Sepetiniz boş!', 'error');
+        return;
+    }
+    
+    if (!currentSaleType) {
+        showNotification('Lütfen satış türünü seçin!', 'error');
+        return;
+    }
+    
+    const total = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    
+    const sale = {
+        id: Date.now().toString(),
+        type: currentSaleType,
+        items: [...cartItems],
+        total: total,
+        date: new Date().toISOString(),
+        userId: currentUser.id
+    };
+    
+    salesHistory.push(sale);
+    localStorage.setItem(`sales_${currentUser.id}`, JSON.stringify(salesHistory));
+    
+    // Stok güncelle
+    cartItems.forEach(cartItem => {
+        const product = userProducts.find(p => p.id === cartItem.productId);
+        if (product) {
+            product.stock -= cartItem.quantity;
+        }
+    });
+    
+    localStorage.setItem(`products_${currentUser.id}`, JSON.stringify(userProducts));
+    
+    // Sepeti temizle
+    cartItems = [];
+    updateCartDisplay();
+    updateCartTotal();
+    document.getElementById('saleForm').classList.add('hidden');
+    
+    showNotification('Satış başarıyla tamamlandı!', 'success');
+    loadSalesHistory();
+}
+
+// Satış geçmişini yükle
+function loadSalesHistory() {
+    const sales = JSON.parse(localStorage.getItem(`sales_${currentUser.id}`) || '[]');
+    salesHistory = sales;
+    
+    const salesHistoryDiv = document.getElementById('salesHistory');
+    if (!salesHistoryDiv) return;
+    
+    salesHistoryDiv.innerHTML = '';
+    
+    sales.slice(-10).reverse().forEach(sale => {
+        const saleDiv = document.createElement('div');
+        saleDiv.className = 'sale-item';
+        saleDiv.innerHTML = `
+            <div>
+                <strong>${getSaleTypeName(sale.type)}</strong><br>
+                <small>${new Date(sale.date).toLocaleDateString('tr-TR')}</small>
+            </div>
+            <div>
+                <strong>₺${sale.total.toFixed(2)}</strong><br>
+                <small>${sale.items.length} ürün</small>
+            </div>
+        `;
+        salesHistoryDiv.appendChild(saleDiv);
+    });
+}
+
+// Satış türü adını al
+function getSaleTypeName(type) {
+    switch (type) {
+        case 'reel': return 'Reel Satış';
+        case 'online': return 'Site Satışı';
+        case 'live': return 'Canlı Yayın Satışı';
+        default: return 'Bilinmeyen';
+    }
+}
+
+// Yeni satış başlat
+function startNewSale() {
+    cartItems = [];
+    currentSaleType = '';
+    document.getElementById('saleForm').classList.add('hidden');
+    document.getElementById('cartSection').classList.add('hidden');
+    
+    // Tüm satış türü butonlarını normal hale getir
+    document.querySelectorAll('.sale-type-buttons .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    showNotification('Yeni satış başlatıldı!', 'success');
+}
+
+// Satış raporu göster
+function showSalesReport() {
+    showPage('reportingPage');
+}
+
+// Raporlama Sistemi Fonksiyonları
+function loadReporting() {
+    loadSalesHistory();
+    generateReport();
+}
+
+// Rapor oluştur
+function generateReport() {
+    const totalSales = salesHistory.reduce((sum, sale) => sum + sale.total, 0);
+    const totalQuantity = salesHistory.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+    const averageOrder = salesHistory.length > 0 ? totalSales / salesHistory.length : 0;
+    
+    // En çok satan ürün
+    const productSales = {};
+    salesHistory.forEach(sale => {
+        sale.items.forEach(item => {
+            if (!productSales[item.productName]) {
+                productSales[item.productName] = 0;
+            }
+            productSales[item.productName] += item.quantity;
+        });
+    });
+    
+    const topProduct = Object.keys(productSales).reduce((a, b) => 
+        productSales[a] > productSales[b] ? a : b, '-');
+    
+    // Özet bilgileri güncelle
+    document.getElementById('totalSales').textContent = `₺${totalSales.toFixed(2)}`;
+    document.getElementById('totalQuantity').textContent = totalQuantity.toString();
+    document.getElementById('averageOrder').textContent = `₺${averageOrder.toFixed(2)}`;
+    document.getElementById('topProduct').textContent = topProduct;
+    
+    // Detaylı rapor tablosu
+    generateReportTable();
+}
+
+// Rapor tablosu oluştur
+function generateReportTable() {
+    const reportTable = document.getElementById('reportTable');
+    if (!reportTable) return;
+    
+    let tableHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Satış Türü</th>
+                    <th>Ürün Sayısı</th>
+                    <th>Toplam</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    salesHistory.slice(-20).reverse().forEach(sale => {
+        tableHTML += `
+            <tr>
+                <td>${new Date(sale.date).toLocaleDateString('tr-TR')}</td>
+                <td>${getSaleTypeName(sale.type)}</td>
+                <td>${sale.items.length}</td>
+                <td>₺${sale.total.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    reportTable.innerHTML = tableHTML;
+}
+
+// Günlük rapor
+function generateDailyReport() {
+    const today = new Date().toDateString();
+    const todaySales = salesHistory.filter(sale => 
+        new Date(sale.date).toDateString() === today
+    );
+    
+    showNotification(`Bugün ${todaySales.length} satış yapıldı!`, 'success');
+}
+
+// Aylık rapor
+function generateMonthlyReport() {
+    const thisMonth = new Date().getMonth();
+    const thisYear = new Date().getFullYear();
+    const monthlySales = salesHistory.filter(sale => {
+        const saleDate = new Date(sale.date);
+        return saleDate.getMonth() === thisMonth && saleDate.getFullYear() === thisYear;
+    });
+    
+    showNotification(`Bu ay ${monthlySales.length} satış yapıldı!`, 'success');
+}
+
+// Ürün raporu
+function generateProductReport() {
+    const productSales = {};
+    salesHistory.forEach(sale => {
+        sale.items.forEach(item => {
+            if (!productSales[item.productName]) {
+                productSales[item.productName] = { quantity: 0, revenue: 0 };
+            }
+            productSales[item.productName].quantity += item.quantity;
+            productSales[item.productName].revenue += item.totalPrice;
+        });
+    });
+    
+    showNotification(`Toplam ${Object.keys(productSales).length} farklı ürün satıldı!`, 'success');
+}
+
+// Filtreleri uygula
+function applyFilters() {
+    generateReport();
+    showNotification('Filtreler uygulandı!', 'success');
+}
+
+// ========================================
+// HAMMADECİLER PROSEDÜRÜ
+// ========================================
+
+// Üretici arama
+function searchProducers() {
+    const searchTerm = document.getElementById('producerSearch').value.toLowerCase();
+    const producers = getAllProducers();
+    const filteredProducers = producers.filter(producer => 
+        producer.name.toLowerCase().includes(searchTerm) ||
+        producer.email.toLowerCase().includes(searchTerm)
+    );
+    displayProducers(filteredProducers);
+}
+
+// Tüm üreticileri getir
+function getAllProducers() {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    return users.filter(user => user.role === 'uretici');
+}
+
+// Üreticileri göster
+function displayProducers(producers) {
+    const producersList = document.getElementById('producersList');
+    if (!producersList) return;
+    
+    producersList.innerHTML = '';
+    
+    producers.forEach(producer => {
+        const producerCard = document.createElement('div');
+        producerCard.className = 'producer-card';
+        producerCard.innerHTML = `
+            <div class="producer-info">
+                <h4>${producer.name}</h4>
+                <p>Email: ${producer.email}</p>
+                <p>Kayıt Tarihi: ${new Date(producer.registrationDate).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="producer-actions">
+                <button class="btn btn-primary btn-small" onclick="sendMessage('${producer.id}')">
+                    <i class="fas fa-envelope"></i> Mesaj Gönder
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="inviteToLiveStream('${producer.id}')">
+                    <i class="fas fa-video"></i> Canlı Yayına Davet Et
+                </button>
+                <button class="btn btn-success btn-small" onclick="sendOffer('${producer.id}')">
+                    <i class="fas fa-file-contract"></i> Teklif Gönder
+                </button>
+            </div>
+        `;
+        producersList.appendChild(producerCard);
+    });
+}
+
+// Mesaj gönder
+function sendMessage(producerId) {
+    const message = prompt('Mesajınızı yazın:');
+    if (message) {
+        const messageData = {
+            id: Date.now().toString(),
+            from: currentUser.id,
+            to: producerId,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        messages.push(messageData);
+        localStorage.setItem('messages', JSON.stringify(messages));
+        
+        showNotification('Mesaj başarıyla gönderildi!', 'success');
+    }
+}
+
+// Canlı yayına davet et
+function inviteToLiveStream(producerId) {
+    const invitation = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: producerId,
+        type: 'live_stream_invitation',
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    const invitations = JSON.parse(localStorage.getItem('invitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('invitations', JSON.stringify(invitations));
+    
+    showNotification('Canlı yayın daveti gönderildi!', 'success');
+}
+
+// Teklif gönder
+function sendOffer(producerId) {
+    const offerData = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: producerId,
+        products: [],
+        totalAmount: 0,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    };
+    
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    offers.push(offerData);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    showNotification('Teklif başarıyla gönderildi!', 'success');
+}
+
+// Teklifleri yükle
+function loadOffers() {
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const userOffers = offers.filter(offer => 
+        offer.from === currentUser.id || offer.to === currentUser.id
+    );
+    
+    displayOffers(userOffers);
+}
+
+// Teklifleri göster
+function displayOffers(offers) {
+    const offersList = document.getElementById('offersList');
+    if (!offersList) return;
+    
+    offersList.innerHTML = '';
+    
+    offers.forEach(offer => {
+        const offerCard = document.createElement('div');
+        offerCard.className = 'offer-card';
+        offerCard.innerHTML = `
+            <div class="offer-info">
+                <h4>Teklif #${offer.id.substring(0, 8)}</h4>
+                <p>Durum: ${getOfferStatusText(offer.status)}</p>
+                <p>Tutar: ₺${offer.totalAmount.toFixed(2)}</p>
+                <p>Tarih: ${new Date(offer.timestamp).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="offer-actions">
+                <button class="btn btn-primary btn-small" onclick="viewOffer('${offer.id}')">
+                    <i class="fas fa-eye"></i> Görüntüle
+                </button>
+                ${offer.status === 'pending' && offer.to === currentUser.id ? `
+                    <button class="btn btn-success btn-small" onclick="acceptOffer('${offer.id}')">
+                        <i class="fas fa-check"></i> Kabul Et
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="rejectOffer('${offer.id}')">
+                        <i class="fas fa-times"></i> Reddet
+                    </button>
+                ` : ''}
+                ${offer.status === 'pending' && offer.from === currentUser.id ? `
+                    <button class="btn btn-warning btn-small" onclick="cancelOffer('${offer.id}')">
+                        <i class="fas fa-ban"></i> İptal Et
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        offersList.appendChild(offerCard);
+    });
+}
+
+// Teklif durumu metni
+function getOfferStatusText(status) {
+    switch (status) {
+        case 'pending': return 'Beklemede';
+        case 'accepted': return 'Kabul Edildi';
+        case 'rejected': return 'Reddedildi';
+        case 'cancelled': return 'İptal Edildi';
+        default: return 'Bilinmeyen';
+    }
+}
+
+// Teklif kabul et
+function acceptOffer(offerId) {
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+        offer.status = 'accepted';
+        localStorage.setItem('offers', JSON.stringify(offers));
+        
+        // Admin paneline kopya gönder
+        const adminCopy = { ...offer, adminCopy: true };
+        const adminOffers = JSON.parse(localStorage.getItem('adminOffers') || '[]');
+        adminOffers.push(adminCopy);
+        localStorage.setItem('adminOffers', JSON.stringify(adminOffers));
+        
+        showNotification('Teklif kabul edildi!', 'success');
+        loadOffers();
+    }
+}
+
+// Teklif reddet
+function rejectOffer(offerId) {
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+        offer.status = 'rejected';
+        localStorage.setItem('offers', JSON.stringify(offers));
+        showNotification('Teklif reddedildi!', 'success');
+        loadOffers();
+    }
+}
+
+// Teklif iptal et
+function cancelOffer(offerId) {
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+        offer.status = 'cancelled';
+        localStorage.setItem('offers', JSON.stringify(offers));
+        showNotification('Teklif iptal edildi!', 'success');
+        loadOffers();
+    }
+}
+
+// Teklif görüntüle
+function viewOffer(offerId) {
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const offer = offers.find(o => o.id === offerId);
+    if (offer) {
+        alert(`Teklif Detayları:\n\nID: ${offer.id}\nDurum: ${getOfferStatusText(offer.status)}\nTutar: ₺${offer.totalAmount.toFixed(2)}\nTarih: ${new Date(offer.timestamp).toLocaleDateString('tr-TR')}`);
+    }
+}
+
+// Sipariş takibini yükle
+function loadOrderTracking() {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const userOrders = orders.filter(order => 
+        order.from === currentUser.id || order.to === currentUser.id
+    );
+    
+    updateOrderSummary(userOrders);
+    displayOrders(userOrders);
+}
+
+// Sipariş özetini güncelle
+function updateOrderSummary(orders) {
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const completedOrders = orders.filter(o => o.status === 'completed').length;
+    
+    document.getElementById('totalOrders').textContent = totalOrders;
+    document.getElementById('pendingOrders').textContent = pendingOrders;
+    document.getElementById('completedOrders').textContent = completedOrders;
+}
+
+// Siparişleri göster
+function displayOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        orderCard.innerHTML = `
+            <div class="order-info">
+                <h4>Sipariş #${order.id.substring(0, 8)}</h4>
+                <p>Durum: ${getOrderStatusText(order.status)}</p>
+                <p>Tutar: ₺${order.totalAmount.toFixed(2)}</p>
+                <p>Tarih: ${new Date(order.timestamp).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="order-actions">
+                <button class="btn btn-primary btn-small" onclick="viewOrder('${order.id}')">
+                    <i class="fas fa-eye"></i> Görüntüle
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="trackOrder('${order.id}')">
+                    <i class="fas fa-shipping-fast"></i> Takip Et
+                </button>
+            </div>
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
+
+// Sipariş durumu metni
+function getOrderStatusText(status) {
+    switch (status) {
+        case 'pending': return 'Beklemede';
+        case 'confirmed': return 'Onaylandı';
+        case 'preparing': return 'Hazırlanıyor';
+        case 'shipped': return 'Kargoya Verildi';
+        case 'delivered': return 'Teslim Edildi';
+        case 'completed': return 'Tamamlandı';
+        case 'cancelled': return 'İptal Edildi';
+        default: return 'Bilinmeyen';
+    }
+}
+
+// Sipariş görüntüle
+function viewOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        alert(`Sipariş Detayları:\n\nID: ${order.id}\nDurum: ${getOrderStatusText(order.status)}\nTutar: ₺${order.totalAmount.toFixed(2)}\nTarih: ${new Date(order.timestamp).toLocaleDateString('tr-TR')}`);
+    }
+}
+
+// Sipariş takip et
+function trackOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        alert(`Kargo Takip Bilgileri:\n\nSipariş ID: ${order.id}\nDurum: ${getOrderStatusText(order.status)}\nKargo Kodu: ${order.trackingCode || 'Henüz atanmadı'}\nTahmini Teslimat: ${order.estimatedDelivery || 'Belirtilmedi'}`);
+    }
+}
+
+// Üreticileri yükle
+function loadProducers() {
+    const producers = getAllProducers();
+    displayProducers(producers);
+}
+
+// Teklif formu yükle
+function loadOfferForm() {
+    // Teklif formu sayfasına yönlendir
+    showPage('offerFormsPage');
+}
+
+// ========================================
+// ÜRETİCİLER PROSEDÜRÜ
+// ========================================
+
+// Hammadeci arama
+function searchSuppliers() {
+    const searchTerm = document.getElementById('supplierSearch').value.toLowerCase();
+    const suppliers = getAllSuppliers();
+    const filteredSuppliers = suppliers.filter(supplier => 
+        supplier.name.toLowerCase().includes(searchTerm) ||
+        supplier.email.toLowerCase().includes(searchTerm)
+    );
+    displaySuppliers(filteredSuppliers);
+}
+
+// Tüm hammadecileri getir
+function getAllSuppliers() {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    return users.filter(user => user.role === 'hammadeci');
+}
+
+// Hammadecileri göster
+function displaySuppliers(suppliers) {
+    const suppliersList = document.getElementById('suppliersList');
+    if (!suppliersList) return;
+    
+    suppliersList.innerHTML = '';
+    
+    suppliers.forEach(supplier => {
+        const supplierCard = document.createElement('div');
+        supplierCard.className = 'supplier-card';
+        supplierCard.innerHTML = `
+            <div class="supplier-info">
+                <h4>${supplier.name}</h4>
+                <p>Email: ${supplier.email}</p>
+                <p>Kayıt Tarihi: ${new Date(supplier.registrationDate).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="supplier-actions">
+                <button class="btn btn-primary btn-small" onclick="sendMessageToSupplier('${supplier.id}')">
+                    <i class="fas fa-envelope"></i> Mesaj Gönder
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="inviteSupplierToLiveStream('${supplier.id}')">
+                    <i class="fas fa-video"></i> Canlı Yayına Davet Et
+                </button>
+                <button class="btn btn-success btn-small" onclick="sendOfferToSupplier('${supplier.id}')">
+                    <i class="fas fa-file-contract"></i> Teklif Gönder
+                </button>
+            </div>
+        `;
+        suppliersList.appendChild(supplierCard);
+    });
+}
+
+// Hammadeciye mesaj gönder
+function sendMessageToSupplier(supplierId) {
+    const message = prompt('Mesajınızı yazın:');
+    if (message) {
+        const messageData = {
+            id: Date.now().toString(),
+            from: currentUser.id,
+            to: supplierId,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        messages.push(messageData);
+        localStorage.setItem('messages', JSON.stringify(messages));
+        
+        showNotification('Mesaj başarıyla gönderildi!', 'success');
+    }
+}
+
+// Hammadeciyi canlı yayına davet et
+function inviteSupplierToLiveStream(supplierId) {
+    const invitation = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: supplierId,
+        type: 'live_stream_invitation',
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    const invitations = JSON.parse(localStorage.getItem('invitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('invitations', JSON.stringify(invitations));
+    
+    showNotification('Canlı yayın daveti gönderildi!', 'success');
+}
+
+// Hammadeciye teklif gönder
+function sendOfferToSupplier(supplierId) {
+    const offerData = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: supplierId,
+        products: [],
+        totalAmount: 0,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    };
+    
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    offers.push(offerData);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    showNotification('Teklif başarıyla gönderildi!', 'success');
+}
+
+// Toptancı arama
+function searchWholesalers() {
+    const searchTerm = document.getElementById('wholesalerSearch').value.toLowerCase();
+    const wholesalers = getAllWholesalers();
+    const filteredWholesalers = wholesalers.filter(wholesaler => 
+        wholesaler.name.toLowerCase().includes(searchTerm) ||
+        wholesaler.email.toLowerCase().includes(searchTerm)
+    );
+    displayWholesalers(filteredWholesalers);
+}
+
+// Tüm toptancıları getir
+function getAllWholesalers() {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    return users.filter(user => user.role === 'toptanci');
+}
+
+// Toptancıları göster
+function displayWholesalers(wholesalers) {
+    const wholesalersList = document.getElementById('wholesalersList');
+    if (!wholesalersList) return;
+    
+    wholesalersList.innerHTML = '';
+    
+    wholesalers.forEach(wholesaler => {
+        const wholesalerCard = document.createElement('div');
+        wholesalerCard.className = 'wholesaler-card';
+        wholesalerCard.innerHTML = `
+            <div class="wholesaler-info">
+                <h4>${wholesaler.name}</h4>
+                <p>Email: ${wholesaler.email}</p>
+                <p>Kayıt Tarihi: ${new Date(wholesaler.registrationDate).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="wholesaler-actions">
+                <button class="btn btn-primary btn-small" onclick="sendMessageToWholesaler('${wholesaler.id}')">
+                    <i class="fas fa-envelope"></i> Mesaj Gönder
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="inviteWholesalerToLiveStream('${wholesaler.id}')">
+                    <i class="fas fa-video"></i> Canlı Yayına Davet Et
+                </button>
+                <button class="btn btn-success btn-small" onclick="sendOfferToWholesaler('${wholesaler.id}')">
+                    <i class="fas fa-file-contract"></i> Teklif Gönder
+                </button>
+            </div>
+        `;
+        wholesalersList.appendChild(wholesalerCard);
+    });
+}
+
+// Toptancıya mesaj gönder
+function sendMessageToWholesaler(wholesalerId) {
+    const message = prompt('Mesajınızı yazın:');
+    if (message) {
+        const messageData = {
+            id: Date.now().toString(),
+            from: currentUser.id,
+            to: wholesalerId,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        messages.push(messageData);
+        localStorage.setItem('messages', JSON.stringify(messages));
+        
+        showNotification('Mesaj başarıyla gönderildi!', 'success');
+    }
+}
+
+// Toptancıyı canlı yayına davet et
+function inviteWholesalerToLiveStream(wholesalerId) {
+    const invitation = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: wholesalerId,
+        type: 'live_stream_invitation',
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    const invitations = JSON.parse(localStorage.getItem('invitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('invitations', JSON.stringify(invitations));
+    
+    showNotification('Canlı yayın daveti gönderildi!', 'success');
+}
+
+// Toptancıya teklif gönder
+function sendOfferToWholesaler(wholesalerId) {
+    const offerData = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: wholesalerId,
+        products: [],
+        totalAmount: 0,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    };
+    
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    offers.push(offerData);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    showNotification('Teklif başarıyla gönderildi!', 'success');
+}
+
+// Üretici sipariş yönetimi
+function loadProducerOrderManagement() {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const userOrders = orders.filter(order => 
+        order.from === currentUser.id || order.to === currentUser.id
+    );
+    
+    updateProducerOrderSummary(userOrders);
+    displayProducerOrders(userOrders);
+}
+
+// Üretici sipariş özetini güncelle
+function updateProducerOrderSummary(orders) {
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const completedOrders = orders.filter(o => o.status === 'completed').length;
+    
+    document.getElementById('totalOrders').textContent = totalOrders;
+    document.getElementById('pendingOrders').textContent = pendingOrders;
+    document.getElementById('completedOrders').textContent = completedOrders;
+}
+
+// Üretici siparişlerini göster
+function displayProducerOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        orderCard.innerHTML = `
+            <div class="order-info">
+                <h4>Sipariş #${order.id.substring(0, 8)}</h4>
+                <p>Durum: ${getOrderStatusText(order.status)}</p>
+                <p>Tutar: ₺${order.totalAmount.toFixed(2)}</p>
+                <p>Tarih: ${new Date(order.timestamp).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="order-actions">
+                <button class="btn btn-primary btn-small" onclick="viewOrder('${order.id}')">
+                    <i class="fas fa-eye"></i> Görüntüle
+                </button>
+                ${order.status === 'pending' ? `
+                    <button class="btn btn-success btn-small" onclick="acceptOrder('${order.id}')">
+                        <i class="fas fa-check"></i> Kabul Et
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="rejectOrder('${order.id}')">
+                        <i class="fas fa-times"></i> Reddet
+                    </button>
+                ` : ''}
+                ${order.status === 'confirmed' ? `
+                    <button class="btn btn-warning btn-small" onclick="processOrder('${order.id}')">
+                        <i class="fas fa-cogs"></i> Hazırla
+                    </button>
+                ` : ''}
+                ${order.status === 'preparing' ? `
+                    <button class="btn btn-info btn-small" onclick="shipOrder('${order.id}')">
+                        <i class="fas fa-shipping-fast"></i> Kargoya Ver
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
+
+// Sipariş kabul et
+function acceptOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = 'confirmed';
+        localStorage.setItem('orders', JSON.stringify(orders));
+        showNotification('Sipariş kabul edildi!', 'success');
+        loadProducerOrderManagement();
+    }
+}
+
+// Sipariş reddet
+function rejectOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = 'cancelled';
+        localStorage.setItem('orders', JSON.stringify(orders));
+        showNotification('Sipariş reddedildi!', 'success');
+        loadProducerOrderManagement();
+    }
+}
+
+// Sipariş hazırla
+function processOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = 'preparing';
+        localStorage.setItem('orders', JSON.stringify(orders));
+        showNotification('Sipariş hazırlanıyor!', 'success');
+        loadProducerOrderManagement();
+    }
+}
+
+// Sipariş kargoya ver
+function shipOrder(orderId) {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = 'shipped';
+        order.trackingCode = 'TRK' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        order.shippingDate = new Date().toISOString();
+        localStorage.setItem('orders', JSON.stringify(orders));
+        showNotification('Sipariş kargoya verildi!', 'success');
+        loadProducerOrderManagement();
+    }
+}
+
+// Hammadecileri yükle
+function loadSuppliers() {
+    const suppliers = getAllSuppliers();
+    displaySuppliers(suppliers);
+}
+
+// Toptancıları yükle
+function loadWholesalers() {
+    const wholesalers = getAllWholesalers();
+    displayWholesalers(wholesalers);
+}
+
+// ========================================
+// TOPTANCILAR PROSEDÜRÜ
+// ========================================
+
+// Toptancı üretici arama
+function searchWholesalerProducers() {
+    const searchTerm = document.getElementById('wholesalerProducerSearch').value.toLowerCase();
+    const producers = getAllProducers();
+    const filteredProducers = producers.filter(producer => 
+        producer.name.toLowerCase().includes(searchTerm) ||
+        producer.email.toLowerCase().includes(searchTerm)
+    );
+    displayWholesalerProducers(filteredProducers);
+}
+
+// Toptancı üreticileri göster
+function displayWholesalerProducers(producers) {
+    const producersList = document.getElementById('wholesalerProducersList');
+    if (!producersList) return;
+    
+    producersList.innerHTML = '';
+    
+    producers.forEach(producer => {
+        const producerCard = document.createElement('div');
+        producerCard.className = 'producer-card';
+        producerCard.innerHTML = `
+            <div class="producer-info">
+                <h4>${producer.name}</h4>
+                <p>Email: ${producer.email}</p>
+                <p>Kayıt Tarihi: ${new Date(producer.registrationDate).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="producer-actions">
+                <button class="btn btn-primary btn-small" onclick="sendMessageToProducer('${producer.id}')">
+                    <i class="fas fa-envelope"></i> Mesaj Gönder
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="inviteProducerToLiveStream('${producer.id}')">
+                    <i class="fas fa-video"></i> Canlı Yayına Davet Et
+                </button>
+                <button class="btn btn-success btn-small" onclick="sendOfferToProducer('${producer.id}')">
+                    <i class="fas fa-file-contract"></i> Teklif Gönder
+                </button>
+            </div>
+        `;
+        producersList.appendChild(producerCard);
+    });
+}
+
+// Üreticiye mesaj gönder
+function sendMessageToProducer(producerId) {
+    const message = prompt('Mesajınızı yazın:');
+    if (message) {
+        const messageData = {
+            id: Date.now().toString(),
+            from: currentUser.id,
+            to: producerId,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        messages.push(messageData);
+        localStorage.setItem('messages', JSON.stringify(messages));
+        
+        showNotification('Mesaj başarıyla gönderildi!', 'success');
+    }
+}
+
+// Üreticiyi canlı yayına davet et
+function inviteProducerToLiveStream(producerId) {
+    const invitation = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: producerId,
+        type: 'live_stream_invitation',
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    const invitations = JSON.parse(localStorage.getItem('invitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('invitations', JSON.stringify(invitations));
+    
+    showNotification('Canlı yayın daveti gönderildi!', 'success');
+}
+
+// Üreticiye teklif gönder
+function sendOfferToProducer(producerId) {
+    const offerData = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: producerId,
+        products: [],
+        totalAmount: 0,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    };
+    
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    offers.push(offerData);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    showNotification('Teklif başarıyla gönderildi!', 'success');
+}
+
+// Toptancı satıcı arama
+function searchWholesalerSellers() {
+    const searchTerm = document.getElementById('wholesalerSellerSearch').value.toLowerCase();
+    const sellers = getAllSellers();
+    const filteredSellers = sellers.filter(seller => 
+        seller.name.toLowerCase().includes(searchTerm) ||
+        seller.email.toLowerCase().includes(searchTerm)
+    );
+    displayWholesalerSellers(filteredSellers);
+}
+
+// Tüm satıcıları getir
+function getAllSellers() {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    return users.filter(user => user.role === 'satici');
+}
+
+// Toptancı satıcıları göster
+function displayWholesalerSellers(sellers) {
+    const sellersList = document.getElementById('wholesalerSellersList');
+    if (!sellersList) return;
+    
+    sellersList.innerHTML = '';
+    
+    sellers.forEach(seller => {
+        const sellerCard = document.createElement('div');
+        sellerCard.className = 'seller-card';
+        sellerCard.innerHTML = `
+            <div class="seller-info">
+                <h4>${seller.name}</h4>
+                <p>Email: ${seller.email}</p>
+                <p>Kayıt Tarihi: ${new Date(seller.registrationDate).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="seller-actions">
+                <button class="btn btn-primary btn-small" onclick="sendMessageToSeller('${seller.id}')">
+                    <i class="fas fa-envelope"></i> Mesaj Gönder
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="inviteSellerToLiveStream('${seller.id}')">
+                    <i class="fas fa-video"></i> Canlı Yayına Davet Et
+                </button>
+                <button class="btn btn-success btn-small" onclick="sendOfferToSeller('${seller.id}')">
+                    <i class="fas fa-file-contract"></i> Teklif Gönder
+                </button>
+            </div>
+        `;
+        sellersList.appendChild(sellerCard);
+    });
+}
+
+// Satıcıya mesaj gönder
+function sendMessageToSeller(sellerId) {
+    const message = prompt('Mesajınızı yazın:');
+    if (message) {
+        const messageData = {
+            id: Date.now().toString(),
+            from: currentUser.id,
+            to: sellerId,
+            message: message,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+        messages.push(messageData);
+        localStorage.setItem('messages', JSON.stringify(messages));
+        
+        showNotification('Mesaj başarıyla gönderildi!', 'success');
+    }
+}
+
+// Satıcıyı canlı yayına davet et
+function inviteSellerToLiveStream(sellerId) {
+    const invitation = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: sellerId,
+        type: 'live_stream_invitation',
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    const invitations = JSON.parse(localStorage.getItem('invitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('invitations', JSON.stringify(invitations));
+    
+    showNotification('Canlı yayın daveti gönderildi!', 'success');
+}
+
+// Satıcıya teklif gönder
+function sendOfferToSeller(sellerId) {
+    const offerData = {
+        id: Date.now().toString(),
+        from: currentUser.id,
+        to: sellerId,
+        products: [],
+        totalAmount: 0,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    };
+    
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    offers.push(offerData);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    showNotification('Teklif başarıyla gönderildi!', 'success');
+}
+
+// Toptancı sipariş yönetimi
+function loadWholesalerOrderManagement() {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const userOrders = orders.filter(order => 
+        order.from === currentUser.id || order.to === currentUser.id
+    );
+    
+    updateWholesalerOrderSummary(userOrders);
+    displayWholesalerOrders(userOrders);
+}
+
+// Toptancı sipariş özetini güncelle
+function updateWholesalerOrderSummary(orders) {
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const completedOrders = orders.filter(o => o.status === 'completed').length;
+    
+    document.getElementById('totalOrders').textContent = totalOrders;
+    document.getElementById('pendingOrders').textContent = pendingOrders;
+    document.getElementById('completedOrders').textContent = completedOrders;
+}
+
+// Toptancı siparişlerini göster
+function displayWholesalerOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        orderCard.innerHTML = `
+            <div class="order-info">
+                <h4>Sipariş #${order.id.substring(0, 8)}</h4>
+                <p>Durum: ${getOrderStatusText(order.status)}</p>
+                <p>Tutar: ₺${order.totalAmount.toFixed(2)}</p>
+                <p>Tarih: ${new Date(order.timestamp).toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="order-actions">
+                <button class="btn btn-primary btn-small" onclick="viewOrder('${order.id}')">
+                    <i class="fas fa-eye"></i> Görüntüle
+                </button>
+                ${order.status === 'pending' ? `
+                    <button class="btn btn-success btn-small" onclick="acceptOrder('${order.id}')">
+                        <i class="fas fa-check"></i> Kabul Et
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="rejectOrder('${order.id}')">
+                        <i class="fas fa-times"></i> Reddet
+                    </button>
+                ` : ''}
+                ${order.status === 'confirmed' ? `
+                    <button class="btn btn-warning btn-small" onclick="processOrder('${order.id}')">
+                        <i class="fas fa-cogs"></i> Hazırla
+                    </button>
+                ` : ''}
+                ${order.status === 'preparing' ? `
+                    <button class="btn btn-info btn-small" onclick="shipOrder('${order.id}')">
+                        <i class="fas fa-shipping-fast"></i> Kargoya Ver
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
+
+// Toptancı üreticileri yükle
+function loadWholesalerProducers() {
+    const producers = getAllProducers();
+    displayWholesalerProducers(producers);
+}
+
+// Toptancı satıcıları yükle
+function loadWholesalerSellers() {
+    const sellers = getAllSellers();
+    displayWholesalerSellers(sellers);
 }
 
 // Canlı yayın kurulum sayfasını yükle

@@ -188,6 +188,12 @@
                     </div>
                 </div>
 
+                <!-- Rol Bazlı Paneller -->
+                <div id="rolePanels" class="role-panels">
+                    <!-- Paneller JavaScript ile dinamik olarak yüklenecek -->
+                </div>
+
+                <!-- Genel Dashboard Kartları -->
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
                         <h3><i class="fas fa-video"></i> Canlı Yayın</h3>
@@ -347,6 +353,207 @@
                         <button class="btn btn-secondary" onclick="skipPurchase()">
                             <i class="fas fa-forward"></i> Bu Adımı Atla
                         </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- POS Satış Sistemi Sayfası -->
+    <div id="posSalesPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-cash-register"></i> POS Satış Sistemi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="pos-sales-container">
+                    <div class="pos-header">
+                        <h2>POS Satış Sistemi</h2>
+                        <div class="pos-controls">
+                            <button class="btn btn-primary" onclick="startNewSale()">
+                                <i class="fas fa-plus"></i> Yeni Satış
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSalesReport()">
+                                <i class="fas fa-chart-bar"></i> Satış Raporu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Satış Türü Seçimi -->
+                    <div class="sale-type-section">
+                        <h3>Satış Türü Seçin</h3>
+                        <div class="sale-type-buttons">
+                            <button class="btn btn-outline" onclick="selectSaleType('reel')">
+                                <i class="fas fa-store"></i> Reel Satış (Dükkandan)
+                            </button>
+                            <button class="btn btn-outline" onclick="selectSaleType('online')">
+                                <i class="fas fa-globe"></i> Site Satışı
+                            </button>
+                            <button class="btn btn-outline" onclick="selectSaleType('live')">
+                                <i class="fas fa-video"></i> Canlı Yayın Satışı
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Satış Formu -->
+                    <div id="saleForm" class="sale-form hidden">
+                        <h3>Satış Yap</h3>
+                        <form id="posSaleForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="saleProduct">Ürün Seçin:</label>
+                                    <select id="saleProduct" required>
+                                        <option value="">Ürün seçin...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="saleQuantity">Miktar:</label>
+                                    <input type="number" id="saleQuantity" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="salePrice">Birim Fiyat:</label>
+                                    <input type="number" id="salePrice" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="addToCart()">
+                                    <i class="fas fa-cart-plus"></i> Sepete Ekle
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check"></i> Satışı Tamamla
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Sepet -->
+                    <div id="cartSection" class="cart-section hidden">
+                        <h3>Sepet</h3>
+                        <div id="cartItems" class="cart-items">
+                            <!-- Sepet öğeleri buraya eklenecek -->
+                        </div>
+                        <div class="cart-total">
+                            <h4>Toplam: <span id="cartTotal">₺0.00</span></h4>
+                        </div>
+                    </div>
+
+                    <!-- Satış Geçmişi -->
+                    <div class="sales-history">
+                        <h3>Son Satışlar</h3>
+                        <div id="salesHistory" class="sales-list">
+                            <!-- Satış geçmişi buraya eklenecek -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Raporlama Sayfası -->
+    <div id="reportingPage" class="page">
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-chart-bar"></i> Raporlama Sistemi</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" onclick="showPage('dashboardPage')">Dashboard</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="reporting-container">
+                    <div class="reporting-header">
+                        <h2>Satış ve Performans Raporları</h2>
+                        <div class="report-controls">
+                            <button class="btn btn-primary" onclick="generateDailyReport()">
+                                <i class="fas fa-calendar-day"></i> Günlük Rapor
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateMonthlyReport()">
+                                <i class="fas fa-calendar-alt"></i> Aylık Rapor
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateProductReport()">
+                                <i class="fas fa-box"></i> Ürün Raporu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rapor Filtreleri -->
+                    <div class="report-filters">
+                        <h3>Rapor Filtreleri</h3>
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label for="reportStartDate">Başlangıç Tarihi:</label>
+                                <input type="date" id="reportStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="reportEndDate">Bitiş Tarihi:</label>
+                                <input type="date" id="reportEndDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="reportType">Rapor Türü:</label>
+                                <select id="reportType">
+                                    <option value="all">Tüm Satışlar</option>
+                                    <option value="reel">Reel Satışlar</option>
+                                    <option value="online">Site Satışları</option>
+                                    <option value="live">Canlı Yayın Satışları</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" onclick="applyFilters()">
+                                    <i class="fas fa-filter"></i> Filtrele
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rapor Sonuçları -->
+                    <div class="report-results">
+                        <div class="report-summary">
+                            <h3>Özet Bilgiler</h3>
+                            <div class="summary-cards">
+                                <div class="summary-card">
+                                    <h4>Toplam Satış</h4>
+                                    <div class="summary-value" id="totalSales">₺0.00</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h4>Satış Adedi</h4>
+                                    <div class="summary-value" id="totalQuantity">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h4>Ortalama Sipariş</h4>
+                                    <div class="summary-value" id="averageOrder">₺0.00</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h4>En Çok Satan Ürün</h4>
+                                    <div class="summary-value" id="topProduct">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-details">
+                            <h3>Detaylı Rapor</h3>
+                            <div id="reportTable" class="report-table">
+                                <!-- Rapor tablosu buraya eklenecek -->
+                            </div>
+                        </div>
+
+                        <div class="report-charts">
+                            <h3>Grafikler</h3>
+                            <div class="chart-container">
+                                <canvas id="salesChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
