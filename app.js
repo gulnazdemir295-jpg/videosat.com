@@ -325,6 +325,34 @@ function loadRoleSpecificPanels() {
                 </div>
             `;
             break;
+            
+        case 'admin':
+            panelHTML = `
+                <h3><i class="fas fa-crown"></i> Admin Paneli</h3>
+                <div class="role-features">
+                    <div class="feature-item">
+                        <i class="fas fa-users"></i>
+                        <span>Kullanıcı Yönetimi</span>
+                        <button class="btn btn-secondary" onclick="showPage('adminUsersPage')">Kullanıcılar</button>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Teklif Yönetimi</span>
+                        <button class="btn btn-secondary" onclick="showPage('adminOffersPage')">Teklifler</button>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>Sipariş Yönetimi</span>
+                        <button class="btn btn-secondary" onclick="showPage('adminOrdersPage')">Siparişler</button>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Raporlama</span>
+                        <button class="btn btn-secondary" onclick="showPage('reportingPage')">Raporlar</button>
+                    </div>
+                </div>
+            `;
+            break;
     }
     
     rolePanels.innerHTML = panelHTML;
