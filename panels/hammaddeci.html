@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hammaddeci Panel - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge">Hammaddeci</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="#products" class="nav-link" data-section="products">
+                    <i class="fas fa-box"></i>
+                    Ürün Yönetimi
+                </a>
+                <a href="#producers" class="nav-link" data-section="producers">
+                    <i class="fas fa-industry"></i>
+                    Üreticiler
+                </a>
+                <a href="#orders" class="nav-link" data-section="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    Siparişler
+                </a>
+                <a href="#live-stream" class="nav-link" data-section="live-stream">
+                    <i class="fas fa-broadcast-tower"></i>
+                    Canlı Yayın
+                </a>
+                <a href="#messages" class="nav-link" data-section="messages">
+                    <i class="fas fa-envelope"></i>
+                    Mesajlar
+                </a>
+                <a href="#reports" class="nav-link" data-section="reports">
+                    <i class="fas fa-chart-line"></i>
+                    Raporlar
+                </a>
+            </div>
+            <div class="panel-user">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userCompanyName">Firma Adı</span>
+                </div>
+                <button class="btn btn-outline btn-small" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Panel Content -->
+    <main class="panel-main">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="panel-section active">
+            <div class="section-header">
+                <h1>Hammaddeci Dashboard</h1>
+                <p>İşletmenizin genel durumunu takip edin</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalProducts">0</h3>
+                        <p>Toplam Ürün</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalOrders">0</h3>
+                        <p>Aktif Sipariş</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalProducers">0</h3>
+                        <p>Üretici Sayısı</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="liveStreamBalance">0</h3>
+                        <p>Canlı Yayın Süresi (saat)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Hızlı İşlemler</h2>
+                <div class="actions-grid">
+                    <button class="action-card" onclick="showSection('products')">
+                        <i class="fas fa-plus"></i>
+                        <h3>Yeni Ürün Ekle</h3>
+                        <p>Hammadde ürünlerinizi sisteme ekleyin</p>
+                    </button>
+                    <button class="action-card" onclick="showSection('producers')">
+                        <i class="fas fa-search"></i>
+                        <h3>Üretici Ara</h3>
+                        <p>Yeni üreticiler bulun ve iletişime geçin</p>
+                    </button>
+                    <button class="action-card" onclick="showSection('live-stream')">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <h3>Canlı Yayın Başlat</h3>
+                        <p>Ürünlerinizi canlı olarak tanıtın</p>
+                    </button>
+                    <button class="action-card" onclick="showSection('orders')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Siparişleri Görüntüle</h3>
+                        <p>Gelen siparişleri takip edin</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <h2>Son Aktiviteler</h2>
+                <div class="activity-list" id="recentActivityList">
+                    <!-- Activity items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="panel-section">
+            <div class="section-header">
+                <h1>Ürün Yönetimi</h1>
+                <p>Hammadde ürünlerinizi yönetin</p>
+                <button class="btn btn-primary" onclick="showAddProductModal()">
+                    <i class="fas fa-plus"></i>
+                    Yeni Ürün Ekle
+                </button>
+            </div>
+
+            <!-- Product Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Kategori:</label>
+                    <select id="productCategoryFilter">
+                        <option value="">Tümü</option>
+                        <option value="metal">Metal</option>
+                        <option value="plastik">Plastik</option>
+                        <option value="kimyasal">Kimyasal</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="diger">Diğer</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Birim:</label>
+                    <select id="productUnitFilter">
+                        <option value="">Tümü</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="m2">Metrekare (m²)</option>
+                        <option value="m3">Metreküp (m³)</option>
+                        <option value="litre">Litre</option>
+                        <option value="gram">Gram</option>
+                        <option value="adet">Adet</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Arama:</label>
+                    <input type="text" id="productSearch" placeholder="Ürün adı ara...">
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="table-container">
+                <table class="data-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Ürün Adı</th>
+                            <th>Kategori</th>
+                            <th>Birim</th>
+                            <th>Stok</th>
+                            <th>Birim Fiyat</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Products will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Producers Section -->
+        <section id="producers" class="panel-section">
+            <div class="section-header">
+                <h1>Üreticiler</h1>
+                <p>Sitedeki üreticilerle iletişime geçin</p>
+            </div>
+
+            <!-- Producer Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Şehir:</label>
+                    <select id="producerCityFilter">
+                        <option value="">Tümü</option>
+                        <option value="istanbul">İstanbul</option>
+                        <option value="ankara">Ankara</option>
+                        <option value="izmir">İzmir</option>
+                        <option value="bursa">Bursa</option>
+                        <option value="antalya">Antalya</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sektör:</label>
+                    <select id="producerSectorFilter">
+                        <option value="">Tümü</option>
+                        <option value="otomotiv">Otomotiv</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="kimya">Kimya</option>
+                        <option value="metal">Metal</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Arama:</label>
+                    <input type="text" id="producerSearch" placeholder="Üretici ara...">
+                </div>
+            </div>
+
+            <!-- Producers Grid -->
+            <div class="producers-grid" id="producersGrid">
+                <!-- Producers will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders" class="panel-section">
+            <div class="section-header">
+                <h1>Sipariş Yönetimi</h1>
+                <p>Gelen ve giden siparişlerinizi takip edin</p>
+            </div>
+
+            <!-- Order Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="incoming">Gelen Siparişler</button>
+                <button class="tab-btn" data-tab="outgoing">Giden Siparişler</button>
+            </div>
+
+            <!-- Incoming Orders -->
+            <div id="incomingOrders" class="tab-content active">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Üretici</th>
+                                <th>Ürün</th>
+                                <th>Miktar</th>
+                                <th>Tutar</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomingOrdersBody">
+                            <!-- Orders will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Outgoing Orders -->
+            <div id="outgoingOrders" class="tab-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Üretici</th>
+                                <th>Ürün</th>
+                                <th>Miktar</th>
+                                <th>Tutar</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="outgoingOrdersBody">
+                            <!-- Orders will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Stream Section -->
+        <section id="live-stream" class="panel-section">
+            <div class="section-header">
+                <h1>Canlı Yayın</h1>
+                <p>Ürünlerinizi canlı olarak tanıtın ve satın</p>
+            </div>
+
+            <!-- Stream Balance -->
+            <div class="stream-balance">
+                <div class="balance-card">
+                    <div class="balance-info">
+                        <h3>Canlı Yayın Bakiyesi</h3>
+                        <div class="balance-amount">
+                            <span id="streamBalanceHours">0</span>
+                            <span>saat</span>
+                        </div>
+                    </div>
+                    <div class="balance-actions">
+                        <button class="btn btn-primary" onclick="showBuyStreamTimeModal()">
+                            <i class="fas fa-plus"></i>
+                            Süre Satın Al
+                        </button>
+                        <a href="#" class="btn btn-outline" onclick="skipPurchase()">
+                            <i class="fas fa-forward"></i>
+                            Bu Adımı Atla
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream Setup -->
+            <div class="stream-setup">
+                <h2>Canlı Yayın Kurulumu</h2>
+                <form id="streamSetupForm" class="stream-form">
+                    <div class="form-group">
+                        <label>Satılacak Ürünler</label>
+                        <div class="product-selection" id="streamProductSelection">
+                            <!-- Products will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Slogan Cümleleri</label>
+                        <textarea id="streamSlogans" placeholder="Canlı yayında kullanacağınız slogan cümlelerini yazın..." rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Yayın Başlığı</label>
+                        <input type="text" id="streamTitle" placeholder="Canlı yayın başlığınızı yazın...">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="previewStream()">
+                            <i class="fas fa-eye"></i>
+                            Önizleme
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-broadcast-tower"></i>
+                            Yayını Başlat
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Active Stream -->
+            <div id="activeStream" class="active-stream hidden">
+                <h2>Aktif Canlı Yayın</h2>
+                <div class="stream-container">
+                    <div class="stream-video">
+                        <video id="localVideo" autoplay muted></video>
+                        <div class="stream-overlay">
+                            <div class="stream-info">
+                                <h3 id="currentStreamTitle">Yayın Başlığı</h3>
+                                <p id="currentStreamSlogan">Slogan</p>
+                            </div>
+                            <div class="stream-controls">
+                                <button class="btn btn-danger" onclick="stopStream()">
+                                    <i class="fas fa-stop"></i>
+                                    Yayını Durdur
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stream-sidebar">
+                        <div class="stream-products">
+                            <h4>Satılan Ürünler</h4>
+                            <div id="streamProductsList">
+                                <!-- Products will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="stream-chat">
+                            <h4>Canlı Sohbet</h4>
+                            <div class="chat-messages" id="streamChatMessages">
+                                <!-- Chat messages will be populated by JavaScript -->
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" id="streamChatInput" placeholder="Mesaj yazın...">
+                                <button onclick="sendStreamMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages Section -->
+        <section id="messages" class="panel-section">
+            <div class="section-header">
+                <h1>Mesajlar</h1>
+                <p>Üreticilerle iletişiminizi yönetin</p>
+            </div>
+
+            <div class="messages-container">
+                <div class="messages-sidebar">
+                    <div class="messages-search">
+                        <input type="text" placeholder="Mesaj ara..." id="messageSearch">
+                    </div>
+                    <div class="messages-list" id="messagesList">
+                        <!-- Messages will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="messages-content">
+                    <div class="message-header">
+                        <div class="message-contact-info">
+                            <h3 id="selectedContactName">Bir konuşma seçin</h3>
+                            <p id="selectedContactStatus">Durum</p>
+                        </div>
+                        <div class="message-actions">
+                            <button class="btn btn-outline btn-small" onclick="showOfferForm()">
+                                <i class="fas fa-file-contract"></i>
+                                Teklif Gönder
+                            </button>
+                        </div>
+                    </div>
+                    <div class="message-messages" id="messageMessages">
+                        <div class="no-message">
+                            <i class="fas fa-comments"></i>
+                            <p>Bir konuşma seçerek mesajlaşmaya başlayın</p>
+                        </div>
+                    </div>
+                    <div class="message-input">
+                        <input type="text" id="messageInput" placeholder="Mesaj yazın..." disabled>
+                        <button onclick="sendMessage()" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="panel-section">
+            <div class="section-header">
+                <h1>Raporlar</h1>
+                <p>İşletmenizin performansını analiz edin</p>
+            </div>
+
+            <div class="reports-grid">
+                <div class="report-card">
+                    <h3>Satış Raporu</h3>
+                    <div class="report-chart" id="salesChart">
+                        <!-- Chart will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Ürün Performansı</h3>
+                    <div class="report-chart" id="productChart">
+                        <!-- Chart will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Müşteri Analizi</h3>
+                    <div class="report-chart" id="customerChart">
+                        <!-- Chart will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Canlı Yayın İstatistikleri</h3>
+                    <div class="report-chart" id="streamChart">
+                        <!-- Chart will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Ürün Ekle</h2>
+                <span class="close" onclick="closeModal('addProductModal')">&times;</span>
+            </div>
+            <form id="addProductForm" class="modal-form">
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="productCategory" required>
+                        <option value="">Kategori seçin</option>
+                        <option value="metal">Metal</option>
+                        <option value="plastik">Plastik</option>
+                        <option value="kimyasal">Kimyasal</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="diger">Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Birim</label>
+                    <select id="productUnit" required>
+                        <option value="">Birim seçin</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="m2">Metrekare (m²)</option>
+                        <option value="m3">Metreküp (m³)</option>
+                        <option value="litre">Litre</option>
+                        <option value="gram">Gram</option>
+                        <option value="adet">Adet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stok Miktarı</label>
+                    <input type="number" id="productStock" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Birim Fiyat (₺)</label>
+                    <input type="number" id="productPrice" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Ürün Açıklaması</label>
+                    <textarea id="productDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ürün Resmi</label>
+                    <input type="file" id="productImage" accept="image/*">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addProductModal')">
+                        İptal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Ürün Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Buy Stream Time Modal -->
+    <div id="buyStreamTimeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Canlı Yayın Süresi Satın Al</h2>
+                <span class="close" onclick="closeModal('buyStreamTimeModal')">&times;</span>
+            </div>
+            <div class="stream-packages">
+                <div class="package-card">
+                    <h3>1 Saat</h3>
+                    <div class="package-price">₺50</div>
+                    <ul class="package-features">
+                        <li>1 saat canlı yayın</li>
+                        <li>Temel özellikler</li>
+                    </ul>
+                    <button class="btn btn-outline btn-block" onclick="buyStreamTime(1, 50)">Satın Al</button>
+                </div>
+                <div class="package-card featured">
+                    <div class="package-badge">Popüler</div>
+                    <h3>5 Saat</h3>
+                    <div class="package-price">₺200</div>
+                    <ul class="package-features">
+                        <li>5 saat canlı yayın</li>
+                        <li>Gelişmiş özellikler</li>
+                        <li>%20 indirim</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block" onclick="buyStreamTime(5, 200)">Satın Al</button>
+                </div>
+                <div class="package-card">
+                    <h3>10 Saat</h3>
+                    <div class="package-price">₺350</div>
+                    <ul class="package-features">
+                        <li>10 saat canlı yayın</li>
+                        <li>Tüm özellikler</li>
+                        <li>%30 indirim</li>
+                    </ul>
+                    <button class="btn btn-outline btn-block" onclick="buyStreamTime(10, 350)">Satın Al</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="skipPurchase()">
+                    <i class="fas fa-forward"></i>
+                    Bu Adımı Atla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+    <script src="panel-app.js"></script>
+</body>
+</html>
