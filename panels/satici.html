@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Üretici Panel - VideoSat</title>
+    <title>Satıcı Panel - VideoSat</title>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="panel-styles.css">
     <link rel="stylesheet" href="../modern-ui-enhancements.css">
@@ -17,7 +17,7 @@
             <div class="panel-logo">
                 <i class="fas fa-video"></i>
                 <span>VideoSat</span>
-                <span class="role-badge">Üretici</span>
+                <span class="role-badge">Satıcı</span>
             </div>
             <div class="panel-nav-menu">
                 <a href="#dashboard" class="nav-link active" data-section="dashboard">
@@ -27,10 +27,6 @@
                 <a href="#products" class="nav-link" data-section="products">
                     <i class="fas fa-box"></i>
                     Ürün Yönetimi
-                </a>
-                <a href="#suppliers" class="nav-link" data-section="suppliers">
-                    <i class="fas fa-truck"></i>
-                    Hammadeciler
                 </a>
                 <a href="#wholesalers" class="nav-link" data-section="wholesalers">
                     <i class="fas fa-warehouse"></i>
@@ -43,10 +39,6 @@
                 <a href="#live-stream" class="nav-link" data-section="live-stream">
                     <i class="fas fa-broadcast-tower"></i>
                     Canlı Yayın
-                </a>
-                <a href="#invitations" class="nav-link" data-section="invitations">
-                    <i class="fas fa-bell"></i>
-                    Canlı Yayın Davetleri
                 </a>
                 <a href="#messages" class="nav-link" data-section="messages">
                     <i class="fas fa-envelope"></i>
@@ -79,7 +71,7 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="panel-section active">
             <div class="section-header">
-                <h1>Üretici Dashboard</h1>
+                <h1>Hammaddeci Dashboard</h1>
                 <p>İşletmenizin genel durumunu takip edin</p>
             </div>
 
@@ -105,20 +97,20 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <i class="fas fa-truck"></i>
+                        <i class="fas fa-industry"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 id="totalSuppliers">0</h3>
-                        <p>Hammaddeci Sayısı</p>
+                        <h3 id="totalProducers">0</h3>
+                        <p>Üretici Sayısı</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <i class="fas fa-warehouse"></i>
+                        <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 id="totalWholesalers">0</h3>
-                        <p>Toptancı Sayısı</p>
+                        <h3 id="liveStreamBalance">0</h3>
+                        <p>Canlı Yayın Süresi (saat)</p>
                     </div>
                 </div>
             </div>
@@ -130,41 +122,22 @@
                     <button class="action-card" onclick="showSectionDirect('products')">
                         <i class="fas fa-plus"></i>
                         <h3>Yeni Ürün Ekle</h3>
-                        <p>Üretim ürünlerinizi sisteme ekleyin</p>
-                    </button>
-                    <button class="action-card" onclick="showSectionDirect('suppliers')">
-                        <i class="fas fa-search"></i>
-                        <h3>Hammaddeci Ara</h3>
-                        <p>Yeni hammadeciler bulun ve iletişime geçin</p>
+                        <p>Hammadde ürünlerinizi sisteme ekleyin</p>
                     </button>
                     <button class="action-card" onclick="showSectionDirect('wholesalers')">
-                        <i class="fas fa-handshake"></i>
-                        <h3>Toptancı Bul</h3>
-                        <p>Toptancılarla işbirliği kurun</p>
+                        <i class="fas fa-search"></i>
+                        <h3>Toptancı Ara</h3>
+                        <p>Yeni toptancılar bulun ve iletişime geçin</p>
                     </button>
                     <button class="action-card" onclick="window.location.href='../live-stream.html'">
                         <i class="fas fa-broadcast-tower"></i>
                         <h3>Canlı Yayın Başlat</h3>
                         <p>Ürünlerinizi canlı olarak tanıtın</p>
                     </button>
-                    <button class="action-card" onclick="showSectionDirect('invitations')">
-                        <i class="fas fa-bell"></i>
-                        <h3>Canlı Yayın Davetleri</h3>
-                        <p>Gelen davetleri görüntüle</p>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Live Stream Invitations Alert -->
-            <div class="invitations-alert" id="invitationsAlert" style="display: none;">
-                <div class="alert-content">
-                    <i class="fas fa-bell"></i>
-                    <div class="alert-text">
-                        <h3 id="invitationCount">0</h3>
-                        <p>Yeni canlı yayın davetiniz var!</p>
-                    </div>
-                    <button class="btn btn-primary" onclick="showSectionDirect('invitations')">
-                        Davetleri Gör
+                    <button class="action-card" onclick="showSectionDirect('orders')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Siparişleri Görüntüle</h3>
+                        <p>Gelen siparişleri takip edin</p>
                     </button>
                 </div>
             </div>
@@ -182,7 +155,7 @@
         <section id="products" class="panel-section">
             <div class="section-header">
                 <h1>Ürün Yönetimi</h1>
-                <p>Üretim ürünlerinizi yönetin</p>
+                <p>Hammadde ürünlerinizi yönetin</p>
                 <button class="btn btn-primary" onclick="showAddProductModal()">
                     <i class="fas fa-plus"></i>
                     Yeni Ürün Ekle
@@ -195,11 +168,11 @@
                     <label>Kategori:</label>
                     <select id="productCategoryFilter">
                         <option value="">Tümü</option>
-                        <option value="otomotiv">Otomotiv</option>
+                        <option value="metal">Metal</option>
+                        <option value="plastik">Plastik</option>
+                        <option value="kimyasal">Kimyasal</option>
                         <option value="tekstil">Tekstil</option>
                         <option value="gida">Gıda</option>
-                        <option value="kimya">Kimya</option>
-                        <option value="metal">Metal</option>
                         <option value="diger">Diğer</option>
                     </select>
                 </div>
@@ -242,49 +215,6 @@
             </div>
         </section>
 
-        <!-- Suppliers Section -->
-        <section id="suppliers" class="panel-section">
-            <div class="section-header">
-                <h1>Hammadeciler</h1>
-                <p>Sitedeki hammadecilerle iletişime geçin</p>
-            </div>
-
-            <!-- Supplier Filters -->
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Şehir:</label>
-                    <select id="supplierCityFilter">
-                        <option value="">Tümü</option>
-                        <option value="istanbul">İstanbul</option>
-                        <option value="ankara">Ankara</option>
-                        <option value="izmir">İzmir</option>
-                        <option value="bursa">Bursa</option>
-                        <option value="antalya">Antalya</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Hammadde Türü:</label>
-                    <select id="supplierMaterialFilter">
-                        <option value="">Tümü</option>
-                        <option value="metal">Metal</option>
-                        <option value="plastik">Plastik</option>
-                        <option value="kimyasal">Kimyasal</option>
-                        <option value="tekstil">Tekstil</option>
-                        <option value="gida">Gıda</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Arama:</label>
-                    <input type="text" id="supplierSearch" placeholder="Hammaddeci ara...">
-                </div>
-            </div>
-
-            <!-- Suppliers Grid -->
-            <div class="suppliers-grid" id="suppliersGrid">
-                <!-- Suppliers will be populated by JavaScript -->
-            </div>
-        </section>
-
         <!-- Wholesalers Section -->
         <section id="wholesalers" class="panel-section">
             <div class="section-header">
@@ -292,11 +222,11 @@
                 <p>Sitedeki toptancılarla iletişime geçin</p>
             </div>
 
-            <!-- Wholesaler Filters -->
+            <!-- Producer Filters -->
             <div class="filters">
                 <div class="filter-group">
                     <label>Şehir:</label>
-                    <select id="wholesalerCityFilter">
+                    <select id="producerCityFilter">
                         <option value="">Tümü</option>
                         <option value="istanbul">İstanbul</option>
                         <option value="ankara">Ankara</option>
@@ -307,23 +237,24 @@
                 </div>
                 <div class="filter-group">
                     <label>Sektör:</label>
-                    <select id="wholesalerSectorFilter">
+                    <select id="producerSectorFilter">
                         <option value="">Tümü</option>
-                        <option value="perakende">Perakende</option>
-                        <option value="toptan">Toptan</option>
-                        <option value="distributor">Distribütör</option>
-                        <option value="export">İhracat</option>
+                        <option value="otomotiv">Otomotiv</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="kimya">Kimya</option>
+                        <option value="metal">Metal</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Arama:</label>
-                    <input type="text" id="wholesalerSearch" placeholder="Toptancı ara...">
+                    <input type="text" id="producerSearch" placeholder="Üretici ara...">
                 </div>
             </div>
 
-            <!-- Wholesalers Grid -->
-            <div class="wholesalers-grid" id="wholesalersGrid">
-                <!-- Wholesalers will be populated by JavaScript -->
+            <!-- Producers Grid -->
+            <div class="producers-grid" id="producersGrid">
+                <!-- Producers will be populated by JavaScript -->
             </div>
         </section>
 
@@ -347,7 +278,7 @@
                         <thead>
                             <tr>
                                 <th>Sipariş No</th>
-                                <th>Toptancı</th>
+                                <th>Üretici</th>
                                 <th>Ürün</th>
                                 <th>Miktar</th>
                                 <th>Tutar</th>
@@ -370,7 +301,7 @@
                         <thead>
                             <tr>
                                 <th>Sipariş No</th>
-                                <th>Hammaddeci</th>
+                                <th>Üretici</th>
                                 <th>Ürün</th>
                                 <th>Miktar</th>
                                 <th>Tutar</th>
@@ -494,78 +425,11 @@
             </div>
         </section>
 
-        <!-- Invitations Section -->
-        <section id="invitations" class="panel-section">
-            <div class="section-header">
-                <h1><i class="fas fa-bell"></i> Canlı Yayın Davetleri</h1>
-                <p>Hammaddecilerden gelen canlı yayın davetlerini görüntüleyin</p>
-            </div>
-
-            <!-- Invitations Stats -->
-            <div class="stats-grid" style="margin-bottom: 2rem;">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fef3c7;">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="totalInvitations">0</h3>
-                        <p>Toplam Davet</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #dbeafe;">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="pendingInvitations">0</h3>
-                        <p>Bekleyen</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #dcfce7;">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="acceptedInvitations">0</h3>
-                        <p>Kabul Edilen</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Invitations Tabs -->
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="pending-invites">Bekleyen Davetler</button>
-                <button class="tab-btn" data-tab="accepted-invites">Kabul Edilen</button>
-                <button class="tab-btn" data-tab="declined-invites">Reddedilen</button>
-            </div>
-
-            <!-- Pending Invitations -->
-            <div id="pending-invites" class="tab-content active">
-                <div class="invitations-list" id="pendingInvitationsList">
-                    <!-- Invitations will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Accepted Invitations -->
-            <div id="accepted-invites" class="tab-content">
-                <div class="invitations-list" id="acceptedInvitationsList">
-                    <!-- Accepted invitations will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Declined Invitations -->
-            <div id="declined-invites" class="tab-content">
-                <div class="invitations-list" id="declinedInvitationsList">
-                    <!-- Declined invitations will be populated by JavaScript -->
-                </div>
-            </div>
-        </section>
-
         <!-- Messages Section -->
         <section id="messages" class="panel-section">
             <div class="section-header">
                 <h1>Mesajlar</h1>
-                <p>Hammaddeci ve toptancılarla iletişiminizi yönetin</p>
+                <p>Üreticilerle iletişiminizi yönetin</p>
             </div>
 
             <div class="messages-container">
@@ -627,8 +491,8 @@
                     </div>
                 </div>
                 <div class="report-card">
-                    <h3>Hammadde Analizi</h3>
-                    <div class="report-chart" id="supplierChart">
+                    <h3>Müşteri Analizi</h3>
+                    <div class="report-chart" id="customerChart">
                         <!-- Chart will be populated by JavaScript -->
                     </div>
                 </div>
@@ -658,11 +522,11 @@
                     <label>Kategori</label>
                     <select id="productCategory" required>
                         <option value="">Kategori seçin</option>
-                        <option value="otomotiv">Otomotiv</option>
+                        <option value="metal">Metal</option>
+                        <option value="plastik">Plastik</option>
+                        <option value="kimyasal">Kimyasal</option>
                         <option value="tekstil">Tekstil</option>
                         <option value="gida">Gıda</option>
-                        <option value="kimya">Kimya</option>
-                        <option value="metal">Metal</option>
                         <option value="diger">Diğer</option>
                     </select>
                 </div>
@@ -755,6 +619,8 @@
     </div>
 
     <script src="panel-app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
     
     <!-- FALLBACK FUNCTIONS - ALWAYS WORKS -->
     <script>
@@ -784,8 +650,5 @@
         window.logout = logoutDirect;
         console.log('✅ Fallback functions loaded');
     </script>
-    <script src="panel-app.js"></script>
-    <script src="../services/payment-service.js"></script>
-    <script src="../services/order-service.js"></script>
 </body>
 </html>

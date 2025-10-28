@@ -25,8 +25,8 @@
 ```bash
 # Configure AWS CLI
 aws configure
-# Access Key: AKIAUY2LG7ZJ77D2CKVA
-# Secret Key: KwpS0/saU/Qg/TSegNeNoxl+kcVPcqEa8XzSe3zo
+# Access Key: [YOUR_AWS_ACCESS_KEY]
+# Secret Key: [YOUR_AWS_SECRET_KEY]
 # Region: us-east-1
 # Output format: json
 ```
@@ -134,13 +134,13 @@ jobs:
 ## Environment Variables
 ```bash
 # AWS Configuration
-AWS_ACCESS_KEY_ID=AKIAUY2LG7ZJ77D2CKVA
-AWS_SECRET_ACCESS_KEY=KwpS0/saU/Qg/TSegNeNoxl+kcVPcqEa8XzSe3zo
+AWS_ACCESS_KEY_ID=[YOUR_AWS_ACCESS_KEY]
+AWS_SECRET_ACCESS_KEY=[YOUR_AWS_SECRET_KEY]
 AWS_REGION=us-east-1
 S3_BUCKET=dunyanin-en-acayip-sitesi-328185871955
 
 # GitHub Configuration
-GITHUB_TOKEN=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
+GITHUB_TOKEN=[YOUR_GITHUB_TOKEN]
 ```
 
 ## Security Configuration

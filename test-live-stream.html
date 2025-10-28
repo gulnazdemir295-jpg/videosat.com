@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSat - Canlı Yayın Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modern-ui-enhancements.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+        }
+        
+        .test-video {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            background: #000;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .test-status {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+        
+        .test-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .test-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .test-status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .test-log {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem;
+        }
+        
+        .log-entry.success {
+            color: #065f46;
+        }
+        
+        .log-entry.error {
+            color: #991b1b;
+        }
+        
+        .log-entry.info {
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-broadcast-tower"></i> VideoSat Canlı Yayın Test</h1>
+        <p>Bu sayfa WebRTC canlı yayın sisteminin çalışıp çalışmadığını test eder.</p>
+        
+        <!-- Test 1: Kamera Erişimi -->
+        <div class="test-section">
+            <h2><i class="fas fa-video"></i> Test 1: Kamera Erişimi</h2>
+            <p>WebRTC ile kamera erişimini test edin.</p>
+            
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testCameraAccess()">
+                    <i class="fas fa-play"></i> Kamera Testini Başlat
+                </button>
+                <button class="btn btn-outline" onclick="stopCameraTest()">
+                    <i class="fas fa-stop"></i> Testi Durdur
+                </button>
+            </div>
+            
+            <video id="testVideo" class="test-video" autoplay muted></video>
+            
+            <div id="cameraStatus" class="test-status info">
+                <i class="fas fa-info-circle"></i> Kamera testi henüz başlatılmadı
+            </div>
+        </div>
+        
+        <!-- Test 2: Mikrofon Erişimi -->
+        <div class="test-section">
+            <h2><i class="fas fa-microphone"></i> Test 2: Mikrofon Erişimi</h2>
+            <p>Mikrofon erişimini test edin.</p>
+            
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testMicrophoneAccess()">
+                    <i class="fas fa-microphone"></i> Mikrofon Testini Başlat
+                </button>
+                <button class="btn btn-outline" onclick="stopMicrophoneTest()">
+                    <i class="fas fa-stop"></i> Testi Durdur
+                </button>
+            </div>
+            
+            <div id="microphoneStatus" class="test-status info">
+                <i class="fas fa-info-circle"></i> Mikrofon testi henüz başlatılmadı
+            </div>
+            
+            <div id="audioLevel" style="margin-top: 1rem;">
+                <label>Ses Seviyesi:</label>
+                <div style="width: 100%; height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden;">
+                    <div id="audioLevelBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); transition: width 0.1s ease;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test 3: Canlı Yayın Simülasyonu -->
+        <div class="test-section">
+            <h2><i class="fas fa-broadcast-tower"></i> Test 3: Canlı Yayın Simülasyonu</h2>
+            <p>Gerçek canlı yayın sistemini test edin.</p>
+            
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="startLiveStreamTest()">
+                    <i class="fas fa-broadcast-tower"></i> Canlı Yayını Başlat
+                </button>
+                <button class="btn btn-danger" onclick="stopLiveStreamTest()">
+                    <i class="fas fa-stop"></i> Yayını Durdur
+                </button>
+            </div>
+            
+            <div id="streamStatus" class="test-status info">
+                <i class="fas fa-info-circle"></i> Canlı yayın henüz başlatılmadı
+            </div>
+            
+            <div id="streamInfo" style="margin-top: 1rem; display: none;">
+                <h3>Yayın Bilgileri</h3>
+                <p><strong>Yayın Başlığı:</strong> <span id="streamTitle">Test Yayını</span></p>
+                <p><strong>Başlangıç Zamanı:</strong> <span id="streamStartTime">-</span></p>
+                <p><strong>Süre:</strong> <span id="streamDuration">00:00</span></p>
+                <p><strong>İzleyici Sayısı:</strong> <span id="viewerCount">0</span></p>
+            </div>
+        </div>
+        
+        <!-- Test 4: Sistem Bilgileri -->
+        <div class="test-section">
+            <h2><i class="fas fa-info-circle"></i> Test 4: Sistem Bilgileri</h2>
+            <p>Tarayıcı ve sistem bilgilerini kontrol edin.</p>
+            
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="checkSystemInfo()">
+                    <i class="fas fa-search"></i> Sistem Bilgilerini Kontrol Et
+                </button>
+            </div>
+            
+            <div id="systemInfo" style="margin-top: 1rem;">
+                <!-- Sistem bilgileri buraya gelecek -->
+            </div>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <h2><i class="fas fa-list"></i> Test Log</h2>
+            <p>Tüm test sonuçları ve hatalar burada görüntülenir.</p>
+            
+            <div class="test-controls">
+                <button class="btn btn-outline" onclick="clearLog()">
+                    <i class="fas fa-trash"></i> Log'u Temizle
+                </button>
+            </div>
+            
+            <div id="testLog" class="test-log">
+                <div class="log-entry info">Test sayfası yüklendi - Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Ana Siteye Dön -->
+        <div class="test-controls" style="margin-top: 2rem; justify-content: center;">
+            <a href="index.html" class="btn btn-primary">
+                <i class="fas fa-home"></i> Ana Siteye Dön
+            </a>
+            <a href="panels/hammaddeci.html" class="btn btn-outline">
+                <i class="fas fa-tachometer-alt"></i> Hammaddeci Paneli
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let testStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let streamStartTime = null;
+        let streamInterval = null;
+        let viewerCount = 0;
+
+        // Log fonksiyonu
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            addLog('Log temizlendi', 'info');
+        }
+
+        // Test 1: Kamera Erişimi
+        async function testCameraAccess() {
+            const status = document.getElementById('cameraStatus');
+            const video = document.getElementById('testVideo');
+            
+            try {
+                addLog('Kamera erişimi test ediliyor...', 'info');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kamera erişimi test ediliyor...';
+                status.className = 'test-status info';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                
+                video.srcObject = stream;
+                testStream = stream;
+                
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Kamera erişimi başarılı!';
+                status.className = 'test-status success';
+                addLog('Kamera erişimi başarılı', 'success');
+                
+            } catch (error) {
+                status.innerHTML = `<i class="fas fa-exclamation-circle"></i> Kamera erişimi başarısız: ${error.message}`;
+                status.className = 'test-status error';
+                addLog(`Kamera erişimi hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function stopCameraTest() {
+            if (testStream) {
+                testStream.getTracks().forEach(track => track.stop());
+                testStream = null;
+                document.getElementById('testVideo').srcObject = null;
+                
+                const status = document.getElementById('cameraStatus');
+                status.innerHTML = '<i class="fas fa-stop-circle"></i> Kamera testi durduruldu';
+                status.className = 'test-status info';
+                addLog('Kamera testi durduruldu', 'info');
+            }
+        }
+
+        // Test 2: Mikrofon Erişimi
+        async function testMicrophoneAccess() {
+            const status = document.getElementById('microphoneStatus');
+            
+            try {
+                addLog('Mikrofon erişimi test ediliyor...', 'info');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mikrofon erişimi test ediliyor...';
+                status.className = 'test-status info';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: false,
+                    audio: true
+                });
+                
+                // Audio context oluştur
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                
+                analyser.fftSize = 256;
+                microphone.connect(analyser);
+                
+                // Ses seviyesi takibi
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                function updateAudioLevel() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    const percentage = (average / 255) * 100;
+                    
+                    document.getElementById('audioLevelBar').style.width = percentage + '%';
+                    
+                    if (stream.active) {
+                        requestAnimationFrame(updateAudioLevel);
+                    }
+                }
+                updateAudioLevel();
+                
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Mikrofon erişimi başarılı!';
+                status.className = 'test-status success';
+                addLog('Mikrofon erişimi başarılı', 'success');
+                
+            } catch (error) {
+                status.innerHTML = `<i class="fas fa-exclamation-circle"></i> Mikrofon erişimi başarısız: ${error.message}`;
+                status.className = 'test-status error';
+                addLog(`Mikrofon erişimi hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function stopMicrophoneTest() {
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+                analyser = null;
+                microphone = null;
+                
+                document.getElementById('audioLevelBar').style.width = '0%';
+                
+                const status = document.getElementById('microphoneStatus');
+                status.innerHTML = '<i class="fas fa-stop-circle"></i> Mikrofon testi durduruldu';
+                status.className = 'test-status info';
+                addLog('Mikrofon testi durduruldu', 'info');
+            }
+        }
+
+        // Test 3: Canlı Yayın Simülasyonu
+        async function startLiveStreamTest() {
+            const status = document.getElementById('streamStatus');
+            const streamInfo = document.getElementById('streamInfo');
+            
+            try {
+                addLog('Canlı yayın başlatılıyor...', 'info');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Canlı yayın başlatılıyor...';
+                status.className = 'test-status info';
+                
+                // Hem kamera hem mikrofon erişimi
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                // Video elementini güncelle
+                const video = document.getElementById('testVideo');
+                video.srcObject = stream;
+                testStream = stream;
+                
+                // Yayın bilgilerini güncelle
+                streamStartTime = new Date();
+                document.getElementById('streamStartTime').textContent = streamStartTime.toLocaleTimeString();
+                document.getElementById('streamTitle').textContent = 'Test Yayını - ' + streamStartTime.toLocaleDateString();
+                
+                // Süre takibi
+                streamInterval = setInterval(() => {
+                    const now = new Date();
+                    const duration = Math.floor((now - streamStartTime) / 1000);
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = duration % 60;
+                    document.getElementById('streamDuration').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+                
+                // İzleyici sayısı simülasyonu
+                setInterval(() => {
+                    viewerCount += Math.floor(Math.random() * 3) - 1;
+                    viewerCount = Math.max(0, viewerCount);
+                    document.getElementById('viewerCount').textContent = viewerCount;
+                }, 5000);
+                
+                streamInfo.style.display = 'block';
+                
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Canlı yayın başarıyla başlatıldı!';
+                status.className = 'test-status success';
+                addLog('Canlı yayın başarıyla başlatıldı', 'success');
+                
+            } catch (error) {
+                status.innerHTML = `<i class="fas fa-exclamation-circle"></i> Canlı yayın başlatılamadı: ${error.message}`;
+                status.className = 'test-status error';
+                addLog(`Canlı yayın hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function stopLiveStreamTest() {
+            if (testStream) {
+                testStream.getTracks().forEach(track => track.stop());
+                testStream = null;
+                
+                if (streamInterval) {
+                    clearInterval(streamInterval);
+                    streamInterval = null;
+                }
+                
+                document.getElementById('testVideo').srcObject = null;
+                document.getElementById('streamInfo').style.display = 'none';
+                
+                const status = document.getElementById('streamStatus');
+                status.innerHTML = '<i class="fas fa-stop-circle"></i> Canlı yayın durduruldu';
+                status.className = 'test-status info';
+                addLog('Canlı yayın durduruldu', 'info');
+            }
+        }
+
+        // Test 4: Sistem Bilgileri
+        function checkSystemInfo() {
+            const systemInfo = document.getElementById('systemInfo');
+            
+            const info = {
+                'Tarayıcı': navigator.userAgent,
+                'WebRTC Desteği': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+                'HTTPS': location.protocol === 'https:',
+                'Kamera Desteği': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+                'Mikrofon Desteği': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+                'Ekran Çözünürlüğü': `${screen.width}x${screen.height}`,
+                'Pencere Boyutu': `${window.innerWidth}x${window.innerHeight}`,
+                'Dil': navigator.language,
+                'Platform': navigator.platform,
+                'Çevrimiçi': navigator.onLine ? 'Evet' : 'Hayır'
+            };
+            
+            let html = '<h3>Sistem Bilgileri</h3><table style="width: 100%; border-collapse: collapse;">';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 0.5rem; font-weight: 500;">${key}:</td>
+                    <td style="padding: 0.5rem;">${value}</td>
+                </tr>`;
+            }
+            html += '</table>';
+            
+            systemInfo.innerHTML = html;
+            addLog('Sistem bilgileri kontrol edildi', 'info');
+        }
+
+        // Sayfa yüklendiğinde otomatik sistem kontrolü
+        window.addEventListener('load', () => {
+            addLog('Test sayfası yüklendi', 'info');
+            checkSystemInfo();
+        });
+
+        // Sayfa kapatılırken stream'leri temizle
+        window.addEventListener('beforeunload', () => {
+            if (testStream) {
+                testStream.getTracks().forEach(track => track.stop());
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+        });
+    </script>
+</body>
+</html>

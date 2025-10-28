@@ -1,5 +1,32 @@
-# Dependencies
-node_modules/
+# Hassas dosyalar - ASLA COMMIT ETMEYİN!
+.env
+.env.local
+.env.production
+.env.development
+*.key
+*.pem
+*.p12
+*.pfx
+config/secrets.json
+secrets/
+credentials/
+
+# AWS Configuration
+aws-credentials.json
+.aws/
+
+# GitHub Tokens
+github-token.txt
+.github-token
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -12,27 +39,20 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage/
+*.lcov
 
 # nyc test coverage
 .nyc_output
 
-# Grunt intermediate storage
-.grunt
-
-# Bower dependency directory
-bower_components
-
-# node-waf configuration
-.lock-wscript
-
-# Compiled binary addons
-build/Release
-
 # Dependency directories
+node_modules/
 jspm_packages/
 
 # Optional npm cache directory
 .npm
+
+# Optional eslint cache
+.eslintcache
 
 # Optional REPL history
 .node_repl_history
@@ -44,9 +64,9 @@ jspm_packages/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+.env.test
 
-# parcel-bundler cache
+# parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
@@ -60,7 +80,7 @@ jspm_packages/
 .vuepress/dist
 
 # Serverless directories
-.serverless
+.serverless/
 
 # FuseBox cache
 .fusebox/
@@ -70,6 +90,22 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary folders
+tmp/
+temp/
+
+# Local server logs
+server.log
+*.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
 
 # OS generated files
 .DS_Store
@@ -87,13 +123,25 @@ Thumbs.db
 *.swo
 *~
 
-# Logs
-logs
-*.log
-
 # Backup files
-backup-old-files/
+*.bak
+*.backup
+*.old
 
-# Temporary files
-*.tmp
-*.temp
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip

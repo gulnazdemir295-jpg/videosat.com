@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSat POS - Satış Sistemi Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .pos-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-info {
+            text-align: right;
+        }
+
+        .header-info .time {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-info .date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .products-section {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .product-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .product-price {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .product-card.selected .product-price {
+            color: white;
+        }
+
+        .product-stock {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .product-card.selected .product-stock {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .cart-section {
+            background: #f8f9fa;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            border-left: 3px solid #667eea;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            max-height: calc(100vh - 400px);
+        }
+
+        .cart-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #764ba2;
+        }
+
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .qty-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .remove-item {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .remove-item:hover {
+            background: #c82333;
+        }
+
+        .cart-summary {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .summary-row.total {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            padding-top: 10px;
+            border-top: 2px solid #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .discount-section {
+            margin-bottom: 20px;
+        }
+
+        .discount-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .payment-methods {
+            margin-bottom: 20px;
+        }
+
+        .payment-btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .payment-btn.cash {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .payment-btn.cash:hover {
+            background: #218838;
+        }
+
+        .payment-btn.card {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .payment-btn.card:hover {
+            background: #0056b3;
+        }
+
+        .payment-btn.online {
+            background: #ffc107;
+            color: #333;
+            border-color: #ffc107;
+        }
+
+        .payment-btn.online:hover {
+            background: #e0a800;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-cart i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #000;
+        }
+
+        .info-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        @media (max-width: 1024px) {
+            .pos-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pos-container">
+        <div class="header">
+            <h1><i class="fas fa-cash-register"></i> VideoSat POS Sistemi</h1>
+            <div class="header-info">
+                <div class="time" id="currentTime">00:00:00</div>
+                <div class="date" id="currentDate">-- -- ----</div>
+            </div>
+        </div>
+
+        <div class="products-section">
+            <h2 class="section-title"><i class="fas fa-box"></i> Ürünler</h2>
+            <input type="text" class="search-bar" id="searchBar" placeholder="Ürün ara...">
+            
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+
+        <div class="cart-section">
+            <h2 class="section-title"><i class="fas fa-shopping-cart"></i> Sepet</h2>
+            
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Sepetiniz boş</p>
+                </div>
+            </div>
+
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Ara Toplam:</span>
+                    <span id="subtotal">0 ₺</span>
+                </div>
+                <div class="summary-row">
+                    <span>İndirim (%10):</span>
+                    <span id="discount">-0 ₺</span>
+                </div>
+                <div class="summary-row total">
+                    <span>TOPLAM:</span>
+                    <span id="total">0 ₺</span>
+                </div>
+            </div>
+
+            <div class="payment-methods">
+                <button class="payment-btn cash" onclick="showPaymentModal('cash')">
+                    <i class="fas fa-money-bill-wave"></i> Nakit Ödeme
+                </button>
+                <button class="payment-btn card" onclick="showPaymentModal('card')">
+                    <i class="fas fa-credit-card"></i> Kart Ödeme
+                </button>
+                <button class="payment-btn online" onclick="showPaymentModal('online')">
+                    <i class="fas fa-globe"></i> Online Ödeme
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closePaymentModal()">&times;</span>
+            <div class="modal-header">
+                <i class="fas fa-cash-register"></i> Ödeme İşlemi
+            </div>
+            <div id="modalBody">
+                <!-- Payment form will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="pos-test.js"></script>
+    <script src="services/payment-service.js"></script>
+    <script src="services/order-service.js"></script>
+</body>
+</html>

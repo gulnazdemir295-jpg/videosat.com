@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Section Test</title>
+</head>
+<body>
+    <button onclick="showSection('products')">Ürünler</button>
+    <button onclick="showSection('producers')">Üreticiler</button>
+    
+    <section id="dashboard" class="panel-section active">
+        <h1>Dashboard</h1>
+    </section>
+    <section id="products" class="panel-section" style="display:none;">
+        <h1>Ürünler</h1>
+    </section>
+    <section id="producers" class="panel-section" style="display:none;">
+        <h1>Üreticiler</h1>
+    </section>
+    
+    <script>
+        function showSection(sectionId) {
+            console.log('Showing:', sectionId);
+            document.querySelectorAll('.panel-section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                console.log('Section shown:', sectionId);
+            }
+        }
+    </script>
+</body>
+</html>

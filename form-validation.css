@@ -1,0 +1,163 @@
+/* Form Validation Styles */
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Validation States */
+.form-group input.valid,
+.form-group textarea.valid,
+.form-group select.valid {
+    border-color: var(--success-color);
+}
+
+.form-group input.invalid,
+.form-group textarea.invalid,
+.form-group select.invalid {
+    border-color: var(--danger-color);
+}
+
+.form-group input.invalid:focus,
+.form-group textarea.invalid:focus,
+.form-group select.invalid:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Error Messages */
+.error-message {
+    display: none;
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.error-message.show {
+    display: flex;
+}
+
+.error-message i {
+    font-size: 1rem;
+}
+
+/* Success Messages */
+.success-message {
+    display: none;
+    color: var(--success-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.success-message.show {
+    display: flex;
+}
+
+/* Required Field Indicator */
+label.required::after {
+    content: " *";
+    color: var(--danger-color);
+}
+
+/* Help Text */
+.help-text {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 0.25rem;
+    transition: all 0.3s ease;
+    background-color: var(--border-color);
+}
+
+.strength-bar.weak {
+    width: 33%;
+    background-color: var(--danger-color);
+}
+
+.strength-bar.medium {
+    width: 66%;
+    background-color: var(--warning-color);
+}
+
+.strength-bar.strong {
+    width: 100%;
+    background-color: var(--success-color);
+}
+
+/* Character Counter */
+.char-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+}
+
+.char-counter.warning {
+    color: var(--warning-color);
+}
+
+.char-counter.error {
+    color: var(--danger-color);
+}
+
+/* Accessibility */
+input:required,
+textarea:required,
+select:required {
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+}

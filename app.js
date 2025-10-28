@@ -38,6 +38,12 @@ function setupEventListeners() {
         registerForm.addEventListener('submit', handleRegister);
     }
     
+    // Admin Login Form
+    const adminLoginForm = document.getElementById('adminLoginForm');
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', handleAdminLogin);
+    }
+    
     // Contact Form
     const contactForm = document.querySelector('.contact-form');
     if (contactForm) {
@@ -77,8 +83,20 @@ function showRegisterModal() {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    } else {
+        // Fallback: close all modals
+        document.querySelectorAll('.modal').forEach(m => {
+            m.style.display = 'none';
+        });
+    }
 }
+
+// Global function for window access
+window.closeModal = closeModal;
+window.showAlert = showAlert;
 
 function switchToRegister() {
     closeModal('loginModal');
@@ -112,6 +130,13 @@ async function handleLogin(e) {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1500));
         
+        // Generate member number
+        const generateMemberNumber = () => {
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+            return `${timestamp}-${random}`;
+        };
+        
         // Mock user data based on email
         const mockUser = {
             id: Date.now(),
@@ -119,6 +144,7 @@ async function handleLogin(e) {
             role: getUserRoleFromEmail(email),
             companyName: getCompanyNameFromEmail(email),
             phone: '+90 555 123 4567',
+            memberNumber: generateMemberNumber(),
             createdAt: new Date().toISOString()
         };
         
@@ -157,6 +183,13 @@ async function handleRegister(e) {
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     
+    // Generate member number
+    const generateMemberNumber = () => {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+        return `${timestamp}-${random}`;
+    };
+    
     // Validation
     if (!role || !companyName || !email || !phone || !password || !confirmPassword) {
         showAlert('Lütfen tüm alanları doldurun.', 'error');
@@ -190,6 +223,7 @@ async function handleRegister(e) {
             role: role,
             companyName: companyName,
             phone: phone,
+            memberNumber: generateMemberNumber(),
             createdAt: new Date().toISOString(),
             isActive: true
         };
@@ -248,7 +282,40 @@ async function handleContactForm(e) {
 
 // Utility Functions
 function getUserRoleFromEmail(email) {
-    // Mock role assignment based on email
+    // Test accounts for live streaming
+    const testAccounts = {
+        'hammaddeci@videosat.com': 'hammaddeci',
+        'uretici@videosat.com': 'uretici',
+        'test-hammaddeci@test.com': 'hammaddeci',
+        'test-uretici@test.com': 'uretici',
+        'hammadde123@test.com': 'hammaddeci',
+        'uretici123@test.com': 'uretici'
+    };
+    
+    // Check if it's a known test account
+    if (testAccounts[email]) {
+        return testAccounts[email];
+    }
+    
+    // Check email domain for role
+    const lowerEmail = email.toLowerCase();
+    if (lowerEmail.includes('hammadde') || lowerEmail.includes('raw')) {
+        return 'hammaddeci';
+    }
+    if (lowerEmail.includes('uretici') || lowerEmail.includes('manufacturer')) {
+        return 'uretici';
+    }
+    if (lowerEmail.includes('toptanci') || lowerEmail.includes('wholesale')) {
+        return 'toptanci';
+    }
+    if (lowerEmail.includes('satici') || lowerEmail.includes('seller')) {
+        return 'satici';
+    }
+    if (lowerEmail.includes('musteri') || lowerEmail.includes('customer')) {
+        return 'musteri';
+    }
+    
+    // Mock role assignment based on email hash
     const roles = ['hammaddeci', 'uretici', 'toptanci', 'satici', 'musteri', 'admin'];
     const hash = email.split('').reduce((a, b) => {
         a = ((a << 5) - a) + b.charCodeAt(0);
@@ -468,15 +535,116 @@ class WebRTCManager {
 // Initialize WebRTC Manager
 const webRTCManager = new WebRTCManager();
 
+// Admin Login Functions
+function showAdminLoginModal() {
+    closeModal('loginModal');
+    closeModal('registerModal');
+    document.getElementById('adminLoginModal').style.display = 'block';
+}
+
+function switchToNormalLogin() {
+    closeModal('adminLoginModal');
+    showLoginModal();
+}
+
+// Handle Admin Login
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+    
+    if (!username || !password) {
+        showAlert('Lütfen tüm alanları doldurun.', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Giriş yapılıyor...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Debug: Log the entered values
+        console.log('Entered username:', username);
+        console.log('Entered password:', password);
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Simple admin credentials check
+        if ((username === 'ceo@videosat.com' && password === 'ceo123') ||
+            (username === 'admin@videosat.com' && password === 'admin123') ||
+            (username === 'admin' && password === 'admin123')) {
+        // Generate member number for admin
+                    const generateAdminMemberNumber = () => {
+                        return 'ADMIN-0000';
+                    };
+        
+        // Create admin user
+                    const adminUser = {
+                        id: 'admin-001',
+                        username: username,
+                        role: 'admin',
+                        companyName: 'VideoSat Admin',
+                        email: 'admin@videosat.com',
+                        phone: '+90 212 555 0000',
+                        memberNumber: generateAdminMemberNumber(),
+                        createdAt: new Date().toISOString(),
+                        isAdmin: true
+                    };
+            
+            // Save admin data
+            currentUser = adminUser;
+            isLoggedIn = true;
+            userRole = 'admin';
+            localStorage.setItem('currentUser', JSON.stringify(adminUser));
+            
+            // Close modal and redirect to admin panel
+            closeModal('adminLoginModal');
+            showAlert('Admin paneline başarıyla giriş yaptınız!', 'success');
+            
+            // Redirect to admin panel
+            setTimeout(() => {
+                window.location.href = 'panels/admin.html';
+            }, 1000);
+            
+        } else {
+            showAlert('Geçersiz admin kullanıcı adı veya şifre!', 'error');
+        }
+        
+    } catch (error) {
+        showAlert('Admin girişi yapılırken bir hata oluştu.', 'error');
+    } finally {
+        // Reset button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Modal click outside to close
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
+});
+
 // Export functions for global access
 window.showLoginModal = showLoginModal;
 window.showRegisterModal = showRegisterModal;
+window.showAdminLoginModal = showAdminLoginModal;
+window.switchToNormalLogin = switchToNormalLogin;
 window.closeModal = closeModal;
 window.switchToRegister = switchToRegister;
 window.switchToLogin = switchToLogin;
 window.toggleMobileMenu = toggleMobileMenu;
 window.scrollToFeatures = scrollToFeatures;
 window.logout = logout;
+window.getAlertIcon = getAlertIcon;
+window.showAlert = showAlert;
 
 // Initialize pricing buttons
 document.addEventListener('DOMContentLoaded', function() {

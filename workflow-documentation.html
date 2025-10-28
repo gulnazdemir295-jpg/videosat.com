@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSat Platform - İş Akışları ve Prosedürler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .nav-menu {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-menu h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .nav-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 15px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #34495e;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+        }
+        
+        .section h4 {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+        }
+        
+        .workflow-diagram {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .workflow-step {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 10px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .workflow-arrow {
+            font-size: 1.5em;
+            color: #667eea;
+            margin: 0 10px;
+        }
+        
+        .process-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .process-step {
+            background: #fff;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .process-step.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .checklist {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .checklist-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .success-box {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer p {
+            color: #7f8c8d;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-links {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 VideoSat Platform</h1>
+            <p>İş Akışları ve Prosedürler Dokümantasyonu</p>
+            <p><strong>Proje Sahibi:</strong> Gül Naz Demir | <strong>Yıl:</strong> 2024</p>
+        </div>
+        
+        <div class="nav-menu">
+            <h3>📋 Dokümantasyon Menüsü</h3>
+            <div class="nav-links">
+                <a href="#genel-akış" class="nav-link">🎯 Genel İş Akışı</a>
+                <a href="#urun-ekleme" class="nav-link">🔄 Ürün Ekleme Prosedürü</a>
+                <a href="#siparis-yonetimi" class="nav-link">🛒 Sipariş Yönetimi</a>
+                <a href="#odeme-sistemi" class="nav-link">💰 Ödeme ve Komisyon</a>
+                <a href="#canli-yayin" class="nav-link">🎥 Canlı Yayın Prosedürü</a>
+                <a href="#pos-sistemi" class="nav-link">🏪 POS Sistemi</a>
+                <a href="#guvenlik" class="nav-link">🔐 Güvenlik Prosedürü</a>
+                <a href="#raporlama" class="nav-link">📊 Raporlama Sistemi</a>
+            </div>
+        </div>
+        
+        <div id="genel-akış" class="section">
+            <h2>🎯 Genel İş Akışı Şeması</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Kullanıcı Kayıt ve Rol Seçimi</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Kullanıcı Kayıt</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Rol Seçimi</div>
+                </div>
+                
+                <h4>Rol Bazlı Paneller</h4>
+                <div class="process-flow">
+                    <div class="process-step">Hammaddeci</div>
+                    <div class="process-step">Üretici</div>
+                    <div class="process-step">Toptancı</div>
+                    <div class="process-step">Satıcı</div>
+                    <div class="process-step">Müşteri</div>
+                    <div class="process-step">Admin</div>
+                </div>
+                
+                <h4>Panel Özellikleri</h4>
+                <div class="process-flow">
+                    <div class="process-step">Ürün Arama</div>
+                    <div class="process-step">Sipariş Yönetimi</div>
+                    <div class="process-step">Stok Yönetimi</div>
+                    <div class="process-step">POS Satışları</div>
+                    <div class="process-step">Alışveriş</div>
+                    <div class="process-step">Sistem Yönetimi</div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4>💡 Sistem Özellikleri</h4>
+                <ul>
+                    <li><strong>Rol Bazlı Erişim:</strong> Her kullanıcı kendi rolüne göre özel panel erişimi</li>
+                    <li><strong>Entegre Sistem:</strong> Tüm roller birbirleriyle entegre çalışır</li>
+                    <li><strong>Merkezi Yönetim:</strong> Admin paneli tüm sistemi yönetir</li>
+                    <li><strong>Gerçek Zamanlı:</strong> Anlık güncellemeler ve bildirimler</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="urun-ekleme" class="section">
+            <h2>🔄 Ürün Ekleme Prosedürü</h2>
+            
+            <div class="warning-box">
+                <h4>⚠️ KRİTİK KURAL</h4>
+                <p><strong>"ÜRÜN EKLEME PROSEDÜRÜ ... bu kuralı asla ama asla unutma."</strong></p>
+            </div>
+            
+            <div class="workflow-diagram">
+                <h4>Ürün Ekleme Adımları</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Panel Seçimi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Ürün Yönetimi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Yeni Ürün Ekle</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Ürün Bilgileri</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Birim Seçimi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Fiyat Girişi</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Stok Miktarı</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Resim Yükleme</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Kaydet</div>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>📋 Birim Seçimi (KRİTİK)</h4>
+                <div class="checklist-item">
+                    <strong>kg</strong> - Kilogram (ağırlık)
+                </div>
+                <div class="checklist-item">
+                    <strong>m²</strong> - Metrekare (alan)
+                </div>
+                <div class="checklist-item">
+                    <strong>m³</strong> - Metreküp (hacim)
+                </div>
+                <div class="checklist-item">
+                    <strong>litre</strong> - Litre (sıvı hacmi)
+                </div>
+                <div class="checklist-item">
+                    <strong>gram</strong> - Gram (küçük ağırlık)
+                </div>
+                <div class="checklist-item">
+                    <strong>adet</strong> - Adet (sayısal)
+                </div>
+            </div>
+        </div>
+        
+        <div id="siparis-yonetimi" class="section">
+            <h2>🛒 Sipariş Yönetimi Prosedürü</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Sipariş Süreci</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Hammaddeci</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Üretici</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Toptancı</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Toptancı</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Satıcı</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Müşteri</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Müşteri</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Admin</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Ödeme Transferi</div>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>📋 Sipariş Süreci Detayları</h4>
+                <div class="checklist-item">
+                    <strong>1. Talep Aşaması:</strong> Hammadeci ürün talebinde bulunur
+                </div>
+                <div class="checklist-item">
+                    <strong>2. Onay Aşaması:</strong> Üretici stok kontrolü yapar
+                </div>
+                <div class="checklist-item">
+                    <strong>3. Üretim Aşaması:</strong> Üretici siparişi hazırlar
+                </div>
+                <div class="checklist-item">
+                    <strong>4. Satış Aşaması:</strong> Toptancı → Satıcı → Müşteri
+                </div>
+                <div class="checklist-item">
+                    <strong>5. Ödeme Aşaması:</strong> Admin merkezi ödeme sistemi
+                </div>
+            </div>
+        </div>
+        
+        <div id="odeme-sistemi" class="section">
+            <h2>💰 Ödeme ve Komisyon Prosedürü</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Merkezi Ödeme Sistemi</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Müşteri Ödemesi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Admin Hesabı</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Komisyon Hesaplama</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Net Bakiye</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Hammadeci IBAN</div>
+                    <div class="process-step">Üretici IBAN</div>
+                    <div class="process-step">Toptancı IBAN</div>
+                    <div class="process-step">Satıcı IBAN</div>
+                </div>
+            </div>
+            
+            <div class="highlight">
+                <h4>📊 Komisyon Hesaplama Formülü</h4>
+                <p><strong>Toplam Gelir</strong> = Müşteri Ödemesi + Canlı Yayın Ücreti</p>
+                <p><strong>Platform Komisyonu</strong> = Toplam Gelir × %5</p>
+                <p><strong>İşlem Ücreti</strong> = Toplam Gelir × %2</p>
+                <p><strong>Net Bakiye</strong> = Toplam Gelir - Platform Komisyonu - İşlem Ücreti</p>
+            </div>
+            
+            <div class="checklist">
+                <h4>📅 Ödeme Takvimi</h4>
+                <div class="checklist-item">
+                    <strong>Günlük:</strong> Acil ödemeler
+                </div>
+                <div class="checklist-item">
+                    <strong>Haftalık:</strong> Normal ödemeler (Her Pazartesi)
+                </div>
+                <div class="checklist-item">
+                    <strong>Aylık:</strong> Büyük ödemeler (Her ayın 1'i)
+                </div>
+                <div class="checklist-item">
+                    <strong>Özel:</strong> Anlaşma bazlı ödemeler
+                </div>
+            </div>
+        </div>
+        
+        <div id="canli-yayin" class="section">
+            <h2>🎥 Canlı Yayın Prosedürü</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Canlı Yayın Süreci</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Bakiye Kontrolü</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Kamera Erişimi</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Ürün Seçimi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Slogan Yazma</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Yayın Başlatma</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Ürün Tanıtımı</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Sipariş Alma</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Yayın Sonlandırma</div>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>📋 Canlı Yayın Adımları</h4>
+                <div class="checklist-item">
+                    <strong>1. Hazırlık:</strong> Bakiye kontrolü, kamera erişimi, ürün seçimi
+                </div>
+                <div class="checklist-item">
+                    <strong>2. Yayın:</strong> Ürün tanıtımı, müşteri etkileşimi, sipariş alma
+                </div>
+                <div class="checklist-item">
+                    <strong>3. Sonlandırma:</strong> Yayın kapatma, bakiye düşürme, rapor oluşturma
+                </div>
+            </div>
+        </div>
+        
+        <div id="pos-sistemi" class="section">
+            <h2>🏪 POS Sistemi İş Akışı</h2>
+            
+            <div class="workflow-diagram">
+                <h4>POS Satış Süreci</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Satıcı Girişi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Kasa Açılış</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Ürün Seçimi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Sepete Ekleme</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Fiyat Hesaplama</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Ödeme Yöntemi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">İşlem Tamamlama</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Fatura Yazdırma</div>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>💳 Ödeme Yöntemleri</h4>
+                <div class="checklist-item">
+                    <strong>Nakit Ödeme:</strong> Para üstü hesaplama
+                </div>
+                <div class="checklist-item">
+                    <strong>Kart Ödeme:</strong> Kart doğrulama ve bakiye kontrolü
+                </div>
+                <div class="checklist-item">
+                    <strong>Online Ödeme:</strong> Gateway entegrasyonu
+                </div>
+                <div class="checklist-item">
+                    <strong>Taksitli Ödeme:</strong> Taksit planları
+                </div>
+            </div>
+        </div>
+        
+        <div id="guvenlik" class="section">
+            <h2>🔐 Güvenlik Prosedürü</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Kimlik Doğrulama Süreci</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Giriş Denemesi</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Kullanıcı Kontrolü</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Şifre Kontrolü</div>
+                </div>
+                
+                <div class="process-flow">
+                    <div class="process-step">Rol Kontrolü</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="process-step">Panel Yönlendirme</div>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <h4>🔒 Admin Güvenlik Bilgileri</h4>
+                <p><strong>E-posta:</strong> admin@videosat.com</p>
+                <p><strong>Şifre:</strong> admin123</p>
+                <p><strong>Alternatif:</strong> ceo@videosat.com / ceo123</p>
+            </div>
+            
+            <div class="checklist">
+                <h4>🛡️ Güvenlik Kontrolleri</h4>
+                <div class="checklist-item">
+                    Şifre karmaşıklığı kontrolü
+                </div>
+                <div class="checklist-item">
+                    Oturum süresi sınırlaması
+                </div>
+                <div class="checklist-item">
+                    IP adresi kayıtları
+                </div>
+                <div class="checklist-item">
+                    Şüpheli aktivite bildirimleri
+                </div>
+            </div>
+        </div>
+        
+        <div id="raporlama" class="section">
+            <h2>📊 Raporlama Sistemi</h2>
+            
+            <div class="workflow-diagram">
+                <h4>Rapor Türleri</h4>
+                <div class="process-flow">
+                    <div class="process-step active">Günlük Raporlar</div>
+                    <div class="process-step">Haftalık Raporlar</div>
+                    <div class="process-step">Aylık Raporlar</div>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>📈 Günlük Raporlar</h4>
+                <div class="checklist-item">
+                    Satış raporları
+                </div>
+                <div class="checklist-item">
+                    Sipariş raporları
+                </div>
+                <div class="checklist-item">
+                    Kullanıcı aktivite raporları
+                </div>
+                <div class="checklist-item">
+                    Sistem performans raporları
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h4>📊 Haftalık Raporlar</h4>
+                <div class="checklist-item">
+                    Gelir analizi
+                </div>
+                <div class="checklist-item">
+                    Komisyon raporları
+                </div>
+                <div class="checklist-item">
+                    Kullanıcı büyüme raporları
+                </div>
+                <div class="checklist-item">
+                    Platform kullanım istatistikleri
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <h3>📞 İletişim Bilgileri</h3>
+            <p><strong>Proje Sahibi:</strong> Gül Naz Demir</p>
+            <p><strong>Yıl:</strong> 2024</p>
+            <p><strong>E-posta:</strong> info@videosat.com</p>
+            <p><strong>Telefon:</strong> +90 (212) 555 0123</p>
+            <p><strong>Website:</strong> basvideo.com</p>
+            
+            <div class="success-box">
+                <h4>✅ Dokümantasyon Tamamlandı</h4>
+                <p>Bu dokümantasyon VideoSat platformunun tüm iş süreçlerini kapsar.</p>
+                <p>Her prosedür detaylı adımlarla açıklanmış ve görsel şemalarla desteklenmiştir.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Add animation to workflow steps
+        const workflowSteps = document.querySelectorAll('.process-step');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+                }
+            });
+        });
+        
+        workflowSteps.forEach(step => {
+            observer.observe(step);
+        });
+        
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
+

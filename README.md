@@ -202,7 +202,7 @@ npm run test:performance
 ## 📞 İletişim
 
 * **Website**: basvideo.com
-* **GitHub**: https://github.com/gulnazdemir295-jpg/videosat.com
+* **GitHub**: [Repository URL]
 * **E-posta**: info@videosat.com
 * **Telefon**: +90 (212) 555 0123
 
@@ -231,10 +231,10 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 
 ## 📊 İstatistikler
 
-![GitHub stars](https://img.shields.io/github/stars/gulnazdemir295-jpg/videosat.com?style=social)
-![GitHub forks](https://img.shields.io/github/forks/gulnazdemir295-jpg/videosat.com?style=social)
-![GitHub issues](https://img.shields.io/github/issues/gulnazdemir295-jpg/videosat.com)
-![GitHub license](https://img.shields.io/github/license/gulnazdemir295-jpg/videosat.com)
+![GitHub stars](https://img.shields.io/github/stars/[USERNAME]/[REPOSITORY]?style=social)
+![GitHub forks](https://img.shields.io/github/forks/[USERNAME]/[REPOSITORY]?style=social)
+![GitHub issues](https://img.shields.io/github/issues/[USERNAME]/[REPOSITORY])
+![GitHub license](https://img.shields.io/github/license/[USERNAME]/[REPOSITORY])
 
 ## 🔄 Güncellemeler
 

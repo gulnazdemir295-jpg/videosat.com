@@ -37,10 +37,45 @@ function initializePanel() {
     showSection('dashboard');
 }
 
+// Generate Member Number
+function generateMemberNumber() {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${timestamp}-${random}`;
+}
+
 // Load User Data
 function loadUserData() {
     if (currentUser) {
-        document.getElementById('userCompanyName').textContent = currentUser.companyName;
+        // Set company name
+        const companyNameElement = document.getElementById('userCompanyName');
+        if (companyNameElement) {
+            companyNameElement.textContent = currentUser.companyName;
+        }
+        
+        // Set admin name if exists
+        const adminNameElement = document.getElementById('adminName');
+        if (adminNameElement && currentUser.companyName) {
+            adminNameElement.textContent = currentUser.companyName;
+        }
+        
+        // Generate and set member number if not exists
+        if (!currentUser.memberNumber) {
+            currentUser.memberNumber = generateMemberNumber();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
+        // Set member number
+        const memberNumberElement = document.getElementById('userMemberNumber');
+        if (memberNumberElement) {
+            memberNumberElement.textContent = `Üye No: ${currentUser.memberNumber}`;
+        }
+        
+        // Set admin member number
+        const adminMemberNumber = document.getElementById('adminMemberNumber');
+        if (adminMemberNumber && currentUser.memberNumber) {
+            adminMemberNumber.textContent = `Admin ID: ${currentUser.memberNumber}`;
+        }
         
         // Load user-specific data
         loadProducts();
@@ -48,13 +83,40 @@ function loadUserData() {
         loadOrders();
         loadMessages();
         loadStreamBalance();
+        
+        // Load invitations if user is uretici
+        if (currentUser.role === 'uretici') {
+            loadInvitations();
+        }
     }
 }
 
 // Update User Info
 function updateUserInfo() {
     if (currentUser) {
-        document.getElementById('userCompanyName').textContent = currentUser.companyName;
+        // Safely update company name if element exists
+        const companyNameElement = document.getElementById('userCompanyName');
+        if (companyNameElement) {
+            companyNameElement.textContent = currentUser.companyName;
+        }
+        
+        // Update member number if exists
+        const memberNumberElement = document.getElementById('userMemberNumber');
+        if (memberNumberElement && currentUser.memberNumber) {
+            memberNumberElement.textContent = `Üye No: ${currentUser.memberNumber}`;
+        }
+        
+        // Update admin name if exists
+        const adminNameElement = document.getElementById('adminName');
+        if (adminNameElement && currentUser.companyName) {
+            adminNameElement.textContent = currentUser.companyName;
+        }
+        
+        // Update admin member number if exists
+        const adminMemberNumber = document.getElementById('adminMemberNumber');
+        if (adminMemberNumber && currentUser.memberNumber) {
+            adminMemberNumber.textContent = `Admin ID: ${currentUser.memberNumber}`;
+        }
     }
 }
 
@@ -65,7 +127,9 @@ function setupPanelEventListeners() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const section = this.getAttribute('data-section');
-            showSection(section);
+            if (section) {
+                showSection(section);
+            }
         });
     });
     
@@ -115,30 +179,43 @@ function setupPanelEventListeners() {
 
 // Show Section
 function showSection(sectionId) {
-    // Hide all sections
-    document.querySelectorAll('.panel-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // Remove active class from nav links
-    document.querySelectorAll('.panel-nav-menu .nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    
-    // Show selected section
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.classList.add('active');
+    try {
+        console.log('Showing section:', sectionId);
+        
+        // Hide all sections
+        document.querySelectorAll('.panel-section').forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        });
+        
+        // Remove active class from nav links
+        document.querySelectorAll('.panel-nav-menu .nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Show selected section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            targetSection.style.display = 'block';
+            console.log('Section activated:', sectionId);
+        } else {
+            console.error('Section not found:', sectionId);
+            alert('Bölüm bulunamadı: ' + sectionId);
+        }
+        
+        // Add active class to nav link
+        const navLink = document.querySelector(`[data-section="${sectionId}"]`);
+        if (navLink) {
+            navLink.classList.add('active');
+        }
+        
+        // Load section-specific data
+        loadSectionData(sectionId);
+    } catch (error) {
+        console.error('Error in showSection:', error);
+        alert('Bir hata oluştu: ' + error.message);
     }
-    
-    // Add active class to nav link
-    const navLink = document.querySelector(`[data-section="${sectionId}"]`);
-    if (navLink) {
-        navLink.classList.add('active');
-    }
-    
-    // Load section-specific data
-    loadSectionData(sectionId);
 }
 
 // Load Section Data
@@ -165,16 +242,47 @@ function loadSectionData(sectionId) {
         case 'reports':
             loadReports();
             break;
+        case 'hr':
+            loadApprovedUsers();
+            break;
+        case 'invitations':
+            loadInvitations();
+            break;
+        case 'departments':
+        case 'finance':
+        case 'operations':
+        case 'payments':
+        case 'customer-service':
+        case 'marketing':
+        case 'rd':
+        case 'security':
+        case 'settings':
+            // Admin-specific sections
+            break;
     }
 }
 
 // Dashboard Data
 function loadDashboardData() {
     // Update stats
-    document.getElementById('totalProducts').textContent = products.length;
-    document.getElementById('totalOrders').textContent = orders.filter(o => o.status === 'pending').length;
-    document.getElementById('totalProducers').textContent = producers.length;
-    document.getElementById('liveStreamBalance').textContent = streamBalance;
+    const totalProductsEl = document.getElementById('totalProducts');
+    const totalOrdersEl = document.getElementById('totalOrders');
+    const totalProducersEl = document.getElementById('totalProducers');
+    const totalSuppliersEl = document.getElementById('totalSuppliers');
+    const totalWholesalersEl = document.getElementById('totalWholesalers');
+    const liveStreamBalanceEl = document.getElementById('liveStreamBalance');
+    
+    if (totalProductsEl) totalProductsEl.textContent = products.length;
+    if (totalOrdersEl) totalOrdersEl.textContent = orders.filter(o => o.status === 'pending').length;
+    if (totalProducersEl) totalProducersEl.textContent = producers.length;
+    if (totalSuppliersEl) totalSuppliersEl.textContent = 0;
+    if (totalWholesalersEl) totalWholesalersEl.textContent = 0;
+    if (liveStreamBalanceEl) liveStreamBalanceEl.textContent = streamBalance;
+    
+    // Show invitation alert for uretici
+    if (currentUser && currentUser.role === 'uretici') {
+        showInvitationAlert();
+    }
     
     // Load recent activity
     loadRecentActivity();
@@ -268,7 +376,7 @@ function renderProductsTable() {
             <td>${product.name}</td>
             <td>${getCategoryName(product.category)}</td>
             <td>${getUnitName(product.unit)}</td>
-            <td>${product.stock}</td>
+            <td><strong>${formatStock(product.stock, product.unit)}</strong></td>
             <td>₺${product.price.toFixed(2)}</td>
             <td><span class="status-badge ${product.status}">${getStatusName(product.status)}</span></td>
             <td>
@@ -313,6 +421,25 @@ function getUnitName(unit) {
     return units[unit] || unit;
 }
 
+// Format Stock with Unit
+function formatStock(stock, unit) {
+    const formattedStock = parseFloat(stock).toLocaleString('tr-TR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+    
+    const unitSymbols = {
+        'kg': 'kg',
+        'm2': 'm²',
+        'm3': 'm³',
+        'litre': 'L',
+        'gram': 'g',
+        'adet': 'adet'
+    };
+    
+    return `${formattedStock} ${unitSymbols[unit] || unit}`;
+}
+
 // Get Status Name
 function getStatusName(status) {
     const statuses = {
@@ -324,6 +451,14 @@ function getStatusName(status) {
     return statuses[status] || status;
 }
 
+// Close Modal
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // Show Add Product Modal
 function showAddProductModal() {
     document.getElementById('addProductModal').style.display = 'block';
@@ -333,14 +468,38 @@ function showAddProductModal() {
 function handleAddProduct(e) {
     e.preventDefault();
     
+    // Get form values
+    const name = document.getElementById('productName').value.trim();
+    const category = document.getElementById('productCategory').value;
+    const unit = document.getElementById('productUnit').value;
+    const stock = parseFloat(document.getElementById('productStock').value);
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const description = document.getElementById('productDescription').value.trim();
+    
+    // Validation
+    if (!name || !category || !unit) {
+        showAlert('Lütfen tüm zorunlu alanları doldurun.', 'error');
+        return;
+    }
+    
+    if (isNaN(stock) || stock < 0) {
+        showAlert('Geçerli bir stok miktarı girin (0 veya daha büyük).', 'error');
+        return;
+    }
+    
+    if (isNaN(price) || price < 0) {
+        showAlert('Geçerli bir fiyat girin (0 veya daha büyük).', 'error');
+        return;
+    }
+    
     const productData = {
         id: Date.now(),
-        name: document.getElementById('productName').value,
-        category: document.getElementById('productCategory').value,
-        unit: document.getElementById('productUnit').value,
-        stock: parseFloat(document.getElementById('productStock').value),
-        price: parseFloat(document.getElementById('productPrice').value),
-        description: document.getElementById('productDescription').value,
+        name: name,
+        category: category,
+        unit: unit,
+        stock: stock,
+        price: price,
+        description: description,
         status: 'active'
     };
     
@@ -364,7 +523,7 @@ function editProduct(productId) {
         document.getElementById('productUnit').value = product.unit;
         document.getElementById('productStock').value = product.stock;
         document.getElementById('productPrice').value = product.price;
-        document.getElementById('productDescription').value = product.description;
+        document.getElementById('productDescription').value = product.description || '';
         
         showAddProductModal();
     }
@@ -458,6 +617,7 @@ function renderFilteredProductsTable(filteredProducts) {
 
 // Producers Management
 function loadProducers() {
+    console.log('Loading producers...');
     // Mock producers data
     producers = [
         {
@@ -489,9 +649,20 @@ function loadProducers() {
             email: 'info@defplastik.com',
             products: ['Plastik enjeksiyon', 'PVC ürünler'],
             status: 'active'
+        },
+        {
+            id: 4,
+            name: 'Test Üretici Firması',
+            city: 'istanbul',
+            sector: 'metal',
+            phone: '+90 555 123 4567',
+            email: 'uretici@videosat.com',
+            products: ['Test ürün', 'Demo malzeme'],
+            status: 'active'
         }
     ];
     
+    console.log('Producers loaded:', producers.length);
     renderProducersGrid();
 }
 
@@ -624,7 +795,121 @@ function sendMessageToProducer(producerId) {
 function inviteToLiveStream(producerId) {
     const producer = producers.find(p => p.id === producerId);
     if (producer) {
+        // Show confirmation modal
+        showInviteModal(producer);
+    }
+}
+
+// Show Invite Modal
+function showInviteModal(producer) {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'inviteModal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            <h2><i class="fas fa-broadcast-tower"></i> Canlı Yayın Daveti</h2>
+            <div style="padding: 20px;">
+                <p style="margin-bottom: 20px;">
+                    <strong>${producer.name}</strong> kullanıcısını canlı yayınıza davet etmek istiyor musunuz?
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="sendInviteToProducer(${producer.id})" style="flex: 1;">
+                        <i class="fas fa-paper-plane"></i> Davet Gönder
+                    </button>
+                    <button class="btn btn-outline" onclick="this.closest('.modal').remove()" style="flex: 1;">
+                        İptal
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Send Invite to Producer
+function sendInviteToProducer(producerId) {
+    const producer = producers.find(p => p.id === producerId);
+    if (producer) {
+        // Save invitation to localStorage
+        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+        const invitation = {
+            id: Date.now(),
+            from: getCurrentUserEmail(),
+            fromName: getCurrentUserName(),
+            to: producer.email,
+            toName: producer.name,
+            timestamp: new Date().toISOString(),
+            status: 'pending',
+            streamUrl: '../live-stream.html'
+        };
+        invitations.push(invitation);
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        
+        // Close modal
+        document.getElementById('inviteModal')?.remove();
+        
+        // Show success
         showAlert(`${producer.name} canlı yayına davet edildi!`, 'success');
+        
+        // Optionally redirect to live stream page
+        setTimeout(() => {
+            if (confirm('Canlı yayına geçmek ister misiniz?')) {
+                window.location.href = '../live-stream.html';
+            }
+        }, 1000);
+    }
+}
+
+// Get Current User Email
+function getCurrentUserEmail() {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return currentUser.email || 'unknown@videosat.com';
+}
+
+// Get Current User Name
+function getCurrentUserName() {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return currentUser.companyName || 'Unknown Company';
+}
+
+// Check for incoming invitations (call this on page load for receivers)
+function checkIncomingInvitations() {
+    const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+    const currentUserEmail = getCurrentUserEmail();
+    
+    const myInvitations = invitations.filter(inv => 
+        inv.to === currentUserEmail && inv.status === 'pending'
+    );
+    
+    if (myInvitations.length > 0) {
+        myInvitations.forEach(inv => {
+            showInvitationAlert(inv);
+        });
+    }
+}
+
+// Show Invitation Alert
+function showInvitationAlert(invitation) {
+    if (confirm(`${invitation.fromName} sizi canlı yayına davet ediyor. Katılmak ister misiniz?`)) {
+        // Mark as accepted
+        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+        const inv = invitations.find(i => i.id === invitation.id);
+        if (inv) {
+            inv.status = 'accepted';
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        }
+        
+        // Redirect to live stream
+        window.location.href = invitation.streamUrl;
+    } else {
+        // Mark as rejected
+        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+        const inv = invitations.find(i => i.id === invitation.id);
+        if (inv) {
+            inv.status = 'rejected';
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        }
     }
 }
 
@@ -754,21 +1039,78 @@ function viewOrder(orderId) {
 }
 
 // Update Order Status
-function updateOrderStatus(orderId) {
+async function updateOrderStatus(orderId) {
     const order = orders.find(o => o.id === orderId);
-    if (order) {
-        const newStatus = order.status === 'pending' ? 'completed' : 'pending';
-        order.status = newStatus;
-        renderOrdersTables();
-        showAlert(`Sipariş durumu güncellendi!`, 'success');
+    if (!order) return;
+    
+    try {
+        // Use order service if available
+        if (window.orderService) {
+            const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+            const currentIndex = statuses.indexOf(order.status);
+            const nextStatus = currentIndex < statuses.length - 1 ? statuses[currentIndex + 1] : 'completed';
+            
+            await window.orderService.updateOrderStatus(orderId, nextStatus, 'Durum güncellendi');
+            
+            order.status = nextStatus;
+            if (nextStatus === 'shipped' && window.orderService) {
+                const updatedOrder = window.orderService.getOrderById(orderId);
+                order.trackingNumber = updatedOrder.trackingNumber;
+            }
+            
+            renderOrdersTables();
+            showAlert(`Sipariş durumu "${getStatusName(nextStatus)}" olarak güncellendi!`, 'success');
+        } else {
+            // Fallback
+            const newStatus = order.status === 'pending' ? 'completed' : 'pending';
+            order.status = newStatus;
+            renderOrdersTables();
+            showAlert(`Sipariş durumu güncellendi!`, 'success');
+        }
+    } catch (error) {
+        showAlert('Sipariş durumu güncellenemedi: ' + error.message, 'error');
     }
 }
 
 // Track Order
 function trackOrder(orderId) {
     const order = orders.find(o => o.id === orderId);
-    if (order) {
-        showAlert(`Sipariş ${order.orderNumber} kargo takibi başlatıldı!`, 'info');
+    if (!order) return;
+    
+    try {
+        // Use order service if available
+        if (window.orderService && order.trackingNumber) {
+            const tracking = window.orderService.getTrackingByNumber(order.trackingNumber);
+            
+            if (tracking) {
+                const timeline = tracking.timeline.map(item => 
+                    `${new Date(item.date).toLocaleDateString('tr-TR')}\n${item.location}\n${item.description}`
+                ).join('\n\n');
+                
+                alert(`📦 KARGO TAKİP BİLGİLERİ\n\n` +
+                    `Sipariş No: ${order.orderNumber}\n` +
+                    `Takip No: ${tracking.trackingNumber}\n` +
+                    `Mevcut Konum: ${tracking.currentLocation}\n` +
+                    `Hedef: ${tracking.destination}\n` +
+                    `Tahmini Teslimat: ${tracking.estimatedDelivery}\n\n` +
+                    `📋 KARGO GÜNCELMELERİ:\n\n${timeline}`);
+            } else {
+                alert(`📦 KARGO TAKİP\n\n` +
+                    `Sipariş No: ${order.orderNumber}\n` +
+                    `Takip No: ${order.trackingNumber}\n` +
+                    `Durum: ${getStatusName(order.status)}`);
+            }
+        } else {
+            // Fallback
+            const trackingInfo = `Sipariş No: ${order.orderNumber}\n` +
+                `Kargo Takip No: ${order.trackingNumber || 'Henüz atanmadı'}\n` +
+                `Durum: ${getStatusName(order.status)}\n` +
+                `Tahmini Teslimat: ${order.deliveryDate || 'Belirlenmedi'}`;
+            
+            alert(`📦 KARGO TAKİP BİLGİLERİ\n\n${trackingInfo}`);
+        }
+    } catch (error) {
+        showAlert('Kargo bilgisi alınamadı: ' + error.message, 'error');
     }
 }
 
@@ -989,28 +1331,192 @@ function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
     
-    if (message) {
-        const messageMessages = document.getElementById('messageMessages');
-        const messageElement = document.createElement('div');
-        messageElement.className = 'message-sent';
-        messageElement.innerHTML = `
-            <div class="message-bubble">
-                <p>${message}</p>
-                <span class="message-time">${new Date().toLocaleTimeString()}</span>
-            </div>
-        `;
-        messageMessages.appendChild(messageElement);
+    if (!message) return;
+    
+    const selectedContact = document.getElementById('selectedContactName')?.textContent;
+    if (!selectedContact || selectedContact === 'Bir konuşma seçin') {
+        showAlert('Lütfen önce bir konuşma seçin!', 'warning');
+        return;
+    }
+    
+    const messageMessages = document.getElementById('messageMessages');
+    const noMessage = messageMessages?.querySelector('.no-message');
+    if (noMessage) noMessage.remove();
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = 'message-sent';
+    messageElement.innerHTML = `
+        <div class="message-bubble">
+            <p>${message}</p>
+            <span class="message-time">${new Date().toLocaleTimeString()}</span>
+        </div>
+    `;
+    messageMessages.appendChild(messageElement);
+    messageMessages.scrollTop = messageMessages.scrollHeight;
+    
+    // Save message to localStorage
+    const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+    allMessages.push({
+        id: Date.now(),
+        from: getCurrentUserEmail(),
+        to: selectedContact,
+        message: message,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('messages', JSON.stringify(allMessages));
+    
+    input.value = '';
+    showAlert('Mesaj gönderildi!', 'success');
+}
+
+// Select Message Contact
+function selectMessageContact(contact) {
+    const nameElement = document.getElementById('selectedContactName');
+    const statusElement = document.getElementById('selectedContactStatus');
+    
+    if (nameElement) nameElement.textContent = contact.name || contact.email || contact;
+    if (statusElement) statusElement.textContent = 'Çevrimiçi';
+    
+    // Enable message input
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) messageInput.disabled = false;
+    
+    // Clear messages and load from localStorage
+    const messageMessages = document.getElementById('messageMessages');
+    if (messageMessages) {
+        const noMessage = messageMessages.querySelector('.no-message');
+        if (noMessage) noMessage.remove();
+        
+        messageMessages.innerHTML = '';
+        
+        // Load messages
+        const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+        const contactEmail = typeof contact === 'string' ? contact : contact.email;
+        const contactMessages = allMessages.filter(m => 
+            (m.from === getCurrentUserEmail() && m.to === contactEmail) ||
+            (m.to === getCurrentUserEmail() && m.from === contactEmail)
+        );
+        
+        contactMessages.forEach(msg => {
+            const isSent = msg.from === getCurrentUserEmail();
+            const messageElement = document.createElement('div');
+            messageElement.className = isSent ? 'message-sent' : 'message-received';
+            messageElement.innerHTML = `
+                <div class="message-bubble">
+                    <p>${msg.message}</p>
+                    <span class="message-time">${new Date(msg.timestamp).toLocaleTimeString('tr-TR')}</span>
+                </div>
+            `;
+            messageMessages.appendChild(messageElement);
+        });
+        
         messageMessages.scrollTop = messageMessages.scrollHeight;
-        
-        input.value = '';
-        
-        showAlert('Mesaj gönderildi!', 'success');
     }
 }
 
 // Show Offer Form
 function showOfferForm() {
-    showAlert('Teklif formu gösteriliyor...', 'info');
+    const selectedContact = document.getElementById('selectedContactName')?.textContent;
+    if (!selectedContact || selectedContact === 'Bir konuşma seçin') {
+        showAlert('Lütfen önce bir konuşma seçin!', 'warning');
+        return;
+    }
+    
+    // Create offer form modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-contract"></i> Teklif Formu</h2>
+                <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            </div>
+            <form id="offerForm" onsubmit="handleOfferForm(event)" style="padding: 20px;">
+                <div class="form-group">
+                    <label>Alıcı:</label>
+                    <input type="text" id="offerRecipient" value="${selectedContact}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Ürün *</label>
+                    <select id="offerProduct" required>
+                        <option value="">Seçiniz...</option>
+                        ${products.map(p => `<option value="${p.id}">${p.name} (${p.stock} ${getUnitName(p.unit)})</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Miktar *</label>
+                    <input type="number" id="offerQuantity" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Birim Fiyat (₺) *</label>
+                    <input type="number" id="offerPrice" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Mesaj</label>
+                    <textarea id="offerMessage" rows="4" placeholder="Teklif notlarınızı buraya yazın..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Teslimat Tarihi</label>
+                    <input type="date" id="offerDeliveryDate">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-paper-plane"></i> Teklif Gönder
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="this.closest('.modal').remove()" style="flex: 1;">
+                        İptal
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Handle Offer Form
+function handleOfferForm(e) {
+    e.preventDefault();
+    
+    const recipient = document.getElementById('offerRecipient').value;
+    const productId = document.getElementById('offerProduct').value;
+    const quantity = document.getElementById('offerQuantity').value;
+    const price = document.getElementById('offerPrice').value;
+    const message = document.getElementById('offerMessage').value;
+    const deliveryDate = document.getElementById('offerDeliveryDate').value;
+    
+    if (!productId || !quantity || !price) {
+        showAlert('Lütfen zorunlu alanları doldurun!', 'error');
+        return;
+    }
+    
+    const product = products.find(p => p.id == productId);
+    const totalAmount = parseFloat(quantity) * parseFloat(price);
+    
+    // Save offer to localStorage (simulated)
+    const offers = JSON.parse(localStorage.getItem('offers') || '[]');
+    const newOffer = {
+        id: Date.now(),
+        from: getCurrentUserEmail(),
+        fromName: getCurrentUserName(),
+        to: recipient,
+        product: product.name,
+        quantity: quantity,
+        unit: product.unit,
+        price: price,
+        totalAmount: totalAmount,
+        message: message,
+        deliveryDate: deliveryDate,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    offers.push(newOffer);
+    localStorage.setItem('offers', JSON.stringify(offers));
+    
+    // Close modal
+    e.target.closest('.modal').remove();
+    
+    showAlert(`${recipient} için teklif formu başarıyla gönderildi!`, 'success');
 }
 
 // Reports Management
@@ -1081,8 +1587,431 @@ function getAlertIcon(type) {
 
 // Logout
 function logout() {
+    // Clear user data immediately
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('liveStreamInvitations');
+    
+    // Redirect to home page
     window.location.href = '../index.html';
+}
+
+// Load Approved Users (Admin Only)
+function loadApprovedUsers() {
+    // Get all users from localStorage (in real app, this would be from database)
+    const approvedUsers = [];
+    
+    // Create mock users for demonstration
+    const mockUsers = [
+        {
+            id: 1,
+            companyName: 'ABC Hammaddeler A.Ş.',
+            email: 'hammaddeci@videosat.com',
+            phone: '+90 555 123 4567',
+            role: 'hammaddeci',
+            memberNumber: 'HM20240115ABC',
+            createdAt: '2024-01-15',
+            status: 'active'
+        },
+        {
+            id: 2,
+            companyName: 'Test Üretici Firması',
+            email: 'uretici@videosat.com',
+            phone: '+90 555 987 6543',
+            role: 'uretici',
+            memberNumber: 'UR20240120XYZ',
+            createdAt: '2024-01-20',
+            status: 'active'
+        },
+        {
+            id: 3,
+            companyName: 'DEMİR Metal Sanayi',
+            email: 'demir@metal.com',
+            phone: '+90 212 555 3344',
+            role: 'uretici',
+            memberNumber: 'UR20240122DEM',
+            createdAt: '2024-01-22',
+            status: 'active'
+        },
+        {
+            id: 4,
+            companyName: 'ÇELİK Toptan Ltd.',
+            email: 'info@celiktop.com',
+            phone: '+90 312 555 7788',
+            role: 'toptanci',
+            memberNumber: 'TP20240201CEL',
+            createdAt: '2024-02-01',
+            status: 'pending'
+        },
+        {
+            id: 5,
+            companyName: 'Tekstil Ürünleri Satış',
+            email: 'satis@tekstil.com',
+            phone: '+90 232 555 4455',
+            role: 'satici',
+            memberNumber: 'ST20240205TEK',
+            createdAt: '2024-02-05',
+            status: 'active'
+        }
+    ];
+    
+    // Get current user from localStorage
+    const localUser = localStorage.getItem('currentUser');
+    if (localUser) {
+        const user = JSON.parse(localUser);
+        if (user.memberNumber) {
+            mockUsers.push(user);
+        }
+    }
+    
+    // Filter by selected filters
+    const roleFilter = document.getElementById('userRoleFilter')?.value || '';
+    const statusFilter = document.getElementById('userStatusFilter')?.value || '';
+    const searchFilter = document.getElementById('userSearch')?.value.toLowerCase() || '';
+    
+    const filteredUsers = mockUsers.filter(user => {
+        const matchesRole = !roleFilter || user.role === roleFilter;
+        const matchesStatus = !statusFilter || user.status === statusFilter;
+        const matchesSearch = !searchFilter || 
+            user.companyName.toLowerCase().includes(searchFilter) ||
+            user.email.toLowerCase().includes(searchFilter) ||
+            user.memberNumber.toLowerCase().includes(searchFilter);
+        
+        return matchesRole && matchesStatus && matchesSearch;
+    });
+    
+    // Update statistics
+    document.getElementById('totalApprovedUsers').textContent = mockUsers.length;
+    document.getElementById('activeUsers').textContent = mockUsers.filter(u => u.status === 'active').length;
+    document.getElementById('pendingApprovals').textContent = mockUsers.filter(u => u.status === 'pending').length;
+    document.getElementById('inactiveUsers').textContent = mockUsers.filter(u => u.status === 'inactive').length;
+    
+    // Render users table
+    renderApprovedUsersTable(filteredUsers);
+}
+
+// Render Approved Users Table
+function renderApprovedUsersTable(users) {
+    const tbody = document.getElementById('approvedUsersBody');
+    
+    if (!tbody) return;
+    
+    tbody.innerHTML = users.map(user => `
+        <tr>
+            <td><strong class="member-number">${user.memberNumber}</strong></td>
+            <td>${user.companyName}</td>
+            <td>${user.email}</td>
+            <td>${user.phone}</td>
+            <td><span class="role-badge ${user.role}">${getRoleName(user.role)}</span></td>
+            <td>${formatDate(user.createdAt)}</td>
+            <td><span class="status-badge ${user.status}">${getStatusName(user.status)}</span></td>
+            <td>
+                <button class="btn btn-small btn-outline" onclick="viewUserDetails(${user.id})">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-small btn-primary" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Get Role Name
+function getRoleName(role) {
+    const roles = {
+        'hammaddeci': 'Hammaddeci',
+        'uretici': 'Üretici',
+        'toptanci': 'Toptancı',
+        'satici': 'Satıcı',
+        'musteri': 'Müşteri',
+        'admin': 'Admin'
+    };
+    return roles[role] || role;
+}
+
+// Format Date
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR');
+}
+
+// View User Details
+function viewUserDetails(userId) {
+    alert(`Kullanıcı detayları gösterilecek: ${userId}`);
+}
+
+// Edit User
+function editUser(userId) {
+    alert(`Kullanıcı düzenlenecek: ${userId}`);
+}
+
+// ==================== INVITATIONS MANAGEMENT ====================
+
+let invitations = [];
+
+// Load Invitations (for Üretici)
+function loadInvitations() {
+    console.log('Loading invitations...');
+    
+    // Check localStorage for incoming invitations
+    const savedInvitations = localStorage.getItem('liveStreamInvitations');
+    
+    if (savedInvitations) {
+        invitations = JSON.parse(savedInvitations);
+        console.log('Found invitations:', invitations.length);
+    } else {
+        // If no invitations exist, create empty array
+        invitations = [];
+        console.log('No invitations found');
+    }
+    
+    // Update statistics
+    updateInvitationStats();
+    
+    // Render invitations
+    renderInvitations();
+    
+    // Show dashboard alert if there are pending invitations
+    showInvitationAlert();
+}
+
+// Update Invitation Statistics
+function updateInvitationStats() {
+    const total = invitations.length;
+    const pending = invitations.filter(i => i.status === 'pending').length;
+    const accepted = invitations.filter(i => i.status === 'accepted').length;
+    
+    const totalEl = document.getElementById('totalInvitations');
+    const pendingEl = document.getElementById('pendingInvitations');
+    const acceptedEl = document.getElementById('acceptedInvitations');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (pendingEl) pendingEl.textContent = pending;
+    if (acceptedEl) acceptedEl.textContent = accepted;
+}
+
+// Render Invitations
+function renderInvitations() {
+    const pending = invitations.filter(i => i.status === 'pending');
+    const accepted = invitations.filter(i => i.status === 'accepted');
+    const declined = invitations.filter(i => i.status === 'declined');
+    
+    renderPendingInvitations(pending);
+    renderAcceptedInvitations(accepted);
+    renderDeclinedInvitations(declined);
+}
+
+// Render Pending Invitations
+function renderPendingInvitations(pendingInvitations) {
+    const container = document.getElementById('pendingInvitationsList');
+    if (!container) return;
+    
+    if (pendingInvitations.length === 0) {
+        container.innerHTML = `
+            <div class="no-invitations">
+                <i class="fas fa-bell-slash"></i>
+                <p>Bekleyen davetiniz yok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = pendingInvitations.map(invitation => `
+        <div class="invitation-card pending">
+            <div class="invitation-header">
+                <div class="invitation-sender">
+                    <div class="invitation-avatar">
+                        ${invitation.senderName.charAt(0)}
+                    </div>
+                    <div class="invitation-info">
+                        <h3>${invitation.senderName}</h3>
+                        <p>Hammaddeci</p>
+                    </div>
+                </div>
+                <div class="invitation-time">
+                    <i class="fas fa-clock"></i>
+                    ${formatTime(invitation.timestamp)}
+                </div>
+            </div>
+            <div class="invitation-body">
+                <p><strong>Canlı yayına davet ediliyorsunuz!</strong></p>
+                <p>${invitation.message || 'Canlı yayına katılmak ister misiniz?'}</p>
+                ${invitation.products && invitation.products.length > 0 ? `
+                    <div class="invitation-products">
+                        ${invitation.products.map(product => `
+                            <span class="product-tag">${product}</span>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+            <div class="invitation-actions">
+                <button class="btn btn-outline" onclick="declineInvitation('${invitation.id}')">
+                    <i class="fas fa-times"></i>
+                    Reddet
+                </button>
+                <button class="btn btn-primary" onclick="acceptInvitation('${invitation.id}')">
+                    <i class="fas fa-check"></i>
+                    Kabul Et ve Katıl
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render Accepted Invitations
+function renderAcceptedInvitations(acceptedInvitations) {
+    const container = document.getElementById('acceptedInvitationsList');
+    if (!container) return;
+    
+    if (acceptedInvitations.length === 0) {
+        container.innerHTML = `
+            <div class="no-invitations">
+                <i class="fas fa-check-circle"></i>
+                <p>Henüz kabul edilen davet yok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = acceptedInvitations.map(invitation => `
+        <div class="invitation-card accepted">
+            <div class="invitation-header">
+                <div class="invitation-sender">
+                    <div class="invitation-avatar">
+                        ${invitation.senderName.charAt(0)}
+                    </div>
+                    <div class="invitation-info">
+                        <h3>${invitation.senderName}</h3>
+                        <p>Hammaddeci</p>
+                    </div>
+                </div>
+                <div class="invitation-time">
+                    <i class="fas fa-check-circle"></i>
+                    Kabul edildi - ${formatTime(invitation.acceptedAt)}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render Declined Invitations
+function renderDeclinedInvitations(declinedInvitations) {
+    const container = document.getElementById('declinedInvitationsList');
+    if (!container) return;
+    
+    if (declinedInvitations.length === 0) {
+        container.innerHTML = `
+            <div class="no-invitations">
+                <i class="fas fa-ban"></i>
+                <p>Reddedilen davet yok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = declinedInvitations.map(invitation => `
+        <div class="invitation-card declined">
+            <div class="invitation-header">
+                <div class="invitation-sender">
+                    <div class="invitation-avatar">
+                        ${invitation.senderName.charAt(0)}
+                    </div>
+                    <div class="invitation-info">
+                        <h3>${invitation.senderName}</h3>
+                        <p>Hammaddeci</p>
+                    </div>
+                </div>
+                <div class="invitation-time">
+                    <i class="fas fa-times-circle"></i>
+                    Reddedildi - ${formatTime(invitation.declinedAt)}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Accept Invitation
+function acceptInvitation(invitationId) {
+    const invitation = invitations.find(i => i.id === invitationId);
+    
+    if (!invitation) {
+        showAlert('Davet bulunamadı!', 'error');
+        return;
+    }
+    
+    // Update invitation status
+    invitation.status = 'accepted';
+    invitation.acceptedAt = new Date().toISOString();
+    
+    // Save to localStorage
+    localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+    
+    // Update UI
+    updateInvitationStats();
+    renderInvitations();
+    showInvitationAlert();
+    
+    // Show success message
+    showAlert('Davet kabul edildi! Canlı yayına yönlendiriliyorsunuz...', 'success');
+    
+    // Redirect to live stream page
+    setTimeout(() => {
+        window.location.href = '../live-stream.html';
+    }, 1500);
+}
+
+// Decline Invitation
+function declineInvitation(invitationId) {
+    const invitation = invitations.find(i => i.id === invitationId);
+    
+    if (!invitation) {
+        showAlert('Davet bulunamadı!', 'error');
+        return;
+    }
+    
+    if (confirm('Bu daveti reddetmek istediğinize emin misiniz?')) {
+        // Update invitation status
+        invitation.status = 'declined';
+        invitation.declinedAt = new Date().toISOString();
+        
+        // Save to localStorage
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        
+        // Update UI
+        updateInvitationStats();
+        renderInvitations();
+        showInvitationAlert();
+        
+        showAlert('Davet reddedildi.', 'info');
+    }
+}
+
+// Show Invitation Alert on Dashboard
+function showInvitationAlert() {
+    const alertElement = document.getElementById('invitationsAlert');
+    const countElement = document.getElementById('invitationCount');
+    const pendingCount = invitations.filter(i => i.status === 'pending').length;
+    
+    if (alertElement && pendingCount > 0) {
+        countElement.textContent = pendingCount;
+        alertElement.style.display = 'block';
+    } else if (alertElement) {
+        alertElement.style.display = 'none';
+    }
+}
+
+// Format Time
+function formatTime(timestamp) {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = now - time;
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return 'Az önce';
+    if (minutes < 60) return `${minutes} dakika önce`;
+    if (minutes < 1440) return `${Math.floor(minutes / 60)} saat önce`;
+    return `${Math.floor(minutes / 1440)} gün önce`;
 }
 
 // Export functions for global access
@@ -1092,6 +2021,9 @@ window.closeModal = closeModal;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.sendMessageToProducer = sendMessageToProducer;
+window.handleOfferForm = handleOfferForm;
+window.selectMessageContact = selectMessageContact;
+window.showOfferForm = showOfferForm;
 window.inviteToLiveStream = inviteToLiveStream;
 window.sendOfferForm = sendOfferForm;
 window.viewOrder = viewOrder;
@@ -1108,5 +2040,35 @@ window.selectMessageContact = selectMessageContact;
 window.sendMessage = sendMessage;
 window.showOfferForm = showOfferForm;
 window.logout = logout;
+window.loadApprovedUsers = loadApprovedUsers;
+window.viewUserDetails = viewUserDetails;
+window.editUser = editUser;
+window.loadInvitations = loadInvitations;
+window.acceptInvitation = acceptInvitation;
+window.declineInvitation = declineInvitation;
+window.updateCommissionRates = updateCommissionRates;
+window.showPaymentModal = showPaymentModal;
+
+// Commission Management
+function updateCommissionRates() {
+    const hammaddeciCommission = document.getElementById('hammaddeciCommission').value;
+    const ureticiCommission = document.getElementById('ureticiCommission').value;
+    const toptanciCommission = document.getElementById('toptanciCommission').value;
+    const saticiCommission = document.getElementById('saticiCommission').value;
+    
+    console.log('Komisyon oranları güncellendi:', {
+        hammaddeci: hammaddeciCommission + '%',
+        uretici: ureticiCommission + '%',
+        toptanci: toptanciCommission + '%',
+        satici: saticiCommission + '%'
+    });
+    
+    showAlert('Komisyon oranları başarıyla güncellendi!', 'success');
+}
+
+// Show Payment Modal
+function showPaymentModal() {
+    alert('Toplu ödeme modalı açılacak.\n\nBu işlem gerçek ödeme için:\n1. Backend API entegrasyonu\n2. IBAN doğrulama\n3. Banka entegrasyonu\n4. Güvenlik onayı\ngerektirir.');
+}
 
 console.log('Panel Application JavaScript Loaded Successfully');
