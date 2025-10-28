@@ -20,7 +20,40 @@ const products = [
 document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
     checkWebRTCSupport();
+    
+    // Connect to WebSocket service if available
+    if (window.websocketService) {
+        window.websocketService.connect();
+        setupWebSocketListeners();
+    }
 });
+
+// Setup WebSocket event listeners
+function setupWebSocketListeners() {
+    if (!window.websocketService) return;
+    
+    // Listen for connection
+    window.websocketService.on('connect', () => {
+        console.log('✅ WebSocket connected for live stream');
+    });
+    
+    // Listen for new viewers
+    window.websocketService.on('new_viewer', (data) => {
+        updateViewerCount(data.count);
+    });
+    
+    // Listen for messages
+    window.websocketService.on('message', (data) => {
+        addChatMessage(data.user, data.message);
+    });
+    
+    // Listen for product updates
+    window.websocketService.on('product_update', (data) => {
+        if (data.productId) {
+            updateProductHighlight(data.productId);
+        }
+    });
+}
 
 // Check WebRTC support
 function checkWebRTCSupport() {
