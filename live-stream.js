@@ -24,10 +24,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check WebRTC support
 function checkWebRTCSupport() {
+    // Check for HTTPS (required for production)
+    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        updateStatus('WebRTC desteklenmiyor. Güncel bir tarayıcı kullanın.');
+        updateStatus('❌ WebRTC desteklenmiyor. Chrome, Firefox, Safari veya Edge kullanın.');
         return false;
     }
+    
+    if (!isSecure && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        updateStatus('⚠️ HTTPS gereklidir. Localhost dışında çalışmak için HTTPS kullanın.');
+    }
+    
+    updateStatus('✅ WebRTC destekleniyor. Kamera/mikrofon erişimi kontrol ediliyor...');
     return true;
 }
 
