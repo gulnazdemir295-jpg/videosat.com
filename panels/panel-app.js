@@ -174,23 +174,68 @@ function updateUserInfo() {
 
 // Setup Panel Event Listeners
 function setupPanelEventListeners() {
-    // Navigation links
+    // Navigation links - hem href hem data-section ile çalışır
     document.querySelectorAll('.panel-nav-menu .nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const section = this.getAttribute('data-section');
+            e.stopPropagation();
+            
+            // Önce data-section, sonra href'ten section id'sini al
+            let section = this.getAttribute('data-section');
+            if (!section && this.getAttribute('href')) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    section = href.substring(1);
+                }
+            }
+            
             if (section) {
                 showSection(section);
             }
         });
     });
     
-    // Tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.getAttribute('data-tab');
-            showTab(tab);
+    // Action card butonları - showSectionDirect ile çalışan butonlar
+    document.querySelectorAll('.action-card[onclick*="showSectionDirect"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Eğer onclick zaten tanımlıysa çalıştır, değilse parse et
+            const onclick = this.getAttribute('onclick');
+            if (onclick) {
+                const match = onclick.match(/showSectionDirect\(['"]([^'"]+)['"]\)/);
+                if (match && typeof showSection === 'function') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSection(match[1]);
+                }
+            }
         });
+    });
+    
+    // Tab buttons - hem onclick hem data-tab attribute'unu destekle
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        // Eğer zaten onclick varsa, onu override etme - sadece data-tab varsa ekle
+        if (!btn.onclick || btn.getAttribute('onclick')) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Önce data-tab attribute'unu kontrol et
+                let tabId = this.getAttribute('data-tab');
+                
+                // Eğer yoksa, onclick'ten parse et
+                if (!tabId && this.getAttribute('onclick')) {
+                    const onclickContent = this.getAttribute('onclick');
+                    const match = onclickContent.match(/showTab\(['"]([^'"]+)['"]\)/);
+                    if (match) {
+                        tabId = match[1];
+                    }
+                }
+                
+                if (tabId) {
+                    showTab(tabId);
+                }
+            });
+        }
     });
     
     // Add Product Form
@@ -234,10 +279,14 @@ function showSection(sectionId) {
     try {
         console.log('Showing section:', sectionId);
         
-        // Hide all sections
+        // Hide all sections with smooth transition
         document.querySelectorAll('.panel-section').forEach(section => {
-            section.classList.remove('active');
-            section.style.display = 'none';
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            }, 150);
         });
         
         // Remove active class from nav links
@@ -245,28 +294,55 @@ function showSection(sectionId) {
             link.classList.remove('active');
         });
         
-        // Show selected section
+        // Show selected section with animation
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
-            targetSection.classList.add('active');
             targetSection.style.display = 'block';
+            targetSection.style.opacity = '0';
+            targetSection.style.transform = 'translateY(10px)';
+            
+            // Force reflow
+            targetSection.offsetHeight;
+            
+            // Add active class and animate in
+            targetSection.classList.add('active');
+            setTimeout(() => {
+                targetSection.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                targetSection.style.opacity = '1';
+                targetSection.style.transform = 'translateY(0)';
+            }, 50);
+            
             console.log('Section activated:', sectionId);
         } else {
             console.error('Section not found:', sectionId);
-            alert('Bölüm bulunamadı: ' + sectionId);
+            // Hata mesajı göster ama sayfa çökmesin
+            if (typeof showAlert === 'function') {
+                showAlert('Bölüm bulunamadı: ' + sectionId, 'error');
+            } else {
+                console.warn('Bölüm bulunamadı:', sectionId);
+            }
+            return;
         }
         
         // Add active class to nav link
-        const navLink = document.querySelector(`[data-section="${sectionId}"]`);
+        const navLink = document.querySelector(`[data-section="${sectionId}"]`) ||
+                       document.querySelector(`[href="#${sectionId}"]`);
         if (navLink) {
             navLink.classList.add('active');
         }
+        
+        // Scroll to top of section
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         
         // Load section-specific data
         loadSectionData(sectionId);
     } catch (error) {
         console.error('Error in showSection:', error);
-        alert('Bir hata oluştu: ' + error.message);
+        if (typeof showAlert === 'function') {
+            showAlert('Bir hata oluştu: ' + error.message, 'error');
+        } else {
+            console.error('Bir hata oluştu:', error.message);
+        }
     }
 }
 
@@ -1065,21 +1141,73 @@ function renderOrdersTables() {
 
 // Show Tab
 function showTab(tabId) {
-    // Remove active class from all tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Add active class to selected tab button
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-    
-    // Show selected tab content
-    document.getElementById(`${tabId}Orders`).classList.add('active');
+    try {
+        console.log('Showing tab:', tabId);
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none';
+        });
+        
+        // Add active class to selected tab button (öncelik: data-tab, sonra onclick içinde tabId)
+        const tabButton = document.querySelector(`[data-tab="${tabId}"]`) || 
+                          document.querySelector(`button[onclick*="showTab('${tabId}')"]`) ||
+                          document.querySelector(`button[onclick*='showTab("${tabId}")']`);
+        
+        if (tabButton) {
+            tabButton.classList.add('active');
+        }
+        
+        // Show selected tab content - farklı formatları destekle
+        const tabContentIds = [
+            `${tabId}-tab`,
+            `${tabId}Tab`,
+            `${tabId}_tab`,
+            `${tabId}Orders`,
+            `tab-${tabId}`,
+            tabId
+        ];
+        
+        let tabContentFound = false;
+        for (const contentId of tabContentIds) {
+            const tabContent = document.getElementById(contentId) || 
+                              document.querySelector(`[data-tab-content="${tabId}"]`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+                tabContent.style.display = 'block';
+                tabContentFound = true;
+                console.log('Tab content activated:', contentId);
+                break;
+            }
+        }
+        
+        if (!tabContentFound) {
+            console.warn('Tab content not found for:', tabId);
+        }
+        
+        // Scroll to top of tab content if exists (smooth scroll)
+        setTimeout(() => {
+            const activeTabContent = document.querySelector('.tab-content.active');
+            if (activeTabContent) {
+                // Tab content'in üstüne scroll yap (tab-nav varsa onu atla)
+                const tabNav = activeTabContent.previousElementSibling;
+                if (tabNav && tabNav.classList.contains('tab-nav')) {
+                    tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    activeTabContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error in showTab:', error);
+    }
 }
 
 // View Order
@@ -2080,7 +2208,14 @@ function formatTime(timestamp) {
 }
 
 // Export functions for global access
+// Global functions - diğer sayfalar için erişilebilir yap
 window.showSection = showSection;
+window.showTab = showTab;
+
+// showSectionDirect için fallback - bazı sayfalarda kullanılıyor
+window.showSectionDirect = function(sectionId) {
+    showSection(sectionId);
+};
 window.showAddProductModal = showAddProductModal;
 window.closeModal = closeModal;
 window.editProduct = editProduct;
