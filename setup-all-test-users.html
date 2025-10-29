@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hesapları Oluştur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        h1 {
+            color: #ff0000;
+        }
+        .user-list {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .user-item {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #ff0000;
+            background: #333;
+        }
+        button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #cc0000;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .success {
+            background: #00ff0020;
+            border: 1px solid #00ff00;
+        }
+        .error {
+            background: #ff000020;
+            border: 1px solid #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 VideoSat - Test Hesapları Oluştur</h1>
+    
+    <div class="user-list">
+        <h2>Oluşturulacak Hesaplar:</h2>
+        <div class="user-item">
+            <strong>Hammaddeci:</strong> hammaddeci@videosat.com / test123
+        </div>
+        <div class="user-item">
+            <strong>Üretici:</strong> uretici@videosat.com / test123
+        </div>
+        <div class="user-item">
+            <strong>Toptancı:</strong> toptanci@videosat.com / test123
+        </div>
+        <div class="user-item">
+            <strong>Satıcı:</strong> satici@videosat.com / satici123
+        </div>
+        <div class="user-item">
+            <strong>Müşteri:</strong> musteri@videosat.com / test123
+        </div>
+        <div class="user-item">
+            <strong>Admin:</strong> admin@videosat.com / admin123
+        </div>
+    </div>
+    
+    <button onclick="createAllUsers()">✅ Tüm Hesapları Oluştur</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        async function sha256(str) {
+            const utf8 = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        async function createAllUsers() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status">⏳ Hesaplar oluşturuluyor...</div>';
+            
+            const users = [
+                { email: 'hammaddeci@videosat.com', password: 'test123', role: 'hammaddeci', companyName: 'Hammadde Tedarik A.Ş.' },
+                { email: 'uretici@videosat.com', password: 'test123', role: 'uretici', companyName: 'Üretim Firma Ltd.' },
+                { email: 'toptanci@videosat.com', password: 'test123', role: 'toptanci', companyName: 'Toptan Satış A.Ş.' },
+                { email: 'satici@videosat.com', password: 'satici123', role: 'satici', companyName: 'Perakende Satış Ltd.' },
+                { email: 'musteri@videosat.com', password: 'test123', role: 'musteri', companyName: 'Müşteri Firma' },
+                { email: 'admin@videosat.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Admin' }
+            ];
+            
+            try {
+                let existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+                let created = 0;
+                let updated = 0;
+                
+                for (const user of users) {
+                    const passwordHash = await sha256(user.password);
+                    const existingUser = existingUsers.find(u => u.email === user.email);
+                    
+                    if (existingUser) {
+                        // Kullanıcı varsa güncelle
+                        const index = existingUsers.indexOf(existingUser);
+                        existingUsers[index] = {
+                            ...existingUser,
+                            passwordHash: passwordHash,
+                            role: user.role,
+                            companyName: user.companyName
+                        };
+                        updated++;
+                    } else {
+                        // Yeni kullanıcı oluştur
+                        const newUser = {
+                            id: Date.now() + Math.random(),
+                            email: user.email,
+                            role: user.role,
+                            companyName: user.companyName,
+                            phone: '+90 555 ' + Math.floor(Math.random() * 9000 + 1000),
+                            memberNumber: user.role.toUpperCase() + '-' + Date.now().toString(36).toUpperCase(),
+                            createdAt: new Date().toISOString(),
+                            isActive: true,
+                            passwordHash: passwordHash
+                        };
+                        existingUsers.push(newUser);
+                        created++;
+                    }
+                }
+                
+                localStorage.setItem('users', JSON.stringify(existingUsers));
+                
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Başarılı!<br>
+                        Oluşturulan: ${created} hesap<br>
+                        Güncellenen: ${updated} hesap<br><br>
+                        Şimdi <a href="index.html" style="color: #00ff00;">Ana Sayfaya</a> gidip giriş yapabilirsiniz!
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Hata: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
