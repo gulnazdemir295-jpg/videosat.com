@@ -425,6 +425,13 @@ function showBuyStreamTimeModal() {
 async function startStream() {
     if (!checkWebRTCSupport()) return;
     
+    // Check if camera access is already granted
+    if (!localStream) {
+        updateStatus('Önce kamera erişimi isteyin!');
+        showAlert('Lütfen önce "Kamera Erişimi İste" butonuna tıklayın.', 'warning');
+        return;
+    }
+    
     // Check balance
     const balance = parseFloat(localStorage.getItem('livestreamBalance') || '0');
     if (balance === 0 && isStreamer) {
@@ -434,20 +441,7 @@ async function startStream() {
     }
     
     try {
-        updateStatus('Kamera ve mikrofon erişim izinleri isteniyor...');
-        
-        // Request camera and microphone access
-        localStream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: 'user'
-            },
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true
-            }
-        });
+        updateStatus('Yayın başlatılıyor...');
         
         // Display local video
         const localVideo = document.getElementById('localVideo');
@@ -471,7 +465,7 @@ async function startStream() {
         // Set remote video background
         remoteVideo.style.background = '#000000';
         
-        updateStatus('Yayın başlatıldı! Diğer kullanıcılara görünüyorsunuz.');
+        updateStatus('✅ Yayın başlatıldı! Diğer kullanıcılara görünüyorsunuz.');
         isStreaming = true;
         streamStartTime = Date.now();
         
@@ -489,8 +483,11 @@ async function startStream() {
         localStorage.setItem('activeLivestream', JSON.stringify(streamData));
         
         // Enable/disable buttons
-        document.querySelector('.control-btn.start').disabled = true;
-        document.getElementById('stopBtn').disabled = false;
+        const startBtn = document.querySelector('.control-btn.start[onclick*="startStream"]');
+        const stopBtn = document.getElementById('stopBtn');
+        
+        if (startBtn) startBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = false;
         
         // Update live badge
         document.getElementById('liveBadge').innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>';
@@ -513,9 +510,13 @@ async function startStream() {
             });
         }
         
+        // Show success message
+        showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
+        
     } catch (error) {
-        console.error('Error accessing media devices:', error);
-        updateStatus('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.');
+        console.error('Error starting stream:', error);
+        updateStatus('❌ Yayın başlatılamadı: ' + error.message);
+        showAlert('Yayın başlatılamadı: ' + error.message, 'error');
     }
 }
 
@@ -891,6 +892,374 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
+// Request Camera Access
+async function requestCameraAccess() {
+    try {
+        updateStatus('Kamera ve mikrofon erişimi isteniyor...');
+        
+        // Request camera and microphone access
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true
+            }
+        });
+        
+        // Display local video
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const waitingMessage = document.getElementById('waitingMessage');
+        
+        if (localVideo) {
+            localVideo.srcObject = localStream;
+            localVideo.style.display = 'block';
+        }
+        
+        if (waitingMessage) {
+            waitingMessage.style.display = 'none';
+        }
+        
+        // Set remote video background
+        if (remoteVideo) {
+            remoteVideo.style.background = '#000000';
+        }
+        
+        updateStatus('✅ Kamera ve mikrofon erişimi başarılı! Yayını başlatabilirsiniz.');
+        
+        // Enable start button
+        const startBtn = document.querySelector('.control-btn.start');
+        if (startBtn && startBtn.onclick.toString().includes('startStream')) {
+            startBtn.disabled = false;
+        }
+        
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+        updateStatus('❌ Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.');
+    }
+}
+
+// Open Product Selector Modal
+function openProductSelector() {
+    // Create modal for product selection
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    modal.style.zIndex = '9999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    
+    modal.innerHTML = `
+        <div style="background: #1a1a1a; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid #dc2626;">
+            <h3 style="color: #dc2626; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-box"></i> Ürün Seç
+            </h3>
+            <div id="productSelectorList" style="margin-bottom: 20px;">
+                <!-- Products will be loaded here -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeProductSelector()" class="control-btn end" style="padding: 10px 20px;">
+                    <i class="fas fa-times"></i> İptal
+                </button>
+                <button onclick="confirmProductSelection()" class="control-btn start" style="padding: 10px 20px;">
+                    <i class="fas fa-check"></i> Seçimi Onayla
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Load products from all panels
+    loadProductsForSelector();
+}
+
+// Load Products for Selector
+function loadProductsForSelector() {
+    const productSelectorList = document.getElementById('productSelectorList');
+    if (!productSelectorList) return;
+    
+    // Get products from all panels
+    const allProducts = [
+        // Hammaddeci products
+        { id: 'h-1', name: 'Tuğla Premium', price: '850 ₺', unit: 'paket', panel: 'hammaddeci' },
+        { id: 'h-2', name: 'Çimento 50kg', price: '450 ₺', unit: 'çuval', panel: 'hammaddeci' },
+        { id: 'h-3', name: 'Kum 1 Ton', price: '650 ₺', unit: 'ton', panel: 'hammaddeci' },
+        { id: 'h-4', name: 'Demir 12mm', price: '5.200 ₺', unit: 'ton', panel: 'hammaddeci' },
+        
+        // Üretici products
+        { id: 'u-1', name: 'Hazır Beton C25', price: '1.200 ₺', unit: 'm³', panel: 'uretici' },
+        { id: 'u-2', name: 'Prefabrik Panel', price: '850 ₺', unit: 'm²', panel: 'uretici' },
+        { id: 'u-3', name: 'Çatı Kiremiti', price: '45 ₺', unit: 'adet', panel: 'uretici' },
+        
+        // Toptancı products
+        { id: 't-1', name: 'İnşaat Malzemesi Paketi', price: '15.000 ₺', unit: 'set', panel: 'toptanci' },
+        { id: 't-2', name: 'Elektrik Malzemeleri', price: '3.500 ₺', unit: 'set', panel: 'toptanci' },
+        
+        // Satıcı products
+        { id: 's-1', name: 'Ev Dekorasyon Seti', price: '2.500 ₺', unit: 'set', panel: 'satici' },
+        { id: 's-2', name: 'Bahçe Mobilyası', price: '1.800 ₺', unit: 'set', panel: 'satici' }
+    ];
+    
+    productSelectorList.innerHTML = allProducts.map(product => `
+        <div class="product-item" onclick="toggleProductSelection('${product.id}')" id="selector-product-${product.id}" style="margin-bottom: 10px;">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">${product.price} / ${product.unit}</div>
+            <div style="font-size: 12px; color: #999;">Panel: ${product.panel}</div>
+        </div>
+    `).join('');
+}
+
+// Toggle Product Selection in Selector
+function toggleProductSelection(productId) {
+    const productElement = document.getElementById(`selector-product-${productId}`);
+    if (productElement) {
+        productElement.classList.toggle('active');
+    }
+}
+
+// Confirm Product Selection
+function confirmProductSelection() {
+    const selectedProducts = document.querySelectorAll('#productSelectorList .product-item.active');
+    const productIds = Array.from(selectedProducts).map(el => el.id.replace('selector-product-', ''));
+    
+    // Add selected products to stream
+    productIds.forEach(id => {
+        if (!selectedProducts.includes(id)) {
+            selectedProducts.push(id);
+        }
+    });
+    
+    // Update products list
+    updateProductsList();
+    
+    // Close modal
+    closeProductSelector();
+    
+    showAlert(`${productIds.length} ürün yayına eklendi!`, 'success');
+}
+
+// Close Product Selector
+function closeProductSelector() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Update Products List
+function updateProductsList() {
+    const productsList = document.getElementById('productsList');
+    if (!productsList) return;
+    
+    const allProducts = [
+        { id: 'h-1', name: 'Tuğla Premium', price: '850 ₺', unit: 'paket' },
+        { id: 'h-2', name: 'Çimento 50kg', price: '450 ₺', unit: 'çuval' },
+        { id: 'h-3', name: 'Kum 1 Ton', price: '650 ₺', unit: 'ton' },
+        { id: 'h-4', name: 'Demir 12mm', price: '5.200 ₺', unit: 'ton' },
+        { id: 'u-1', name: 'Hazır Beton C25', price: '1.200 ₺', unit: 'm³' },
+        { id: 'u-2', name: 'Prefabrik Panel', price: '850 ₺', unit: 'm²' },
+        { id: 'u-3', name: 'Çatı Kiremiti', price: '45 ₺', unit: 'adet' },
+        { id: 't-1', name: 'İnşaat Malzemesi Paketi', price: '15.000 ₺', unit: 'set' },
+        { id: 't-2', name: 'Elektrik Malzemeleri', price: '3.500 ₺', unit: 'set' },
+        { id: 's-1', name: 'Ev Dekorasyon Seti', price: '2.500 ₺', unit: 'set' },
+        { id: 's-2', name: 'Bahçe Mobilyası', price: '1.800 ₺', unit: 'set' }
+    ];
+    
+    const selectedProductsData = allProducts.filter(p => selectedProducts.includes(p.id));
+    
+    productsList.innerHTML = selectedProductsData.map(product => `
+        <div class="product-item" onclick="openProductPage('${product.id}')" id="product-${product.id}">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">${product.price} / ${product.unit}</div>
+            <div style="font-size: 12px; color: #dc2626; margin-top: 5px;">
+                <i class="fas fa-external-link-alt"></i> Satın almak için tıklayın
+            </div>
+        </div>
+    `).join('');
+}
+
+// Open Product Page
+function openProductPage(productId) {
+    // Redirect to product purchase page
+    const productPages = {
+        'h-1': '../panels/hammaddeci.html#products',
+        'h-2': '../panels/hammaddeci.html#products',
+        'h-3': '../panels/hammaddeci.html#products',
+        'h-4': '../panels/hammaddeci.html#products',
+        'u-1': '../panels/uretici.html#products',
+        'u-2': '../panels/uretici.html#products',
+        'u-3': '../panels/uretici.html#products',
+        't-1': '../panels/toptanci.html#products',
+        't-2': '../panels/toptanci.html#products',
+        's-1': '../panels/satici.html#products',
+        's-2': '../panels/satici.html#products'
+    };
+    
+    const page = productPages[productId];
+    if (page) {
+        window.open(page, '_blank');
+    } else {
+        showAlert('Ürün sayfası bulunamadı.', 'error');
+    }
+}
+
+// Open Invite Modal
+function openInviteModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    modal.style.zIndex = '9999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    
+    modal.innerHTML = `
+        <div style="background: #1a1a1a; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; border: 1px solid #dc2626;">
+            <h3 style="color: #dc2626; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-plus"></i> Yayına Davet Et
+            </h3>
+            <div style="margin-bottom: 20px;">
+                <label style="color: white; display: block; margin-bottom: 5px;">E-posta Adresi:</label>
+                <input type="email" id="inviteEmail" placeholder="davet@example.com" style="width: 100%; padding: 10px; border: 1px solid #404040; border-radius: 5px; background: #0a0a0a; color: white; margin-bottom: 10px;">
+                <label style="color: white; display: block; margin-bottom: 5px;">İsim (Opsiyonel):</label>
+                <input type="text" id="inviteName" placeholder="Davet edilen kişi" style="width: 100%; padding: 10px; border: 1px solid #404040; border-radius: 5px; background: #0a0a0a; color: white;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeInviteModal()" class="control-btn end" style="padding: 10px 20px;">
+                    <i class="fas fa-times"></i> İptal
+                </button>
+                <button onclick="sendInvitation()" class="control-btn start" style="padding: 10px 20px;">
+                    <i class="fas fa-paper-plane"></i> Davet Gönder
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Close Invite Modal
+function closeInviteModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Send Invitation
+function sendInvitation() {
+    const email = document.getElementById('inviteEmail').value.trim();
+    const name = document.getElementById('inviteName').value.trim() || email.split('@')[0];
+    
+    if (!email) {
+        showAlert('Lütfen e-posta adresi girin.', 'error');
+        return;
+    }
+    
+    // Create invitation
+    const invitation = {
+        id: Date.now(),
+        from: currentUser?.email || 'yayinci@videosat.com',
+        fromName: currentUser?.companyName || 'Yayıncı',
+        to: email,
+        toName: name,
+        streamId: streamId || 'STREAM-' + Date.now(),
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    
+    // Save invitation
+    const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+    invitations.push(invitation);
+    localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+    
+    // Close modal
+    closeInviteModal();
+    
+    showAlert(`${name} (${email}) yayına davet edildi!`, 'success');
+    
+    // Update invitations list
+    loadInvitationsForStreamer();
+}
+
+// Send Message
+function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    const messageData = {
+        id: Date.now(),
+        sender: currentUser?.companyName || 'Anonim',
+        message: message,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Add message to container
+    addMessageToContainer(messageData);
+    
+    // Clear input
+    messageInput.value = '';
+    
+    // Notify other participants
+    if (window.websocketService && streamId) {
+        window.websocketService.emit('message', {
+            streamId: streamId,
+            message: messageData
+        });
+    }
+}
+
+// Add Message to Container
+function addMessageToContainer(messageData) {
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (!messagesContainer) return;
+    
+    const messageElement = document.createElement('div');
+    messageElement.style.cssText = `
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        background: #0a0a0a;
+        border-radius: 8px;
+        border-left: 3px solid #dc2626;
+    `;
+    
+    messageElement.innerHTML = `
+        <div style="font-weight: bold; color: #dc2626; font-size: 12px;">${messageData.sender}</div>
+        <div style="color: white; margin-top: 4px;">${messageData.message}</div>
+        <div style="color: #999; font-size: 10px; margin-top: 4px;">${new Date(messageData.timestamp).toLocaleTimeString()}</div>
+    `;
+    
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Handle Message Key Press (Enter to send)
+function handleMessageKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
 // Export functions globally
 window.toggleLike = toggleLike;
 window.toggleFollow = toggleFollow;
@@ -903,5 +1272,16 @@ window.selectProduct = selectProduct;
 window.startStream = startStream;
 window.stopStream = stopStream;
 window.endStream = endStream;
+window.requestCameraAccess = requestCameraAccess;
+window.openProductSelector = openProductSelector;
+window.toggleProductSelection = toggleProductSelection;
+window.confirmProductSelection = confirmProductSelection;
+window.closeProductSelector = closeProductSelector;
+window.openProductPage = openProductPage;
+window.openInviteModal = openInviteModal;
+window.closeInviteModal = closeInviteModal;
+window.sendInvitation = sendInvitation;
+window.sendMessage = sendMessage;
+window.handleMessageKeyPress = handleMessageKeyPress;
 
 console.log('✅ Enhanced Live Stream System Loaded');
