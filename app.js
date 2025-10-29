@@ -379,6 +379,17 @@ function logout() {
     }
     
     showAlert('Başarıyla çıkış yaptınız.', 'success');
+    
+    // Anasayfaya yönlendir
+    setTimeout(() => {
+        // Eğer panel sayfasındaysak anasayfaya dön
+        if (window.location.pathname.includes('panels/')) {
+            window.location.href = '../index.html';
+        } else {
+            // Zaten anasayfadaysak sayfayı yenile
+            window.location.reload();
+        }
+    }, 1000);
 }
 
 function checkAuthStatus() {

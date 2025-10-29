@@ -1608,11 +1608,24 @@ function getAlertIcon(type) {
 // Logout
 function logout() {
     // Clear user data immediately
+    currentUser = null;
+    isLoggedIn = false;
+    userRole = null;
     localStorage.removeItem('currentUser');
     localStorage.removeItem('liveStreamInvitations');
     
-    // Redirect to home page
-    window.location.href = '../index.html';
+    // Show success message
+    if (typeof showAlert === 'function') {
+        showAlert('Başarıyla çıkış yaptınız.', 'success');
+    } else {
+        // Fallback alert if showAlert is not available
+        alert('Başarıyla çıkış yaptınız.');
+    }
+    
+    // Redirect to home page after a short delay to show message
+    setTimeout(() => {
+        window.location.href = '../index.html';
+    }, 1000);
 }
 
 // Load Approved Users (Admin Only)
