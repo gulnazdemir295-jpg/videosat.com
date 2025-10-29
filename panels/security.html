@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="security.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="panel-body">
+<link rel="stylesheet" href="../text-readability-fix.css">
+    <link rel="stylesheet" href="../color-contrast-fix.css"></head>
+    <link rel="stylesheet" href="../red-white-black-theme.css"><body class="panel-body">
     <!-- Panel Navigation -->
     <nav class="panel-nav">
         <div class="panel-nav-container">
@@ -61,9 +62,13 @@
                     <i class="fas fa-shield-alt"></i>
                     Güvenlik
                 </a>
-                <a href="#settings" class="nav-link" data-section="settings">
+                <a href="reports.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Raporlar
+                </a>
+                <a href="system-settings.html" class="nav-link">
                     <i class="fas fa-cog"></i>
-                    Ayarlar
+                    Sistem Ayarları
                 </a>
                 <a href="#" class="nav-link logout-link" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i>
@@ -837,11 +842,15 @@
     <!-- Alert Container -->
     <div id="alertContainer"></div>
 
+    <!-- Scripts -->
+    <!-- Module Loader -->
+    <script src="../modules/module-loader.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="../app.js"></script>
-    <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     <script src="../services/order-service.js"></script>
+    <script src="panel-app.js"></script>
     <script src="security.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

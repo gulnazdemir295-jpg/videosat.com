@@ -16,6 +16,22 @@ class CentralPaymentManager {
         this.updatePaymentOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        // Close modals when clicking outside
+        const modals = ['addPaymentMethodModal', 'paymentSettingsModal', 'securitySettingsModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -181,9 +197,39 @@ class CentralPaymentManager {
     }
 
     loadTransactions() {
+        // Try to load from payment-service first
+        if (window.paymentService && window.paymentService.getTransactionHistory) {
+            const serviceTransactions = window.paymentService.getTransactionHistory(100);
+            if (serviceTransactions && serviceTransactions.length > 0) {
+                return serviceTransactions.map(t => ({
+                    id: t.id || `TXN${Date.now()}`,
+                    date: t.timestamp || new Date().toISOString(),
+                    customer: t.customer || t.customerName || 'Müşteri',
+                    amount: t.amount || 0,
+                    method: this.mapPaymentMethod(t.paymentMethod || t.method),
+                    status: t.status === 'completed' ? 'successful' : t.status === 'failed' ? 'failed' : t.status === 'processing' ? 'pending' : 'pending',
+                    gateway: t.gateway || 'Stripe',
+                    processingTime: t.processingTime || (Math.random() * 3 + 1),
+                    commission: t.commission || (t.amount * 0.029)
+                }));
+            }
+        }
+
         const saved = localStorage.getItem('paymentTransactions');
         if (saved) {
-            return JSON.parse(saved);
+            const parsed = JSON.parse(saved);
+            // Transform saved transactions to match expected format
+            return parsed.map(t => ({
+                id: t.id || `TXN${Date.now()}`,
+                date: t.date || t.timestamp || new Date().toISOString(),
+                customer: t.customer || t.customerName || 'Müşteri',
+                amount: t.amount || 0,
+                method: this.mapPaymentMethod(t.method || t.paymentMethod),
+                status: t.status || 'pending',
+                gateway: t.gateway || 'Stripe',
+                processingTime: t.processingTime || (Math.random() * 3 + 1),
+                commission: t.commission || (t.amount * 0.029)
+            }));
         }
 
         // Default transactions
@@ -244,6 +290,18 @@ class CentralPaymentManager {
                 commission: 0
             }
         ];
+    }
+
+    mapPaymentMethod(method) {
+        const methodMap = {
+            'card': 'credit_card',
+            'cash': 'cash',
+            'online': 'digital_wallet',
+            'bank_transfer': 'bank_transfer',
+            'crypto': 'crypto',
+            'installment': 'credit_card'
+        };
+        return methodMap[method] || method || 'credit_card';
     }
 
     loadSecuritySettings() {
@@ -489,17 +547,364 @@ class CentralPaymentManager {
         document.getElementById('systemUptime').textContent = '99.9%';
     }
 
-    // Chart Functions (Mock implementations)
-    updatePaymentVolumeChart() {
-        console.log('Payment volume chart updated');
+    // Chart Functions
+    updatePaymentVolumeChart(period = 'daily') {
+        const ctx = document.getElementById('paymentVolumeChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.paymentVolumeChart) {
+            this.paymentVolumeChart.destroy();
+        }
+
+        const periods = {
+            daily: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            weekly: ['Hafta 1', 'Hafta 2', 'Hafta 3', 'Hafta 4'],
+            monthly: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran']
+        };
+
+        const labels = periods[period] || periods.daily;
+        const volumeData = labels.map(() => 500000 + Math.random() * 500000);
+
+        this.paymentVolumeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ödeme Hacmi',
+                    data: volumeData,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Hacim: ₺' + context.parsed.y.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    updatePaymentMethodsChart() {
-        console.log('Payment methods chart updated');
+    updatePaymentMethodsChart(period = 'today') {
+        const ctx = document.getElementById('paymentMethodsChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.paymentMethodsChart) {
+            this.paymentMethodsChart.destroy();
+        }
+
+        const methodData = {
+            'Kredi Kartı': 45,
+            'Dijital Cüzdan': 30,
+            'Banka Havalesi': 15,
+            'Kripto Para': 10
+        };
+
+        this.paymentMethodsChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(methodData),
+                datasets: [{
+                    data: Object.values(methodData),
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(99, 102, 241, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': %' + context.parsed;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     loadAnalyticsData() {
-        console.log('Analytics data loaded');
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded');
+            return;
+        }
+
+        this.updateSuccessRatesChart();
+        this.updateProcessingTimesChart();
+        this.updateCommissionAnalysisChart();
+        this.updateCustomerSegmentationChart();
+    }
+
+    updateSuccessRatesChart() {
+        const ctx = document.getElementById('successRatesChart');
+        if (!ctx) return;
+
+        if (this.successRatesChart) {
+            this.successRatesChart.destroy();
+        }
+
+        const gatewayNames = this.paymentGateways.map(g => g.name);
+        const successRates = this.paymentGateways.map(g => g.successRate);
+
+        this.successRatesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: gatewayNames,
+                datasets: [{
+                    label: 'Başarı Oranı (%)',
+                    data: successRates,
+                    backgroundColor: successRates.map(rate => 
+                        rate >= 99 ? 'rgba(34, 197, 94, 0.8)' :
+                        rate >= 98 ? 'rgba(251, 191, 36, 0.8)' :
+                        'rgba(239, 68, 68, 0.8)'
+                    ),
+                    borderColor: successRates.map(rate => 
+                        rate >= 99 ? 'rgba(34, 197, 94, 1)' :
+                        rate >= 98 ? 'rgba(251, 191, 36, 1)' :
+                        'rgba(239, 68, 68, 1)'
+                    ),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Başarı Oranı: %' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 95,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateProcessingTimesChart() {
+        const ctx = document.getElementById('processingTimesChart');
+        if (!ctx) return;
+
+        if (this.processingTimesChart) {
+            this.processingTimesChart.destroy();
+        }
+
+        const methods = ['Kredi Kartı', 'Dijital Cüzdan', 'Banka Havalesi', 'Kripto Para'];
+        const avgTimes = [2.3, 1.8, 4.5, 3.2];
+
+        this.processingTimesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: methods,
+                datasets: [{
+                    label: 'Ortalama İşlem Süresi (saniye)',
+                    data: avgTimes,
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Süre: ' + context.parsed.y.toFixed(1) + 's';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + 's';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateCommissionAnalysisChart() {
+        const ctx = document.getElementById('commissionAnalysisChart');
+        if (!ctx) return;
+
+        if (this.commissionAnalysisChart) {
+            this.commissionAnalysisChart.destroy();
+        }
+
+        const gatewayNames = this.paymentGateways.map(g => g.name);
+        const commissionRates = this.paymentGateways.map(g => g.commissionRate);
+
+        this.commissionAnalysisChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: gatewayNames,
+                datasets: [{
+                    label: 'Komisyon Oranı (%)',
+                    data: commissionRates,
+                    borderColor: 'rgba(251, 191, 36, 1)',
+                    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Komisyon: %' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateCustomerSegmentationChart() {
+        const ctx = document.getElementById('customerSegmentationChart');
+        if (!ctx) return;
+
+        if (this.customerSegmentationChart) {
+            this.customerSegmentationChart.destroy();
+        }
+
+        const segments = ['Premium', 'Standart', 'Temel', 'Yeni'];
+        const percentages = [25, 40, 25, 10];
+
+        this.customerSegmentationChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: segments,
+                datasets: [{
+                    data: percentages,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(99, 102, 241, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': %' + context.parsed;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     loadSecurityData() {
@@ -633,15 +1038,42 @@ class CentralPaymentManager {
 
     // Modal Functions
     showAddPaymentMethodModal() {
-        document.getElementById('addPaymentMethodModal').style.display = 'block';
+        const modal = document.getElementById('addPaymentMethodModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showPaymentSettingsModal() {
-        document.getElementById('paymentSettingsModal').style.display = 'block';
+        const modal = document.getElementById('paymentSettingsModal');
+        if (modal) {
+            // Populate form with current settings
+            document.getElementById('defaultCurrency').value = this.paymentSettings.defaultCurrency;
+            document.getElementById('autoRefundDays').value = this.paymentSettings.autoRefundDays;
+            document.getElementById('transactionTimeout').value = this.paymentSettings.transactionTimeout;
+            document.getElementById('enableFraudDetection').checked = this.paymentSettings.enableFraudDetection;
+            document.getElementById('enable3DSecure').checked = this.paymentSettings.enable3DSecure;
+            document.getElementById('enableIPWhitelist').checked = this.paymentSettings.enableIPWhitelist;
+            document.getElementById('emailNotifications').checked = this.paymentSettings.emailNotifications;
+            document.getElementById('smsNotifications').checked = this.paymentSettings.smsNotifications;
+            document.getElementById('webhookNotifications').checked = this.paymentSettings.webhookNotifications;
+            modal.style.display = 'block';
+        }
     }
 
     showSecuritySettingsModal() {
-        document.getElementById('securitySettingsModal').style.display = 'block';
+        const modal = document.getElementById('securitySettingsModal');
+        if (modal) {
+            // Populate form with current settings
+            document.getElementById('encryptionLevel').value = this.securitySettings.encryptionLevel;
+            document.getElementById('sessionTimeout').value = this.securitySettings.sessionTimeout;
+            document.getElementById('maxAttempts').value = this.securitySettings.maxAttempts;
+            document.getElementById('ipRestrictions').value = this.securitySettings.ipRestrictions;
+            document.getElementById('enableSSL').checked = this.securitySettings.enableSSL;
+            document.getElementById('enablePCI').checked = this.securitySettings.enablePCI;
+            document.getElementById('enableTokenization').checked = this.securitySettings.enableTokenization;
+            modal.style.display = 'block';
+        }
     }
 
     // Form Handlers
@@ -735,11 +1167,26 @@ class CentralPaymentManager {
         if (confirm('Bu işlemi iade etmek istediğinizden emin misiniz?')) {
             const transaction = this.transactions.find(t => t.id === transactionId);
             if (transaction) {
-                transaction.status = 'refunded';
-                this.saveTransactions();
-                this.renderTransactions();
-                this.updatePaymentOverview();
-                showAlert('İşlem başarıyla iade edildi!', 'success');
+                // Use payment-service if available
+                if (window.paymentService && window.paymentService.refundPayment) {
+                    window.paymentService.refundPayment(transactionId, transaction.amount)
+                        .then(() => {
+                            transaction.status = 'refunded';
+                            this.saveTransactions();
+                            this.renderTransactions();
+                            this.updatePaymentOverview();
+                            showAlert('İşlem başarıyla iade edildi!', 'success');
+                        })
+                        .catch(() => {
+                            showAlert('İade işlemi başarısız oldu!', 'error');
+                        });
+                } else {
+                    transaction.status = 'refunded';
+                    this.saveTransactions();
+                    this.renderTransactions();
+                    this.updatePaymentOverview();
+                    showAlert('İşlem başarıyla iade edildi!', 'success');
+                }
             }
         }
     }
@@ -879,15 +1326,209 @@ class CentralPaymentManager {
     }
 
     generateAnalyticsReport() {
+        const startDate = document.getElementById('analyticsStartDate').value;
+        const endDate = document.getElementById('analyticsEndDate').value;
+        
+        if (!startDate || !endDate) {
+            showAlert('Lütfen başlangıç ve bitiş tarihlerini seçin!', 'error');
+            return;
+        }
+
         showAlert('Analitik raporu oluşturuluyor...', 'info');
+        
+        // Generate analytics report
+        const reportData = {
+            period: {
+                start: startDate,
+                end: endDate
+            },
+            analytics: {
+                totalTransactions: this.transactions.length,
+                totalVolume: this.transactions.reduce((sum, t) => sum + t.amount, 0),
+                successRate: (this.transactions.filter(t => t.status === 'successful').length / this.transactions.length * 100).toFixed(2),
+                avgProcessingTime: (this.transactions.filter(t => t.processingTime).reduce((sum, t) => sum + t.processingTime, 0) / this.transactions.filter(t => t.processingTime).length).toFixed(2),
+                gateways: this.paymentGateways.map(g => ({
+                    name: g.name,
+                    transactionCount: g.transactionCount,
+                    totalVolume: g.totalVolume,
+                    successRate: g.successRate,
+                    commissionRate: g.commissionRate
+                }))
+            },
+            generatedAt: new Date().toISOString()
+        };
+
+        // Create and download report
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics-report-${startDate}-${endDate}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert('Analitik raporu başarıyla oluşturuldu!', 'success');
     }
 
     downloadAnalytics(reportType) {
-        showAlert(`${reportType} raporu indirme özelliği yakında eklenecek!`, 'info');
+        const reportData = {
+            type: reportType,
+            generatedAt: new Date().toISOString(),
+            data: {}
+        };
+
+        switch (reportType) {
+            case 'success-rates':
+                reportData.data = {
+                    gateways: this.paymentGateways.map(g => ({
+                        name: g.name,
+                        successRate: g.successRate,
+                        transactionCount: g.transactionCount
+                    }))
+                };
+                break;
+            case 'processing-times':
+                const methods = ['credit_card', 'digital_wallet', 'bank_transfer', 'crypto'];
+                reportData.data = {
+                    methods: methods.map(method => {
+                        const methodTransactions = this.transactions.filter(t => t.method === method && t.processingTime);
+                        const avgTime = methodTransactions.length > 0 
+                            ? methodTransactions.reduce((sum, t) => sum + t.processingTime, 0) / methodTransactions.length
+                            : 0;
+                        return {
+                            method: this.getMethodName(method),
+                            avgProcessingTime: avgTime.toFixed(2),
+                            transactionCount: methodTransactions.length
+                        };
+                    })
+                };
+                break;
+            case 'commission-analysis':
+                reportData.data = {
+                    gateways: this.paymentGateways.map(g => ({
+                        name: g.name,
+                        commissionRate: g.commissionRate,
+                        totalVolume: g.totalVolume,
+                        totalCommission: (g.totalVolume * g.commissionRate / 100).toFixed(2)
+                    }))
+                };
+                break;
+            case 'customer-segmentation':
+                reportData.data = {
+                    segments: [
+                        { segment: 'Premium', percentage: 25, avgTransaction: 5000 },
+                        { segment: 'Standart', percentage: 40, avgTransaction: 2000 },
+                        { segment: 'Temel', percentage: 25, avgTransaction: 800 },
+                        { segment: 'Yeni', percentage: 10, avgTransaction: 500 }
+                    ]
+                };
+                break;
+        }
+
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportType}-report-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert(`${reportType} raporu başarıyla indirildi!`, 'success');
     }
 
     runSecurityAudit() {
         showAlert('Güvenlik denetimi başlatıldı!', 'info');
+        
+        // Simulate security audit
+        setTimeout(() => {
+            const auditResults = {
+                sslStatus: this.securitySettings.enableSSL ? 'Aktif' : 'Pasif',
+                pciStatus: this.securitySettings.enablePCI ? 'Uyumlu' : 'Uyumlu Değil',
+                tokenizationStatus: this.securitySettings.enableTokenization ? 'Aktif' : 'Pasif',
+                encryptionLevel: this.securitySettings.encryptionLevel,
+                vulnerabilities: [],
+                recommendations: []
+            };
+
+            if (!this.securitySettings.enableSSL) {
+                auditResults.vulnerabilities.push('SSL/TLS şifreleme aktif değil');
+                auditResults.recommendations.push('SSL/TLS şifrelemeyi aktifleştirin');
+            }
+
+            if (!this.securitySettings.enableTokenization) {
+                auditResults.recommendations.push('Tokenizasyon özelliğini aktifleştirin');
+            }
+
+            const auditReport = JSON.stringify(auditResults, null, 2);
+            const blob = new Blob([auditReport], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `security-audit-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert('Güvenlik denetimi tamamlandı! Rapor indirildi.', 'success');
+        }, 2000);
+    }
+
+    downloadReceipt(transactionId) {
+        const transaction = this.transactions.find(t => t.id === transactionId);
+        if (!transaction) {
+            showAlert('İşlem bulunamadı!', 'error');
+            return;
+        }
+
+        const receiptData = {
+            receiptId: `RCP-${transaction.id}`,
+            transactionId: transaction.id,
+            date: transaction.date,
+            customer: transaction.customer,
+            amount: transaction.amount,
+            method: this.getMethodName(transaction.method),
+            gateway: transaction.gateway,
+            status: this.getStatusName(transaction.status),
+            commission: transaction.commission,
+            netAmount: transaction.amount - transaction.commission,
+            generatedAt: new Date().toISOString()
+        };
+
+        const receiptText = `
+╔══════════════════════════════════╗
+║        ÖDEME MAKBUZU             ║
+╠══════════════════════════════════╣
+║ Makbuz No: ${receiptData.receiptId.padEnd(21)} ║
+║ İşlem ID:  ${receiptData.transactionId.padEnd(21)} ║
+║ Tarih:      ${receiptData.date.padEnd(21)} ║
+║ Müşteri:    ${receiptData.customer.padEnd(21)} ║
+╠══════════════════════════════════╣
+║ Tutar:      ₺${receiptData.amount.toFixed(2).padStart(18)} ║
+║ Komisyon:   ₺${receiptData.commission.toFixed(2).padStart(18)} ║
+║ Net Tutar:  ₺${receiptData.netAmount.toFixed(2).padStart(18)} ║
+╠══════════════════════════════════╣
+║ Ödeme Yöntemi: ${receiptData.method.padEnd(19)} ║
+║ Gateway:      ${receiptData.gateway.padEnd(19)} ║
+║ Durum:        ${receiptData.status.padEnd(19)} ║
+╚══════════════════════════════════╝
+        `.trim();
+
+        const blob = new Blob([receiptText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `makbuz-${transaction.id}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert('Makbuz başarıyla indirildi!', 'success');
     }
 
     // Utility Functions

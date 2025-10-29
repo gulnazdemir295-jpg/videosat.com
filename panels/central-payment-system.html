@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="central-payment-system.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="panel-body">
+<link rel="stylesheet" href="../text-readability-fix.css">
+    <link rel="stylesheet" href="../color-contrast-fix.css"></head>
+    <link rel="stylesheet" href="../red-white-black-theme.css"><body class="panel-body">
     <!-- Panel Navigation -->
     <nav class="panel-nav">
         <div class="panel-nav-container">
@@ -41,23 +42,23 @@
                     <i class="fas fa-money-bill-wave"></i>
                     Merkezi Ödeme Sistemi
                 </a>
-                <a href="admin.html#hr" class="nav-link">
+                <a href="human-resources.html" class="nav-link">
                     <i class="fas fa-users-cog"></i>
                     İnsan Kaynakları
                 </a>
-                <a href="admin.html#customer-service" class="nav-link">
+                <a href="customer-service.html" class="nav-link">
                     <i class="fas fa-headset"></i>
                     Müşteri Hizmetleri
                 </a>
-                <a href="admin.html#marketing" class="nav-link">
+                <a href="marketing-advertising.html" class="nav-link">
                     <i class="fas fa-bullhorn"></i>
                     Pazarlama & Reklam
                 </a>
-                <a href="admin.html#rd" class="nav-link">
+                <a href="rd-software.html" class="nav-link">
                     <i class="fas fa-flask"></i>
                     Ar-Ge & İnovasyon
                 </a>
-                <a href="admin.html#security" class="nav-link">
+                <a href="security.html" class="nav-link">
                     <i class="fas fa-shield-alt"></i>
                     Güvenlik & Uyumluluk
                 </a>
@@ -620,6 +621,10 @@
     <div id="alertContainer"></div>
 
     <!-- Scripts -->
+    <!-- Module Loader -->
+    <script src="../modules/module-loader.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="../app.js"></script>
     <script src="../services/payment-service.js"></script>
     <script src="../services/order-service.js"></script>

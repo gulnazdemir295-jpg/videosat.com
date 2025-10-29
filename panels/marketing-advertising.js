@@ -16,6 +16,21 @@ class MarketingManager {
         this.updateOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['addCampaignModal', 'addAdModal', 'addSegmentModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -345,8 +360,120 @@ class MarketingManager {
     }
 
     updateAnalytics() {
-        console.log('Analytics updated');
-        // Chart.js integration would go here
+        if (typeof Chart === 'undefined') return;
+        this.updateCampaignPerformanceChart();
+        this.updateROITrendChart();
+        this.updatePlatformDistributionChart();
+        this.updateCustomerAcquisitionChart();
+    }
+
+    updateCampaignPerformanceChart() {
+        const ctx = document.getElementById('campaignPerformanceChart');
+        if (!ctx) return;
+        if (this.campaignPerformanceChart) this.campaignPerformanceChart.destroy();
+        const campaigns = this.campaigns.slice(0, 5).map(c => c.name);
+        const performance = campaigns.map(() => Math.random() * 100);
+        this.campaignPerformanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: campaigns,
+                datasets: [{
+                    label: 'Performans',
+                    data: performance,
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+    }
+
+    updateROITrendChart() {
+        const ctx = document.getElementById('roiTrendChart');
+        if (!ctx) return;
+        if (this.roiTrendChart) this.roiTrendChart.destroy();
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const roi = months.map(() => 1 + Math.random() * 3);
+        this.roiTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'ROI',
+                    data: roi,
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } }
+            }
+        });
+    }
+
+    updatePlatformDistributionChart() {
+        const ctx = document.getElementById('platformDistributionChart');
+        if (!ctx) return;
+        if (this.platformDistributionChart) this.platformDistributionChart.destroy();
+        const platforms = ['Facebook', 'Google', 'Instagram', 'YouTube'];
+        const distribution = platforms.map(() => Math.random() * 30);
+        this.platformDistributionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: platforms,
+                datasets: [{
+                    data: distribution,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    updateCustomerAcquisitionChart() {
+        const ctx = document.getElementById('customerAcquisitionChart');
+        if (!ctx) return;
+        if (this.customerAcquisitionChart) this.customerAcquisitionChart.destroy();
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const acquisitions = months.map(() => Math.floor(Math.random() * 500 + 100));
+        this.customerAcquisitionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Müşteri Kazanımı',
+                    data: acquisitions,
+                    backgroundColor: 'rgba(168, 85, 247, 0.8)',
+                    borderColor: 'rgba(168, 85, 247, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
     }
 
     // Filters

@@ -16,6 +16,21 @@ class CustomerServiceManager {
         this.updateOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['addTicketModal', 'liveChatModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -210,8 +225,125 @@ class CustomerServiceManager {
     }
 
     // Charts (mock)
-    updateTicketStatusChart() { console.log('Ticket status chart updated'); }
-    updateSatisfactionTrendChart() { console.log('Satisfaction trend chart updated'); }
+    updateTicketStatusChart() {
+        const ctx = document.getElementById('ticketStatusChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        if (this.ticketStatusChart) {
+            this.ticketStatusChart.destroy();
+        }
+
+        const statuses = ['Açık', 'İşlemde', 'Çözüldü', 'Kapalı'];
+        const counts = statuses.map(status => {
+            const statusKey = {
+                'Açık': 'open',
+                'İşlemde': 'in-progress',
+                'Çözüldü': 'resolved',
+                'Kapalı': 'closed'
+            }[status];
+            return this.tickets.filter(t => t.status === statusKey).length;
+        });
+
+        this.ticketStatusChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: statuses,
+                datasets: [{
+                    label: 'Ticket Sayısı',
+                    data: counts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(107, 114, 128, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateSatisfactionTrendChart() {
+        const ctx = document.getElementById('satisfactionTrendChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        if (this.satisfactionTrendChart) {
+            this.satisfactionTrendChart.destroy();
+        }
+
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const avgSatisfaction = months.map(() => 3.5 + Math.random() * 1.5);
+
+        this.satisfactionTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Ortalama Memnuniyet',
+                    data: avgSatisfaction,
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Memnuniyet: ' + context.parsed.y.toFixed(1) + '/5';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 2,
+                        max: 5,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(1);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
     loadAnalyticsData() { console.log('Analytics data loaded'); }
 
     // Ticket actions

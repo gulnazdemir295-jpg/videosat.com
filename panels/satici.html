@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="panel-styles.css">
     <link rel="stylesheet" href="../modern-ui-enhancements.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../text-readability-fix.css">
+    <link rel="stylesheet" href="../color-contrast-fix.css">    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../red-white-black-theme.css">    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="panel-body">
     <!-- Panel Navigation -->
@@ -71,7 +72,7 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="panel-section active">
             <div class="section-header">
-                <h1>Hammaddeci Dashboard</h1>
+                <h1>Satıcı Dashboard</h1>
                 <p>İşletmenizin genel durumunu takip edin</p>
             </div>
 
@@ -618,6 +619,14 @@
         </div>
     </div>
 
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <!-- Module Loader -->
+    <script src="../modules/module-loader.js"></script>
+    
+    <script src="../app.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     <script src="../services/order-service.js"></script>

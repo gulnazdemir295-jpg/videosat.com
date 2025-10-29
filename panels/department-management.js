@@ -14,6 +14,22 @@ class DepartmentManager {
         this.renderEmployees();
         this.renderBudgets();
         this.updateStatistics();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        // Close modals when clicking outside
+        const modals = ['addDepartmentModal', 'editDepartmentModal', 'budgetModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -449,25 +465,51 @@ class DepartmentManager {
 
     // Modal Functions
     showAddDepartmentModal() {
-        document.getElementById('addDepartmentModal').style.display = 'block';
+        const modal = document.getElementById('addDepartmentModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showBudgetModal() {
-        document.getElementById('budgetModal').style.display = 'block';
+        const modal = document.getElementById('budgetModal');
+        if (modal) {
+            // Populate department dropdown dynamically
+            const departmentSelect = document.getElementById('budgetDepartment');
+            if (departmentSelect) {
+                departmentSelect.innerHTML = '<option value="">Departman Seçin</option>' +
+                    this.departments.map(dept => 
+                        `<option value="${dept.name}">${dept.name}</option>`
+                    ).join('');
+            }
+            modal.style.display = 'block';
+        }
     }
 
     // Form Handlers
     handleAddDepartment(e) {
         e.preventDefault();
         
-        const formData = new FormData(e.target);
+        const name = document.getElementById('departmentName').value.trim();
+        const code = document.getElementById('departmentCode').value.trim().toUpperCase();
+        
+        // Validate department code uniqueness
+        if (this.departments.find(d => d.code === code)) {
+            showAlert('Bu departman kodu zaten kullanılıyor!', 'error');
+            return;
+        }
+        
+        const managerSelect = document.getElementById('departmentManager');
+        const managerId = managerSelect.value;
+        const managerName = managerSelect.selectedOptions[0]?.text || 'Belirtilmemiş';
+        
         const newDepartment = {
             id: Date.now(),
-            name: document.getElementById('departmentName').value,
-            code: document.getElementById('departmentCode').value,
-            manager: document.getElementById('departmentManager').selectedOptions[0].text,
-            managerId: document.getElementById('departmentManager').value,
-            description: document.getElementById('departmentDescription').value,
+            name: name,
+            code: code,
+            manager: managerName,
+            managerId: managerId,
+            description: document.getElementById('departmentDescription').value.trim() || `${name} departmanı`,
             budget: parseInt(document.getElementById('departmentBudget').value) || 0,
             employees: 0,
             performance: 0,
@@ -515,22 +557,45 @@ class DepartmentManager {
     handleBudgetSubmit(e) {
         e.preventDefault();
         
+        const departmentName = document.getElementById('budgetDepartment').value;
+        const department = this.departments.find(d => d.name === departmentName);
+        
+        if (!department) {
+            showAlert('Lütfen geçerli bir departman seçin!', 'error');
+            return;
+        }
+        
         const newBudget = {
             id: Date.now(),
-            department: document.getElementById('budgetDepartment').value,
+            department: departmentName,
             year: parseInt(document.getElementById('budgetYear').value),
             totalBudget: parseInt(document.getElementById('budgetAmount').value),
             usedBudget: parseInt(document.getElementById('budgetUsed').value) || 0,
             remainingBudget: parseInt(document.getElementById('budgetAmount').value) - (parseInt(document.getElementById('budgetUsed').value) || 0),
-            description: document.getElementById('budgetDescription').value
+            description: document.getElementById('budgetDescription').value || `${departmentName} departmanı yıllık bütçesi`
         };
 
-        this.budgets.push(newBudget);
+        // Check if budget already exists for this department and year
+        const existingBudget = this.budgets.find(b => 
+            b.department === departmentName && b.year === newBudget.year
+        );
+        
+        if (existingBudget) {
+            if (confirm(`${departmentName} departmanı için ${newBudget.year} yılı bütçesi zaten mevcut. Güncellemek istiyor musunuz?`)) {
+                const index = this.budgets.findIndex(b => b.id === existingBudget.id);
+                this.budgets[index] = { ...existingBudget, ...newBudget };
+            } else {
+                return;
+            }
+        } else {
+            this.budgets.push(newBudget);
+        }
+        
         this.saveBudgets();
         this.renderBudgets();
         
         closeModal('budgetModal');
-        showAlert('Bütçe başarıyla eklendi!', 'success');
+        showAlert('Bütçe başarıyla kaydedildi!', 'success');
         e.target.reset();
     }
 
@@ -547,7 +612,10 @@ class DepartmentManager {
         document.getElementById('editDepartmentBudget').value = department.budget;
         document.getElementById('editDepartmentActive').checked = department.status === 'active';
 
-        document.getElementById('editDepartmentModal').style.display = 'block';
+        const modal = document.getElementById('editDepartmentModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     deleteDepartment(departmentId) {
@@ -644,7 +712,16 @@ class DepartmentManager {
             return;
         }
 
-        const filtered = this.employees.filter(emp => emp.department === department);
+        // Map department filter values to actual department names
+        const departmentMap = {
+            'sales': 'Satış',
+            'marketing': 'Pazarlama',
+            'development': 'Geliştirme',
+            'support': 'Müşteri Hizmetleri'
+        };
+        
+        const targetDepartment = departmentMap[department] || department;
+        const filtered = this.employees.filter(emp => emp.department === targetDepartment);
         this.renderFilteredEmployees(filtered);
     }
 
@@ -751,18 +828,153 @@ class DepartmentManager {
 
     // Performance Charts
     loadPerformanceCharts() {
-        // Simple performance chart implementation
-        const performanceData = this.departments.map(dept => ({
-            name: dept.name,
-            performance: dept.performance
-        }));
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded');
+            return;
+        }
 
-        // This would integrate with Chart.js in a real implementation
-        console.log('Performance data loaded:', performanceData);
+        // Performance Comparison Chart
+        const performanceCtx = document.getElementById('performanceChart');
+        if (performanceCtx) {
+            const performanceData = this.departments.map(dept => ({
+                name: dept.name,
+                performance: dept.performance
+            }));
+
+            // Destroy existing chart if it exists
+            if (this.performanceChart) {
+                this.performanceChart.destroy();
+            }
+
+            this.performanceChart = new Chart(performanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: performanceData.map(d => d.name),
+                    datasets: [{
+                        label: 'Performans (%)',
+                        data: performanceData.map(d => d.performance),
+                        backgroundColor: performanceData.map(d => 
+                            d.performance >= 90 ? 'rgba(34, 197, 94, 0.8)' :
+                            d.performance >= 80 ? 'rgba(59, 130, 246, 0.8)' :
+                            'rgba(251, 191, 36, 0.8)'
+                        ),
+                        borderColor: performanceData.map(d => 
+                            d.performance >= 90 ? 'rgba(34, 197, 94, 1)' :
+                            d.performance >= 80 ? 'rgba(59, 130, 246, 1)' :
+                            'rgba(251, 191, 36, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Performans: %' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Trend Chart (Monthly Performance)
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx) {
+            // Generate mock monthly data for last 6 months
+            const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+            const avgPerformance = Math.round(
+                this.departments.reduce((sum, d) => sum + d.performance, 0) / this.departments.length
+            );
+            const trendData = months.map((_, index) => {
+                // Simulate slight variations around average
+                const variation = (Math.random() - 0.5) * 10;
+                return Math.max(60, Math.min(100, avgPerformance + variation));
+            });
+
+            // Destroy existing chart if it exists
+            if (this.trendChart) {
+                this.trendChart.destroy();
+            }
+
+            this.trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Ortalama Performans (%)',
+                        data: trendData,
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Performans: %' + context.parsed.y.toFixed(1);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     updatePerformanceData() {
-        showAlert('Performans verileri güncellendi!', 'success');
+        // Reload charts with updated data
+        if (this.currentTab === 'performance') {
+            this.loadPerformanceCharts();
+            showAlert('Performans verileri güncellendi!', 'success');
+        } else {
+            showAlert('Performans verileri güncellendi!', 'success');
+        }
     }
 
     // Export Functions

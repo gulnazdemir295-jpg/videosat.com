@@ -6,27 +6,29 @@
 }
 
 :root {
-    /* Primary Colors - Better Contrast */
-    --primary-color: #6366f1;
-    --primary-dark: #4f46e5;
-    --secondary-color: #f59e0b;
+    /* Primary Colors - Red & White Theme */
+    --primary-color: #dc2626; /* Kırmızı - ana renk */
+    --primary-dark: #b91c1c; /* Koyu kırmızı */
+    --primary-light: #ef4444; /* Açık kırmızı */
+    --secondary-color: #ffffff; /* Beyaz */
     
     /* Status Colors - WCAG AA Compliant */
-    --success-color: #059669; /* Better contrast than #10b981 */
-    --danger-color: #dc2626; /* Better contrast than #ef4444 */
-    --warning-color: #d97706; /* Better contrast than #f59e0b */
-    --info-color: #0284c7; /* Better contrast than #3b82f6 */
+    --success-color: #22c55e; /* Yeşil */
+    --danger-color: #ef4444; /* Kırmızı */
+    --warning-color: #f59e0b; /* Sarı */
+    --info-color: #3b82f6; /* Mavi */
     
-    /* Text Colors - High Contrast for Readability */
-    --text-primary: #111827; /* Almost black for better readability */
-    --text-secondary: #4b5563; /* Better contrast */
-    --text-light: #6b7280;
-    --text-muted: #9ca3af;
+    /* Text Colors - White & Light for Black Background */
+    --text-primary: #ffffff; /* Beyaz - ana metin */
+    --text-secondary: #f5f5f5; /* Açık gri */
+    --text-light: #e5e5e5;
+    --text-muted: #b0b0b0;
     
-    /* Background Colors */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
-    --bg-dark: #111827;
+    /* Background Colors - Black Theme */
+    --bg-primary: #000000; /* Siyah */
+    --bg-secondary: #1a1a1a; /* Çok koyu gri */
+    --bg-card: #1f1f1f; /* Card arka planı */
+    --bg-dark: #000000;
     
     /* Border Colors */
     --border-color: #d1d5db; /* More visible borders */
@@ -58,7 +60,7 @@ body {
     font-family: var(--font-family);
     line-height: 1.6;
     color: var(--text-primary);
-    background-color: var(--bg-primary);
+    background-color: var(--bg-primary) !important; /* Siyah arka plan */
     overflow-x: hidden;
     scroll-behavior: smooth;
 }
@@ -302,8 +304,8 @@ a:focus {
 /* Hero Section */
 .hero {
     padding: 8rem 0 4rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; /* Kırmızı gradient */
+    color: #ffffff !important;
     position: relative;
     overflow: hidden;
 }
@@ -339,7 +341,7 @@ a:focus {
 }
 
 .gradient-text {
-    background: linear-gradient(45deg, #fbbf24, #f59e0b);
+    background: linear-gradient(45deg, #dc2626, #ef4444) !important; /* Kırmızı gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -441,7 +443,7 @@ section {
 
 /* Features Section */
 .features {
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary) !important; /* Siyah */
 }
 
 .features-grid {
@@ -451,12 +453,13 @@ section {
 }
 
 .feature-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu card */
     padding: 2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+    border: 1px solid #404040 !important; /* Koyu border */
     transition: all 0.3s ease;
+    color: #ffffff !important; /* Beyaz metin */
 }
 
 .feature-card:hover {
@@ -483,12 +486,12 @@ section {
 .feature-card h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: #ffffff !important; /* Beyaz */
 }
 
 .feature-card p {
     margin-bottom: 1.5rem;
-    color: var(--text-secondary);
+    color: #f5f5f5 !important; /* Açık gri */
 }
 
 .feature-card ul {
@@ -560,6 +563,7 @@ section {
 .pricing-header h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
+    color: #ffffff !important; /* Beyaz */
 }
 
 .price {
@@ -595,7 +599,7 @@ section {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: var(--text-secondary);
+    color: #f5f5f5 !important; /* Açık gri */
 }
 
 .pricing-features i {
@@ -605,7 +609,7 @@ section {
 
 /* Contact Section */
 .contact {
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary) !important; /* Siyah */
 }
 
 .contact-content {
@@ -646,7 +650,9 @@ section {
 }
 
 .contact-form {
-    background: white;
+    background: #1f1f1f !important; /* Koyu card */
+    color: var(--text-primary) !important;
+    border: 1px solid #404040 !important;
     padding: 2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);

@@ -1,0 +1,444 @@
+/**
+ * VideoSat Platform - Comprehensive Color & Background Contrast Fix
+ * Tüm sayfalardaki renk ve arka fon okunabilirlik sorunlarını çözer
+ * WCAG AA standartlarına uygun kontrast sağlar
+ */
+
+/* ===== GLOBAL BACKGROUND & TEXT COLOR FIXES ===== */
+
+/* Ensure body has proper background */
+body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+
+body.panel-body {
+    background-color: #f8fafc !important;
+}
+
+/* ===== WHITE BACKGROUND FIXES ===== */
+
+/* White backgrounds must have dark text */
+.white, .bg-white, 
+[style*="background: white"], 
+[style*="background: #fff"], 
+[style*="background: #ffffff"],
+.card, .stat-card, .action-card,
+.modal-content, .panel-section {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Cards with white background */
+.card *:not(.btn):not(a):not(.badge):not([class*="icon"]),
+.stat-card *:not(.btn):not(a):not(.badge):not([class*="icon"]),
+.action-card *:not(.btn):not(a):not(.badge):not([class*="icon"]) {
+    color: #1f2937 !important;
+}
+
+.card p, .stat-card p, .action-card p {
+    color: #4b5563 !important;
+}
+
+/* ===== GRADIENT BACKGROUND FIXES ===== */
+
+/* Gradient backgrounds must have white text */
+[style*="background: linear-gradient"],
+.balance-card,
+.stat-card[style*="gradient"],
+.hero,
+[class*="gradient"] {
+    color: #ffffff !important;
+}
+
+[style*="background: linear-gradient"] *,
+.balance-card *,
+.stat-card[style*="gradient"] * {
+    color: #ffffff !important;
+}
+
+/* ===== DARK BACKGROUND FIXES ===== */
+
+/* Dark backgrounds */
+.panel-nav,
+[class*="dark"],
+[style*="background: #1"],
+[style*="background: #2"],
+[style*="background: #0"] {
+    color: #ffffff !important;
+}
+
+.panel-nav * {
+    color: #ffffff !important;
+}
+
+.panel-nav-menu .nav-link {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.panel-nav-menu .nav-link:hover,
+.panel-nav-menu .nav-link.active {
+    color: #ffffff !important;
+}
+
+/* ===== LIGHT GRAY BACKGROUND FIXES ===== */
+
+/* Light gray backgrounds */
+.bg-gray-50, .bg-gray-100,
+[style*="background: #f"],
+.activity-item,
+[class*="light"] {
+    background-color: #f9fafb !important;
+    color: #1f2937 !important;
+}
+
+.bg-gray-50 *, .bg-gray-100 *,
+.activity-item * {
+    color: #1f2937 !important;
+}
+
+/* ===== TABLE FIXES ===== */
+
+table {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+table thead {
+    background-color: #f9fafb !important;
+}
+
+table th {
+    background-color: #f9fafb !important;
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+}
+
+table td {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+}
+
+table tbody tr:hover td {
+    background-color: #f9fafb !important;
+}
+
+/* ===== FORM ELEMENT FIXES ===== */
+
+input, textarea, select {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #d1d5db !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #6366f1 !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+label {
+    color: #1f2937 !important;
+    font-weight: 500 !important;
+}
+
+/* ===== BUTTON FIXES ===== */
+
+.btn {
+    font-weight: 500 !important;
+}
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info {
+    color: #ffffff !important;
+}
+
+.btn-outline {
+    background-color: transparent !important;
+    color: #6366f1 !important;
+    border-color: #6366f1 !important;
+}
+
+.btn-outline:hover {
+    background-color: #6366f1 !important;
+    color: #ffffff !important;
+}
+
+/* ===== EMPTY STATE FIXES ===== */
+
+/* Empty states with icons */
+[style*="color: #9ca3af"] {
+    color: #6b7280 !important;
+}
+
+[style*="color: #6b7280"] {
+    color: #4b5563 !important;
+}
+
+.empty-state,
+.empty-state p {
+    color: #4b5563 !important;
+}
+
+.empty-state i {
+    color: #6b7280 !important;
+}
+
+/* ===== MODAL FIXES ===== */
+
+.modal {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.modal-content {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+.modal-content h2,
+.modal-content h3,
+.modal-content h4 {
+    color: #1f2937 !important;
+}
+
+.modal-content p,
+.modal-content label {
+    color: #4b5563 !important;
+}
+
+.modal-header {
+    background-color: #f9fafb !important;
+    border-bottom-color: #e5e7eb !important;
+}
+
+.modal-header h2 {
+    color: #1f2937 !important;
+}
+
+.close, .modal-close {
+    color: #6b7280 !important;
+}
+
+.close:hover, .modal-close:hover {
+    color: #1f2937 !important;
+}
+
+/* ===== STAT ICON BACKGROUND FIXES ===== */
+
+/* Stat icon backgrounds with proper text */
+.stat-icon[style*="background: #fee2e2"],
+.stat-icon[style*="background: #fef3c7"],
+.stat-icon[style*="background: #d1fae5"],
+.stat-icon[style*="background: #dbeafe"] {
+    color: #1f2937 !important;
+}
+
+.stat-icon[style*="background: rgba(255"] {
+    color: #ffffff !important;
+}
+
+/* ===== SECTION HEADER FIXES ===== */
+
+.section-header h1,
+.section-header h2 {
+    color: #1f2937 !important;
+}
+
+.section-header p {
+    color: #4b5563 !important;
+}
+
+/* ===== TABS FIXES ===== */
+
+.tabs {
+    background-color: #ffffff !important;
+}
+
+.tab-btn {
+    color: #4b5563 !important;
+    background-color: transparent !important;
+}
+
+.tab-btn:hover {
+    color: #1f2937 !important;
+    background-color: #f9fafb !important;
+}
+
+.tab-btn.active {
+    color: #6366f1 !important;
+    background-color: #f9fafb !important;
+}
+
+.tab-content {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* ===== LIST ITEMS FIXES ===== */
+
+ul, ol, li {
+    color: #1f2937 !important;
+}
+
+/* ===== LINK FIXES ===== */
+
+a {
+    color: #6366f1 !important;
+}
+
+a:hover {
+    color: #4f46e5 !important;
+}
+
+a:visited {
+    color: #5b21b6 !important;
+}
+
+/* ===== HEADING FIXES ===== */
+
+h1, h2, h3, h4, h5, h6 {
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+}
+
+/* ===== PARAGRAPH FIXES ===== */
+
+p {
+    color: #1f2937 !important;
+    line-height: 1.6 !important;
+}
+
+p[style*="color: white"] {
+    color: #ffffff !important;
+}
+
+/* ===== BADGE & LABEL FIXES ===== */
+
+.badge, .status-badge, .label {
+    color: #1f2937 !important;
+    font-weight: 500 !important;
+}
+
+.badge-success {
+    background-color: #059669 !important;
+    color: #ffffff !important;
+}
+
+.badge-danger {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.badge-warning {
+    background-color: #d97706 !important;
+    color: #ffffff !important;
+}
+
+.badge-info {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+/* ===== ALERT & MESSAGE FIXES ===== */
+
+.alert, .message, .notification {
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
+}
+
+.alert-success {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.alert-danger {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.alert-warning {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+.alert-info {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+/* ===== FORCE DARK TEXT ON LIGHT BACKGROUNDS ===== */
+
+[style*="background: #f"],
+[style*="background-color: #f"],
+.bg-light,
+.bg-gray-50,
+.bg-gray-100 {
+    color: #1f2937 !important;
+}
+
+[style*="background: #f"] *,
+[style*="background-color: #f"] *,
+.bg-light *,
+.bg-gray-50 *,
+.bg-gray-100 * {
+    color: #1f2937 !important;
+}
+
+/* ===== FORCE WHITE TEXT ON DARK BACKGROUNDS ===== */
+
+[style*="background: linear-gradient"],
+[style*="background: #1"],
+[style*="background: #2"],
+[style*="background: #3"],
+[style*="background: #4"],
+[style*="background: #5"],
+[style*="background: #6"],
+.bg-dark,
+.bg-primary {
+    color: #ffffff !important;
+}
+
+[style*="background: linear-gradient"] *,
+[style*="background: #1"] *,
+[style*="background: #2"] *,
+.bg-dark *,
+.bg-primary * {
+    color: #ffffff !important;
+}
+
+/* ===== RESPONSIVE FIXES ===== */
+
+@media (max-width: 768px) {
+    body {
+        background-color: #ffffff !important;
+        color: #1f2937 !important;
+    }
+    
+    .panel-main {
+        background-color: #f8fafc !important;
+    }
+}
+
+/* ===== ACCESSIBILITY FIXES ===== */
+
+/* Increase contrast for better readability */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus states for better accessibility */
+*:focus-visible {
+    outline: 2px solid #6366f1 !important;
+    outline-offset: 2px !important;
+}
+
+

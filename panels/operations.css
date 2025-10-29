@@ -1,3 +1,122 @@
+/* Modal Enhancements */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--gray-800);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close {
+    color: var(--gray-400);
+    font-size: 2rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.close:hover {
+    color: var(--gray-600);
+}
+
+.auth-form {
+    padding: 2rem;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+}
+
+.auth-form input,
+.auth-form select,
+.auth-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.auth-form input:focus,
+.auth-form select:focus,
+.auth-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.auth-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+}
+
 /* Operations Management Specific Styles */
 
 /* Operations Overview Cards */
@@ -711,31 +830,176 @@
 .recommendation-item,
 .bottleneck-item,
 .improvement-item,
-.cost-item {
+.cost-optimization-item {
     padding: 1rem;
     background: var(--gray-50);
     border-radius: 8px;
     border: 1px solid var(--gray-200);
+    transition: all 0.2s ease;
+}
+
+.recommendation-item:hover,
+.bottleneck-item:hover,
+.improvement-item:hover,
+.cost-optimization-item:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.recommendation-header,
+.bottleneck-header,
+.improvement-header,
+.cost-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
 .recommendation-item h4,
 .bottleneck-item h4,
 .improvement-item h4,
-.cost-item h4 {
+.cost-optimization-item h4 {
     margin: 0 0 0.5rem;
     color: var(--gray-800);
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
-.recommendation-item p,
-.bottleneck-item p,
-.improvement-item p,
-.cost-item p {
-    margin: 0;
+.recommendation-description,
+.bottleneck-description {
+    margin: 0.5rem 0;
     color: var(--gray-600);
     font-size: 0.875rem;
     line-height: 1.5;
+}
+
+.recommendation-footer {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.impact-badge,
+.severity-badge,
+.effort-badge,
+.savings-badge,
+.improvement-timeline,
+.savings-percent {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.impact-badge.high,
+.severity-badge.high {
+    background: var(--error-100);
+    color: var(--error-700);
+}
+
+.impact-badge.medium,
+.severity-badge.medium {
+    background: var(--warning-100);
+    color: var(--warning-700);
+}
+
+.impact-badge.low,
+.severity-badge.low {
+    background: var(--success-100);
+    color: var(--success-700);
+}
+
+.effort-badge {
+    background: var(--info-100);
+    color: var(--info-700);
+}
+
+.savings-badge {
+    background: var(--success-100);
+    color: var(--success-700);
+    font-weight: 600;
+}
+
+.bottleneck-solution {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--gray-200);
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.improvement-name {
+    margin: 0.5rem 0;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.improvement-progress {
+    margin-top: 0.75rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-400));
+    transition: width 0.3s ease;
+}
+
+.progress-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.cost-details {
+    margin: 0.75rem 0;
+}
+
+.cost-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.cost-item:last-child {
+    border-bottom: none;
+}
+
+.cost-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.cost-value {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-size: 0.875rem;
+}
+
+.cost-value.savings {
+    color: var(--success-600);
+}
+
+.cost-implementation {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--gray-200);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-style: italic;
 }
 
 /* Form Enhancements */

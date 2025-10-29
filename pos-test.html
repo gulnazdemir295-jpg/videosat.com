@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VideoSat POS - Satış Sistemi Test</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="text-readability-fix.css">
+    <link rel="stylesheet" href="color-contrast-fix.css">
+    <link rel="stylesheet" href="red-white-black-theme.css">
     <style>
         * {
             margin: 0;
@@ -406,7 +409,7 @@
         }
 
         .modal-close {
-            color: #aaa;
+            color: #6b7280;
             float: right;
             font-size: 28px;
             font-weight: bold;
@@ -505,6 +508,14 @@
         </div>
     </div>
 
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <!-- Module Loader -->
+    <script src="modules/module-loader.js"></script>
+    
+    <script src="app.js"></script>
     <script src="pos-test.js"></script>
     <script src="services/payment-service.js"></script>
     <script src="services/order-service.js"></script>

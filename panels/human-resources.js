@@ -16,6 +16,21 @@ class HumanResourcesManager {
         this.updateHROverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['addEmployeeModal', 'payrollModal', 'performanceReviewModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -540,13 +555,120 @@ class HumanResourcesManager {
         document.getElementById('monthlyPayroll').textContent = '₺' + this.formatNumber(monthlyPayroll);
     }
 
-    // Chart Functions (Mock implementations)
+    // Chart Functions
     updateDepartmentChart() {
-        console.log('Department chart updated');
+        const ctx = document.getElementById('departmentChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        if (this.departmentChart) {
+            this.departmentChart.destroy();
+        }
+
+        const departments = ['Geliştirme', 'Satış', 'Pazarlama', 'İnsan Kaynakları', 'Finans', 'Operasyon'];
+        const counts = departments.map(dept => {
+            return this.employees.filter(e => this.getDepartmentName(e.department) === dept).length;
+        });
+
+        this.departmentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: departments,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(236, 72, 153, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(99, 102, 241, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(168, 85, 247, 1)',
+                        'rgba(236, 72, 153, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
     }
 
-    updatePerformanceTrendChart() {
-        console.log('Performance trend chart updated');
+    updatePerformanceTrendChart(period = 'monthly') {
+        const ctx = document.getElementById('performanceTrendChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        if (this.performanceTrendChart) {
+            this.performanceTrendChart.destroy();
+        }
+
+        const periods = {
+            weekly: ['Hafta 1', 'Hafta 2', 'Hafta 3', 'Hafta 4'],
+            monthly: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran']
+        };
+
+        const labels = periods[period] || periods.monthly;
+        const avgPerformance = labels.map(() => 75 + Math.random() * 20);
+
+        this.performanceTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ortalama Performans',
+                    data: avgPerformance,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Performans: %' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 60,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     loadPerformanceData() {

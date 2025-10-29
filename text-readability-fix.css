@@ -1,0 +1,126 @@
+/**
+ * VideoSat Platform - Text Readability Fix
+ * Bu dosya tüm silik ve okunamayan yazıları koyulaştırır
+ * WCAG AA standartlarına uygun kontrast sağlar
+ */
+
+/* Global Text Readability Improvements */
+* {
+    /* Ensure all text is readable by default */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enhanced text contrast for better readability */
+body {
+    color: #111827 !important; /* Force dark text */
+}
+
+/* Override any light text colors with better contrast */
+.text-muted, .text-light, .text-gray,
+p[style*="color: #999"], p[style*="color: #ccc"], p[style*="color: #aaa"],
+i[style*="color: #999"], i[style*="color: #ccc"], i[style*="color: #aaa"] {
+    color: #6b7280 !important; /* Better contrast gray */
+}
+
+/* Ensure headings are dark */
+h1, h2, h3, h4, h5, h6 {
+    color: #1f2937 !important;
+}
+
+/* Table text should be readable */
+table, td, th {
+    color: #1f2937 !important;
+}
+
+/* Form labels and inputs */
+label {
+    color: #1f2937 !important;
+}
+
+input, textarea, select {
+    color: #1f2937 !important;
+}
+
+/* Card content */
+.card, .stat-card, .action-card {
+    color: #1f2937 !important;
+}
+
+.card p, .stat-card p {
+    color: #4b5563 !important; /* Better contrast for secondary text */
+}
+
+/* Empty state messages */
+.empty-state {
+    color: #6b7280 !important; /* Better contrast */
+}
+
+.empty-state i {
+    color: #9ca3af !important; /* Better contrast for icons */
+}
+
+/* Status badges and labels */
+.badge, .status-badge {
+    color: #1f2937 !important;
+}
+
+/* Modal content */
+.modal-content {
+    color: #1f2937 !important;
+}
+
+.modal-content p {
+    color: #4b5563 !important;
+}
+
+/* Navigation text in panels */
+.panel-nav-menu .nav-link {
+    color: rgba(255, 255, 255, 0.95) !important; /* Better contrast for white text on dark bg */
+}
+
+/* Section headers */
+.section-header p {
+    color: #4b5563 !important; /* Better contrast */
+}
+
+/* Stats */
+.stat-content p {
+    color: #4b5563 !important; /* Better contrast */
+}
+
+/* List items */
+li {
+    color: #1f2937 !important;
+}
+
+/* Links should maintain contrast */
+a {
+    color: #6366f1 !important;
+}
+
+a:visited {
+    color: #4f46e5 !important;
+}
+
+/* Buttons text */
+.btn {
+    color: #ffffff !important;
+}
+
+.btn-outline {
+    color: #6366f1 !important;
+    background-color: transparent !important;
+}
+
+/* Form inputs */
+input::placeholder, textarea::placeholder {
+    color: #9ca3af !important; /* Better contrast for placeholders */
+}
+
+/* Ensure dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles can be added here if needed */
+}
+
+

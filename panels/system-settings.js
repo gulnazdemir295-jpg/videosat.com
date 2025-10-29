@@ -11,6 +11,18 @@ class SystemSettingsManager {
         this.loadSettingsValues();
         this.updateSystemStatus();
         this.startStatusMonitoring();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
     }
 
     setupEventListeners() {

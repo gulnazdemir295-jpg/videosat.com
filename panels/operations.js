@@ -16,6 +16,23 @@ class OperationsManager {
         this.updateOperationsOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+        this.renderOptimizationData();
+    }
+
+    setupModalCloseListeners() {
+        // Close modals when clicking outside
+        const modals = ['addProcessModal', 'resourceModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -79,9 +96,9 @@ class OperationsManager {
         if (tabName === 'dashboard') {
             this.loadDashboardData();
         } else if (tabName === 'performance') {
-            this.loadPerformanceData();
+            this.loadPerformanceCharts();
         } else if (tabName === 'optimization') {
-            this.loadOptimizationData();
+            this.renderOptimizationData();
         }
     }
 
@@ -559,22 +576,277 @@ class OperationsManager {
         document.getElementById('systemUptime').textContent = data.systemUptime + '%';
     }
 
-    // Chart Functions (Mock implementations)
-    updateSystemPerformanceChart() {
-        console.log('System performance chart updated');
+    // Chart Functions
+    updateSystemPerformanceChart(period = 'daily') {
+        const ctx = document.getElementById('systemPerformanceChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.systemPerformanceChart) {
+            this.systemPerformanceChart.destroy();
+        }
+
+        const periods = {
+            daily: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            weekly: ['Hafta 1', 'Hafta 2', 'Hafta 3', 'Hafta 4'],
+            monthly: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran']
+        };
+
+        const labels = periods[period] || periods.daily;
+        const baseValue = 85;
+        const data = labels.map(() => baseValue + (Math.random() * 15 - 5));
+
+        this.systemPerformanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sistem Performansı (%)',
+                    data: data,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Performans: %' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 70,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    updateResourceUtilizationChart() {
-        console.log('Resource utilization chart updated');
+    updateResourceUtilizationChart(period = 'realtime') {
+        const ctx = document.getElementById('resourceUtilizationChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.resourceUtilizationChart) {
+            this.resourceUtilizationChart.destroy();
+        }
+
+        const resourceTypes = ['İnsan', 'Teknik', 'Ekipman', 'Yazılım'];
+        const utilizationData = this.resources.reduce((acc, resource) => {
+            const type = this.getResourceTypeName(resource.type);
+            if (!acc[type]) acc[type] = [];
+            acc[type].push(resource.utilization);
+            return acc;
+        }, {});
+
+        const datasets = Object.keys(utilizationData).map((type, index) => {
+            const colors = [
+                'rgba(34, 197, 94, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(251, 191, 36, 0.8)',
+                'rgba(168, 85, 247, 0.8)'
+            ];
+            return {
+                label: type,
+                data: utilizationData[type],
+                backgroundColor: colors[index % colors.length],
+                borderColor: colors[index % colors.length].replace('0.8', '1'),
+                borderWidth: 1
+            };
+        });
+
+        this.resourceUtilizationChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: this.resources.map(r => r.name),
+                datasets: datasets.length > 0 ? datasets : [{
+                    label: 'Kaynak Kullanımı (%)',
+                    data: this.resources.map(r => r.utilization),
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: datasets.length > 1,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Kullanım: %' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    loadPerformanceCharts() {
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded');
+            return;
+        }
+
+        // Performance Trend Chart
+        const trendCtx = document.getElementById('performanceTrendChart');
+        if (trendCtx) {
+            const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+            const efficiencyData = months.map(() => 85 + Math.random() * 15 - 5);
+
+            if (this.performanceTrendChart) {
+                this.performanceTrendChart.destroy();
+            }
+
+            this.performanceTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Operasyonel Verimlilik (%)',
+                        data: efficiencyData,
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 70,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // KPI Comparison Chart
+        const kpiCtx = document.getElementById('kpiComparisonChart');
+        if (kpiCtx) {
+            const performanceData = this.loadPerformanceData();
+            const kpis = ['Verimlilik', 'Kaynak Kullanımı', 'Süreç Kalitesi', 'Müşteri Memnuniyeti'];
+            const values = [
+                performanceData.operationalEfficiency,
+                performanceData.resourceUtilization,
+                performanceData.processQuality,
+                performanceData.customerSatisfaction
+            ];
+
+            if (this.kpiComparisonChart) {
+                this.kpiComparisonChart.destroy();
+            }
+
+            this.kpiComparisonChart = new Chart(kpiCtx, {
+                type: 'radar',
+                data: {
+                    labels: kpis,
+                    datasets: [{
+                        label: 'KPI Değerleri',
+                        data: values,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(99, 102, 241, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: false,
+                            min: 70,
+                            max: 100,
+                            ticks: {
+                                stepSize: 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
     }
 
     // Modal Functions
     showAddProcessModal() {
-        document.getElementById('addProcessModal').style.display = 'block';
+        const modal = document.getElementById('addProcessModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showResourceModal() {
-        document.getElementById('resourceModal').style.display = 'block';
+        const modal = document.getElementById('resourceModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     // Form Handlers
@@ -727,15 +999,41 @@ class OperationsManager {
         `).join('');
     }
 
-    // Optimization Functions
-    runOptimizationAnalysis() {
-        showAlert('Optimizasyon analizi başlatıldı!', 'info');
-        // In a real implementation, this would run actual optimization algorithms
-    }
-
     generatePerformanceReport() {
+        const startDate = document.getElementById('performanceStartDate').value;
+        const endDate = document.getElementById('performanceEndDate').value;
+        
+        if (!startDate || !endDate) {
+            showAlert('Lütfen başlangıç ve bitiş tarihlerini seçin!', 'error');
+            return;
+        }
+
         showAlert('Performans raporu oluşturuluyor...', 'info');
-        // In a real implementation, this would generate actual reports
+        
+        // Generate report data
+        const reportData = {
+            period: {
+                start: startDate,
+                end: endDate
+            },
+            metrics: this.loadPerformanceData(),
+            processes: this.processes,
+            resources: this.resources,
+            generatedAt: new Date().toISOString()
+        };
+
+        // Create and download report
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `performance-report-${startDate}-${endDate}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert('Performans raporu başarıyla oluşturuldu!', 'success');
     }
 
     exportOperationsData() {
@@ -789,6 +1087,150 @@ class OperationsManager {
             'optimized': 'Optimize Edilmiş'
         };
         return statuses[status] || status;
+    }
+
+    // Optimization Functions
+    renderOptimizationData() {
+        const optimizationData = this.loadOptimizationData();
+        this.renderRecommendations(optimizationData.recommendations);
+        this.renderBottlenecks(optimizationData.bottlenecks);
+        this.renderImprovements(optimizationData.improvements);
+        this.renderCostOptimizations(optimizationData.costOptimizations);
+    }
+
+    renderRecommendations(recommendations) {
+        const container = document.getElementById('optimizationRecommendations');
+        if (!container) return;
+
+        container.innerHTML = recommendations.map(rec => `
+            <div class="recommendation-item">
+                <div class="recommendation-header">
+                    <h4>${rec.title}</h4>
+                    <span class="impact-badge ${rec.impact}">${this.getImpactName(rec.impact)} Etki</span>
+                </div>
+                <p class="recommendation-description">${rec.description}</p>
+                <div class="recommendation-footer">
+                    <span class="effort-badge">${this.getEffortName(rec.effort)}</span>
+                    <span class="savings-badge">${rec.savings}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderBottlenecks(bottlenecks) {
+        const container = document.getElementById('bottlenecksList');
+        if (!container) return;
+
+        container.innerHTML = bottlenecks.map(bottleneck => `
+            <div class="bottleneck-item">
+                <div class="bottleneck-header">
+                    <h4>${bottleneck.process}</h4>
+                    <span class="severity-badge ${bottleneck.severity}">${this.getSeverityName(bottleneck.severity)}</span>
+                </div>
+                <p class="bottleneck-description">${bottleneck.description}</p>
+                <div class="bottleneck-solution">
+                    <strong>Çözüm:</strong> ${bottleneck.solution}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderImprovements(improvements) {
+        const container = document.getElementById('efficiencyImprovements');
+        if (!container) return;
+
+        container.innerHTML = improvements.map(improvement => `
+            <div class="improvement-item">
+                <div class="improvement-header">
+                    <h4>${improvement.area}</h4>
+                    <span class="improvement-timeline">${improvement.timeline}</span>
+                </div>
+                <p class="improvement-name">${improvement.improvement}</p>
+                <div class="improvement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(parseFloat(improvement.currentValue) / parseFloat(improvement.targetValue)) * 100}%"></div>
+                    </div>
+                    <div class="progress-values">
+                        <span>Mevcut: ${improvement.currentValue}</span>
+                        <span>Hedef: ${improvement.targetValue}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderCostOptimizations(costOptimizations) {
+        const container = document.getElementById('costOptimizations');
+        if (!container) return;
+
+        container.innerHTML = costOptimizations.map(opt => {
+            const savingsPercent = (parseFloat(opt.potentialSavings.replace(/[^\d.]/g, '')) / parseFloat(opt.currentCost.replace(/[^\d.]/g, ''))) * 100;
+            return `
+                <div class="cost-optimization-item">
+                    <div class="cost-header">
+                        <h4>${opt.area}</h4>
+                        <span class="savings-percent">%${savingsPercent.toFixed(1)} Tasarruf</span>
+                    </div>
+                    <div class="cost-details">
+                        <div class="cost-item">
+                            <span class="cost-label">Mevcut Maliyet:</span>
+                            <span class="cost-value">${opt.currentCost}</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-label">Potansiyel Tasarruf:</span>
+                            <span class="cost-value savings">${opt.potentialSavings}</span>
+                        </div>
+                    </div>
+                    <p class="cost-implementation">${opt.implementation}</p>
+                </div>
+            `;
+        }).join('');
+    }
+
+    runOptimizationAnalysis() {
+        showAlert('Optimizasyon analizi başlatıldı!', 'info');
+        // Reload optimization data
+        setTimeout(() => {
+            this.renderOptimizationData();
+            showAlert('Optimizasyon analizi tamamlandı!', 'success');
+        }, 2000);
+    }
+
+    getResourceTypeName(type) {
+        const types = {
+            'human': 'İnsan',
+            'technical': 'Teknik',
+            'equipment': 'Ekipman',
+            'software': 'Yazılım'
+        };
+        return types[type] || type;
+    }
+
+    getImpactName(impact) {
+        const impacts = {
+            'high': 'Yüksek',
+            'medium': 'Orta',
+            'low': 'Düşük'
+        };
+        return impacts[impact] || impact;
+    }
+
+    getEffortName(effort) {
+        const efforts = {
+            'high': 'Yüksek Çaba',
+            'medium': 'Orta Çaba',
+            'low': 'Düşük Çaba'
+        };
+        return efforts[effort] || effort;
+    }
+
+    getSeverityName(severity) {
+        const severities = {
+            'high': 'Yüksek',
+            'medium': 'Orta',
+            'low': 'Düşük'
+        };
+        return severities[severity] || severity;
     }
 
     getAlertIcon(type) {

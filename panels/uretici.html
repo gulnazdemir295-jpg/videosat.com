@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="../modern-ui-enhancements.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="panel-body">
+<link rel="stylesheet" href="../text-readability-fix.css">
+    <link rel="stylesheet" href="../color-contrast-fix.css"></head>
+    <link rel="stylesheet" href="../red-white-black-theme.css"><body class="panel-body">
     <!-- Panel Navigation -->
     <nav class="panel-nav">
         <div class="panel-nav-container">
@@ -784,6 +785,15 @@
         window.logout = logoutDirect;
         console.log('✅ Fallback functions loaded');
     </script>
+    
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+    
+    <!-- Scripts -->
+    <!-- Module Loader -->
+    <script src="../modules/module-loader.js"></script>
+    
+    <script src="../app.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     <script src="../services/order-service.js"></script>

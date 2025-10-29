@@ -13,6 +13,21 @@ class ReportsManager {
         this.renderReports();
         this.updateOverview();
         this.loadDashboardData();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['createReportModal', 'scheduleReportModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {

@@ -17,6 +17,22 @@ class FinanceManager {
         this.renderJournalEntries();
         this.updateFinancialOverview();
         this.loadDashboardData();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        // Close modals when clicking outside
+        const modals = ['addTransactionModal', 'budgetModal', 'journalEntryModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -459,33 +475,391 @@ class FinanceManager {
         document.getElementById('budgetUsage').textContent = usagePercentage.toFixed(1) + '%';
     }
 
-    // Chart Functions (Mock implementations)
-    updateIncomeExpenseChart() {
-        // In a real implementation, this would use Chart.js
-        console.log('Income vs Expense chart updated');
+    // Chart Functions
+    updateIncomeExpenseChart(period = 'monthly') {
+        const ctx = document.getElementById('incomeExpenseChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.incomeExpenseChart) {
+            this.incomeExpenseChart.destroy();
+        }
+
+        const periods = {
+            monthly: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'],
+            quarterly: ['Q1', 'Q2', 'Q3', 'Q4'],
+            yearly: ['2022', '2023', '2024']
+        };
+
+        const labels = periods[period] || periods.monthly;
+        const incomeData = labels.map(() => 1000000 + Math.random() * 500000);
+        const expenseData = labels.map(() => 600000 + Math.random() * 300000);
+
+        this.incomeExpenseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Gelir',
+                        data: incomeData,
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Gider',
+                        data: expenseData,
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₺' + context.parsed.y.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    updateCashFlowChart() {
-        // In a real implementation, this would use Chart.js
-        console.log('Cash flow chart updated');
+    updateCashFlowChart(period = '6months') {
+        const ctx = document.getElementById('cashFlowChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        // Destroy existing chart if it exists
+        if (this.cashFlowChart) {
+            this.cashFlowChart.destroy();
+        }
+
+        const periods = {
+            '6months': 6,
+            '12months': 12,
+            '2years': 24
+        };
+
+        const monthCount = periods[period] || 6;
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        const labels = months.slice(0, monthCount);
+        const cashFlowData = labels.map(() => 2500000 + (Math.random() * 1000000 - 500000));
+
+        this.cashFlowChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nakit Akışı',
+                    data: cashFlowData,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Nakit Akışı: ₺' + context.parsed.y.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     loadReportsData() {
-        // Load report data when reports tab is opened
-        console.log('Reports data loaded');
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded');
+            return;
+        }
+
+        this.updateIncomeExpenseReportChart();
+        this.updateProfitabilityReportChart();
+        this.updateCashFlowReportChart();
+        this.updateBudgetPerformanceReportChart();
+    }
+
+    updateIncomeExpenseReportChart() {
+        const ctx = document.getElementById('incomeExpenseReportChart');
+        if (!ctx) return;
+
+        if (this.incomeExpenseReportChart) {
+            this.incomeExpenseReportChart.destroy();
+        }
+
+        const income = this.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const expense = this.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+
+        this.incomeExpenseReportChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Gelir', 'Gider'],
+                datasets: [{
+                    data: [income, expense],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₺' + context.parsed.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateProfitabilityReportChart() {
+        const ctx = document.getElementById('profitabilityReportChart');
+        if (!ctx) return;
+
+        if (this.profitabilityReportChart) {
+            this.profitabilityReportChart.destroy();
+        }
+
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const profitData = months.map(() => {
+            const income = 1000000 + Math.random() * 500000;
+            const expense = 600000 + Math.random() * 300000;
+            return income - expense;
+        });
+
+        this.profitabilityReportChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Net Kar',
+                    data: profitData,
+                    backgroundColor: profitData.map(p => p >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)'),
+                    borderColor: profitData.map(p => p >= 0 ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Net Kar: ₺' + context.parsed.y.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateCashFlowReportChart() {
+        const ctx = document.getElementById('cashFlowReportChart');
+        if (!ctx) return;
+
+        if (this.cashFlowReportChart) {
+            this.cashFlowReportChart.destroy();
+        }
+
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const cashFlowData = months.map(() => 2000000 + Math.random() * 1000000);
+
+        this.cashFlowReportChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Nakit Akışı',
+                    data: cashFlowData,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + (value / 1000).toFixed(0) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updateBudgetPerformanceReportChart() {
+        const ctx = document.getElementById('budgetPerformanceReportChart');
+        if (!ctx) return;
+
+        if (this.budgetPerformanceReportChart) {
+            this.budgetPerformanceReportChart.destroy();
+        }
+
+        const labels = this.budgets.map(b => b.name);
+        const usageData = this.budgets.map(b => (b.used / b.amount) * 100);
+
+        this.budgetPerformanceReportChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Bütçe Kullanımı (%)',
+                    data: usageData,
+                    backgroundColor: usageData.map(u => 
+                        u >= 90 ? 'rgba(239, 68, 68, 0.8)' :
+                        u >= 70 ? 'rgba(251, 191, 36, 0.8)' :
+                        'rgba(34, 197, 94, 0.8)'
+                    ),
+                    borderColor: usageData.map(u => 
+                        u >= 90 ? 'rgba(239, 68, 68, 1)' :
+                        u >= 70 ? 'rgba(251, 191, 36, 1)' :
+                        'rgba(34, 197, 94, 1)'
+                    ),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Kullanım: %' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // Modal Functions
     showAddTransactionModal() {
-        document.getElementById('addTransactionModal').style.display = 'block';
+        const modal = document.getElementById('addTransactionModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showBudgetModal() {
-        document.getElementById('budgetModal').style.display = 'block';
+        const modal = document.getElementById('budgetModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showJournalEntryModal() {
-        document.getElementById('journalEntryModal').style.display = 'block';
+        const modal = document.getElementById('journalEntryModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     showAccountModal() {
@@ -549,6 +923,28 @@ class FinanceManager {
             credit: parseFloat(entry.querySelector('.journal-credit').value) || 0
         }));
 
+        // Validate that at least one entry exists
+        if (entries.length === 0) {
+            showAlert('En az bir yevmiye satırı eklemelisiniz!', 'error');
+            return;
+        }
+
+        // Validate that debit equals credit (double-entry bookkeeping)
+        const totalDebit = entries.reduce((sum, e) => sum + e.debit, 0);
+        const totalCredit = entries.reduce((sum, e) => sum + e.credit, 0);
+
+        if (Math.abs(totalDebit - totalCredit) > 0.01) {
+            showAlert('Borç ve alacak tutarları eşit olmalıdır! (Borç: ₺' + this.formatNumber(totalDebit) + ', Alacak: ₺' + this.formatNumber(totalCredit) + ')', 'error');
+            return;
+        }
+
+        // Validate that each entry has account selected
+        const invalidEntries = entries.filter(e => !e.account);
+        if (invalidEntries.length > 0) {
+            showAlert('Tüm satırlarda hesap seçilmelidir!', 'error');
+            return;
+        }
+
         const newEntry = {
             id: Date.now(),
             date: document.getElementById('journalDate').value,
@@ -559,10 +955,54 @@ class FinanceManager {
         this.journalEntries.push(newEntry);
         this.saveJournalEntries();
         this.renderJournalEntries();
+        this.updateAccountsFromJournal(newEntry);
         
         closeModal('journalEntryModal');
         showAlert('Yevmiye kaydı başarıyla eklendi!', 'success');
         e.target.reset();
+        
+        // Reset journal entries container
+        const entriesContainer = document.getElementById('journalEntries');
+        entriesContainer.innerHTML = `
+            <div class="journal-entry">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hesap</label>
+                        <select class="journal-account" required>
+                            <option value="">Seçin</option>
+                            <option value="100">100 - Kasa</option>
+                            <option value="101">101 - Banka</option>
+                            <option value="120">120 - Alıcılar</option>
+                            <option value="320">320 - Satışlar</option>
+                            <option value="600">600 - Satılan Malın Maliyeti</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Borç (₺)</label>
+                        <input type="number" class="journal-debit" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Alacak (₺)</label>
+                        <input type="number" class="journal-credit" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    updateAccountsFromJournal(journalEntry) {
+        journalEntry.entries.forEach(entry => {
+            const account = this.accounts.find(a => a.code === entry.account);
+            if (account) {
+                if (account.type === 'asset' || account.type === 'expense') {
+                    account.balance += entry.debit - entry.credit;
+                } else {
+                    account.balance += entry.credit - entry.debit;
+                }
+            }
+        });
+        this.saveAccounts();
+        this.renderAccounts();
     }
 
     // Transaction Actions
@@ -721,11 +1161,101 @@ class FinanceManager {
     }
 
     generateReport() {
-        showAlert('Rapor oluşturma özelliği yakında eklenecek!', 'info');
+        const startDate = document.getElementById('reportStartDate').value;
+        const endDate = document.getElementById('reportEndDate').value;
+        
+        if (!startDate || !endDate) {
+            showAlert('Lütfen başlangıç ve bitiş tarihlerini seçin!', 'error');
+            return;
+        }
+
+        showAlert('Rapor oluşturuluyor...', 'info');
+        
+        // Generate report data
+        const reportData = {
+            period: {
+                start: startDate,
+                end: endDate
+            },
+            financialOverview: {
+                totalIncome: this.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                totalExpense: this.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0),
+                netProfit: 0
+            },
+            transactions: this.transactions.filter(t => 
+                new Date(t.date) >= new Date(startDate) && new Date(t.date) <= new Date(endDate)
+            ),
+            budgets: this.budgets,
+            generatedAt: new Date().toISOString()
+        };
+        
+        reportData.financialOverview.netProfit = reportData.financialOverview.totalIncome - reportData.financialOverview.totalExpense;
+
+        // Create and download report
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `financial-report-${startDate}-${endDate}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert('Rapor başarıyla oluşturuldu!', 'success');
     }
 
     downloadReport(reportType) {
-        showAlert(`${reportType} raporu indirme özelliği yakında eklenecek!`, 'info');
+        const reportData = {
+            type: reportType,
+            generatedAt: new Date().toISOString(),
+            data: {}
+        };
+
+        switch (reportType) {
+            case 'income-expense':
+                reportData.data = {
+                    income: this.transactions.filter(t => t.type === 'income'),
+                    expense: this.transactions.filter(t => t.type === 'expense')
+                };
+                break;
+            case 'profitability':
+                const income = this.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                const expense = this.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                reportData.data = {
+                    income,
+                    expense,
+                    profit: income - expense,
+                    margin: ((income - expense) / income * 100).toFixed(2) + '%'
+                };
+                break;
+            case 'cashflow':
+                reportData.data = {
+                    transactions: this.transactions,
+                    cashFlow: this.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) * 1.3
+                };
+                break;
+            case 'budget-performance':
+                reportData.data = {
+                    budgets: this.budgets.map(b => ({
+                        ...b,
+                        usagePercent: (b.used / b.amount * 100).toFixed(2)
+                    }))
+                };
+                break;
+        }
+
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportType}-report-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert(`${reportType} raporu başarıyla indirildi!`, 'success');
     }
 
     // Journal Entry Functions

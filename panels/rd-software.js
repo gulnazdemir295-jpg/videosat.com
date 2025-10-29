@@ -18,6 +18,21 @@ class RDSoftwareManager {
         this.updateOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['addProjectModal', 'addResearchModal', 'addInnovationModal', 'addPatentModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -438,8 +453,122 @@ class RDSoftwareManager {
     }
 
     updateAnalytics() {
-        console.log('R&D Analytics updated');
-        // Chart.js integration would go here
+        if (typeof Chart === 'undefined') return;
+        this.updateProjectProgressChart();
+        this.updateBudgetUsageChart();
+        this.updateTechnologyDistributionChart();
+        this.updateInnovationTrendChart();
+    }
+
+    updateProjectProgressChart() {
+        const ctx = document.getElementById('projectProgressChart');
+        if (!ctx) return;
+        if (this.projectProgressChart) this.projectProgressChart.destroy();
+        const projects = this.projects.slice(0, 5).map(p => p.name);
+        const progress = projects.map(() => Math.random() * 100);
+        this.projectProgressChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: projects,
+                datasets: [{
+                    label: 'İlerleme %',
+                    data: progress,
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+            }
+        });
+    }
+
+    updateBudgetUsageChart() {
+        const ctx = document.getElementById('budgetUsageChart');
+        if (!ctx) return;
+        if (this.budgetUsageChart) this.budgetUsageChart.destroy();
+        const projects = this.projects.slice(0, 5).map(p => p.name);
+        const budget = projects.map(() => Math.random() * 100);
+        this.budgetUsageChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: projects,
+                datasets: [{
+                    label: 'Bütçe Kullanımı %',
+                    data: budget,
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+            }
+        });
+    }
+
+    updateTechnologyDistributionChart() {
+        const ctx = document.getElementById('technologyDistributionChart');
+        if (!ctx) return;
+        if (this.technologyDistributionChart) this.technologyDistributionChart.destroy();
+        const technologies = ['AI', 'Blockchain', 'IoT', 'Cloud', 'Security'];
+        const distribution = technologies.map(() => Math.random() * 30);
+        this.technologyDistributionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: technologies,
+                datasets: [{
+                    data: distribution,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(168, 85, 247, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    updateInnovationTrendChart() {
+        const ctx = document.getElementById('innovationTrendChart');
+        if (!ctx) return;
+        if (this.innovationTrendChart) this.innovationTrendChart.destroy();
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const innovations = months.map(() => Math.floor(Math.random() * 10 + 2));
+        this.innovationTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'İnovasyon Sayısı',
+                    data: innovations,
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } }
+            }
+        });
     }
 
     // Filters

@@ -35,6 +35,26 @@ function initializePanel() {
     
     // Show appropriate section based on role
     showSection('dashboard');
+    
+    // Setup modal close listeners
+    setupModalCloseListeners();
+}
+
+// Setup Modal Close Listeners
+function setupModalCloseListeners() {
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                const modalId = modal.id || modal.getAttribute('id');
+                if (modalId) {
+                    closeModal(modalId);
+                } else {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+    });
 }
 
 // Generate Member Number

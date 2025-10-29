@@ -1,0 +1,538 @@
+/**
+ * VideoSat Platform - Kırmızı-Beyaz-Siyah Tema
+ * Tüm siteyi kırmızı-beyaz tonlarına hakim, siyah arka planlı yapar
+ */
+
+/* ===== ROOT VARIABLES - RED & WHITE THEME ===== */
+:root {
+    /* Primary Colors - Red & White */
+    --primary-color: #dc2626; /* Kırmızı - ana renk */
+    --primary-dark: #b91c1c; /* Koyu kırmızı */
+    --primary-light: #ef4444; /* Açık kırmızı */
+    --secondary-color: #ffffff; /* Beyaz */
+    
+    /* Background Colors - Black Theme */
+    --bg-primary: #000000; /* Siyah arka plan */
+    --bg-secondary: #1a1a1a; /* Çok koyu gri */
+    --bg-tertiary: #2a2a2a; /* Koyu gri - cards için */
+    --bg-card: #1f1f1f; /* Card arka planı */
+    
+    /* Text Colors - White & Light */
+    --text-primary: #ffffff; /* Beyaz - ana metin */
+    --text-secondary: #f5f5f5; /* Açık gri - ikincil metin */
+    --text-light: #e5e5e5; /* Çok açık gri */
+    --text-muted: #b0b0b0; /* Muted metin */
+    
+    /* Accent Colors */
+    --accent-red: #dc2626;
+    --accent-red-dark: #991b1b;
+    --accent-red-light: #f87171;
+    
+    /* Status Colors */
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
+    
+    /* Border Colors */
+    --border-color: #404040;
+    --border-light: #505050;
+    --border-red: #dc2626;
+}
+
+/* ===== GLOBAL BACKGROUND - BLACK ===== */
+body {
+    background-color: var(--bg-primary) !important; /* Siyah */
+    color: var(--text-primary) !important; /* Beyaz metin */
+}
+
+body.panel-body {
+    background-color: var(--bg-primary) !important;
+}
+
+html {
+    background-color: var(--bg-primary) !important;
+}
+
+/* ===== NAVIGATION - RED & WHITE ===== */
+.navbar {
+    background-color: var(--bg-secondary) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+.nav-logo {
+    color: var(--primary-color) !important;
+}
+
+.nav-link {
+    color: var(--text-primary) !important;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* ===== CARDS - DARK WITH WHITE TEXT ===== */
+.card, .stat-card, .action-card,
+.panel-section, .section-header,
+.recent-activity, .modal-content {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.card *, .stat-card *, .action-card * {
+    color: var(--text-primary) !important;
+}
+
+.card p, .stat-card p, .action-card p {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== TABLES - DARK THEME ===== */
+table {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+table thead {
+    background-color: var(--bg-secondary) !important;
+}
+
+table th {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+table td {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+table tbody tr:hover td {
+    background-color: var(--bg-secondary) !important;
+}
+
+/* ===== BUTTONS - RED THEME ===== */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    color: var(--secondary-color) !important;
+}
+
+.btn-outline {
+    background-color: transparent !important;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+.btn-secondary:hover {
+    background-color: var(--text-secondary) !important;
+    color: var(--primary-color) !important;
+}
+
+/* ===== FORMS - DARK THEME ===== */
+input, textarea, select {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--primary-color) !important;
+    outline-color: var(--primary-color) !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+label {
+    color: var(--text-primary) !important;
+}
+
+/* ===== HEADINGS - WHITE ===== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+/* ===== PARAGRAPHS - LIGHT GRAY ===== */
+p {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== LINKS - RED ===== */
+a {
+    color: var(--primary-color) !important;
+}
+
+a:hover {
+    color: var(--primary-light) !important;
+}
+
+a:visited {
+    color: var(--accent-red-light) !important;
+}
+
+/* ===== MODALS - DARK WITH RED ACCENTS ===== */
+.modal {
+    background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.modal-content {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.modal-header {
+    background-color: var(--bg-secondary) !important;
+    border-bottom-color: var(--primary-color) !important;
+}
+
+.modal-header h2 {
+    color: var(--text-primary) !important;
+}
+
+.close, .modal-close {
+    color: var(--text-primary) !important;
+}
+
+.close:hover, .modal-close:hover {
+    color: var(--primary-color) !important;
+}
+
+/* ===== PANEL NAVIGATION - RED ACCENT ===== */
+.panel-nav {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, #000000 100%) !important;
+    border-right-color: var(--primary-color) !important;
+}
+
+.panel-nav-menu .nav-link {
+    color: var(--text-secondary) !important;
+}
+
+.panel-nav-menu .nav-link:hover {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    color: var(--primary-color) !important;
+}
+
+.panel-nav-menu .nav-link.active {
+    background-color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+.panel-logo i {
+    color: var(--primary-color) !important;
+}
+
+.role-badge {
+    background-color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+/* ===== STAT CARDS - RED ACCENTS ===== */
+.stat-icon {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    color: var(--secondary-color) !important;
+}
+
+.stat-card {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.stat-content h3 {
+    color: var(--text-primary) !important;
+}
+
+.stat-content p {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== ACTION CARDS - RED THEME ===== */
+.action-card {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.action-card:hover {
+    border-color: var(--primary-color) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
+.action-card i {
+    color: var(--primary-color) !important;
+}
+
+.action-card h3 {
+    color: var(--text-primary) !important;
+}
+
+.action-card p {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== HERO SECTION - RED GRADIENT ===== */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    color: var(--secondary-color) !important;
+}
+
+.hero * {
+    color: var(--secondary-color) !important;
+}
+
+/* ===== TABS - RED ACCENT ===== */
+.tabs {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tab-btn {
+    color: var(--text-secondary) !important;
+    background-color: transparent !important;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
+.tab-btn.active {
+    color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
+.tab-content {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ===== BADGES - RED & WHITE ===== */
+.badge, .status-badge {
+    color: var(--secondary-color) !important;
+    font-weight: 500 !important;
+}
+
+.badge-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge-danger {
+    background-color: var(--primary-color) !important;
+}
+
+.badge-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.badge-info {
+    background-color: var(--info-color) !important;
+}
+
+/* ===== ALERTS - RED THEME ===== */
+.alert {
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.alert-success {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    border-color: var(--success-color) !important;
+    color: var(--success-color) !important;
+}
+
+.alert-danger {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    border-color: var(--warning-color) !important;
+    color: var(--warning-color) !important;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: var(--info-color) !important;
+    color: var(--info-color) !important;
+}
+
+/* ===== INPUT GROUPS - DARK ===== */
+.form-group {
+    color: var(--text-primary) !important;
+}
+
+.form-control {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+/* ===== BALANCE CARDS - RED GRADIENT ===== */
+.balance-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    color: var(--secondary-color) !important;
+}
+
+.balance-card * {
+    color: var(--secondary-color) !important;
+}
+
+/* ===== SECTION HEADERS - WHITE TEXT ===== */
+.section-header h1,
+.section-header h2 {
+    color: var(--text-primary) !important;
+}
+
+.section-header p {
+    color: var(--text-secondary) !important;
+}
+
+/* ===== EMPTY STATES - LIGHT GRAY ===== */
+.empty-state,
+.empty-state p {
+    color: var(--text-muted) !important;
+}
+
+.empty-state i {
+    color: var(--text-muted) !important;
+}
+
+/* ===== GRADIENT TEXT - RED ===== */
+.gradient-text {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* ===== SCROLLBAR - RED THEME ===== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary) !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color) !important;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark) !important;
+}
+
+/* ===== ACTIVITY ITEMS - DARK ===== */
+.activity-item {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ===== PRODUCT ITEMS - DARK ===== */
+.product-item {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.product-item:hover {
+    border-color: var(--primary-color) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
+/* ===== STATIC BACKGROUND OVERRIDES ===== */
+/* Tüm gradient arka planları kırmızı yap */
+[style*="background: linear-gradient"] {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    color: var(--secondary-color) !important;
+}
+
+[style*="background: linear-gradient"] * {
+    color: var(--secondary-color) !important;
+}
+
+/* Beyaz arka planları siyah/koyu yap */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+.bg-white {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Açık gri arka planları koyu yap */
+[style*="background: #f"],
+.bg-gray-50,
+.bg-gray-100 {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ===== OVERRIDE INLINE STYLES ===== */
+/* Stat cards with gradient backgrounds */
+.stat-card[style*="background: linear-gradient"] {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    color: var(--secondary-color) !important;
+}
+
+.stat-card[style*="background: linear-gradient"] * {
+    color: var(--secondary-color) !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    body {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .panel-main {
+        background-color: var(--bg-primary) !important;
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+}
+
+

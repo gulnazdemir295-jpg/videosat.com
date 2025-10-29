@@ -20,6 +20,21 @@ class SecurityManager {
         this.updateOverview();
         this.loadDashboardData();
         this.setDefaultDates();
+        this.setupModalCloseListeners();
+    }
+
+    setupModalCloseListeners() {
+        const modals = ['addSecurityPolicyModal', 'addIncidentModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
     }
 
     setupEventListeners() {
@@ -462,8 +477,129 @@ class SecurityManager {
     }
 
     updateAnalytics() {
-        console.log('Security Analytics updated');
-        // Chart.js integration would go here
+        if (typeof Chart === 'undefined') return;
+        this.updateThreatTrendChart();
+        this.updateIncidentsChart();
+        this.updateComplianceChart();
+        this.updateUserSecurityChart();
+    }
+
+    updateThreatTrendChart() {
+        const ctx = document.getElementById('threatTrendChart');
+        if (!ctx) return;
+        if (this.threatTrendChart) this.threatTrendChart.destroy();
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+        const threats = months.map(() => Math.floor(Math.random() * 50 + 10));
+        this.threatTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Tehdit Sayısı',
+                    data: threats,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } }
+            }
+        });
+    }
+
+    updateIncidentsChart() {
+        const ctx = document.getElementById('incidentsChart');
+        if (!ctx) return;
+        if (this.incidentsChart) this.incidentsChart.destroy();
+        const statuses = ['Açık', 'İşlemde', 'Çözüldü', 'Kapalı'];
+        const counts = statuses.map(() => Math.floor(Math.random() * 20 + 5));
+        this.incidentsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: statuses,
+                datasets: [{
+                    label: 'Olay Sayısı',
+                    data: counts,
+                    backgroundColor: 'rgba(251, 191, 36, 0.8)',
+                    borderColor: 'rgba(251, 191, 36, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    updateComplianceChart() {
+        const ctx = document.getElementById('complianceChart');
+        if (!ctx) return;
+        if (this.complianceChart) this.complianceChart.destroy();
+        const standards = ['GDPR', 'ISO 27001', 'KVKK', 'PCI DSS'];
+        const scores = standards.map(() => Math.floor(Math.random() * 20 + 80));
+        this.complianceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: standards,
+                datasets: [{
+                    data: scores,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    updateUserSecurityChart() {
+        const ctx = document.getElementById('userSecurityChart');
+        if (!ctx) return;
+        if (this.userSecurityChart) this.userSecurityChart.destroy();
+        const categories = ['Güvenli', 'Düşük Risk', 'Yüksek Risk', 'Engellenmiş'];
+        const counts = categories.map(() => Math.floor(Math.random() * 50 + 10));
+        this.userSecurityChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: 'Kullanıcı Sayısı',
+                    data: counts,
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(107, 114, 128, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
     }
 
     // Filters
