@@ -2852,4 +2852,274 @@ function showPaymentModal() {
     alert('Toplu ödeme modalı açılacak.\n\nBu işlem gerçek ödeme için:\n1. Backend API entegrasyonu\n2. IBAN doğrulama\n3. Banka entegrasyonu\n4. Güvenlik onayı\ngerektirir.');
 }
 
+// ============================================
+// FOLLOW SYSTEM
+// ============================================
+
+// Load Followers (for sales panels)
+function loadFollowers() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const companyId = currentUser.id;
+
+    if (!companyId) return;
+
+    const followers = window.followService.getFollowers(companyId);
+    const followersList = document.getElementById('followersList');
+    const totalFollowersCount = document.getElementById('totalFollowersCount');
+
+    if (totalFollowersCount) {
+        totalFollowersCount.textContent = followers.length;
+    }
+
+    if (!followersList) return;
+
+    if (followers.length === 0) {
+        followersList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-user-friends" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz takipçiniz yok</p>
+                <p style="font-size: 14px;">Müşteriler sizi takip ettiğinde burada görünecek</p>
+            </div>
+        `;
+        return;
+    }
+
+    followersList.innerHTML = followers.map(follower => `
+        <div class="action-card" style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; color: #ffffff;">${follower.name}</h3>
+                    <p style="margin: 0; color: #999; font-size: 14px;">
+                        <i class="fas fa-envelope"></i> ${follower.email}
+                    </p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">
+                        Takip: ${new Date(follower.followedAt).toLocaleDateString('tr-TR')}
+                    </p>
+                </div>
+                <button class="btn btn-primary btn-small" onclick="inviteFollowerToLivestream('${follower.id}', '${follower.name}')">
+                    <i class="fas fa-broadcast-tower"></i>
+                    Yayına Davet Et
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    // Setup search
+    const followersSearch = document.getElementById('followersSearch');
+    if (followersSearch) {
+        followersSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = followersList.querySelectorAll('.action-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('h3').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+}
+
+// Invite follower to livestream
+function inviteFollowerToLivestream(followerId, followerName) {
+    // Check if company is streaming
+    const activeStream = localStorage.getItem('activeLivestream');
+    if (!activeStream) {
+        showAlert('Canlı yayın başlatmanız gerekiyor', 'warning');
+        return;
+    }
+
+    const stream = JSON.parse(activeStream);
+    if (stream.status !== 'live') {
+        showAlert('Aktif canlı yayın bulunmuyor', 'warning');
+        return;
+    }
+
+    if (confirm(`${followerName} kullanıcısını canlı yayına davet etmek istiyor musunuz?`)) {
+        // Send invitation
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+        const invitation = {
+            id: Date.now(),
+            streamId: stream.id,
+            fromCompanyId: currentUser.id,
+            fromCompanyName: currentUser.companyName || currentUser.name,
+            toUserId: followerId,
+            toUserName: followerName,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+
+        // Save invitation
+        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+        invitations.push(invitation);
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+
+        showAlert(`${followerName} kullanıcısına davet gönderildi`, 'success');
+    }
+}
+
+// ============================================
+// CUSTOMER - LIVESTREAMS AND FOLLOWING
+// ============================================
+
+// Load Live Streams (for customer)
+function loadCustomerLiveStreams() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userId = currentUser.id;
+
+    if (!userId) return;
+
+    const streams = window.followService.getFollowedLiveStreams(userId);
+    const streamsList = document.getElementById('liveStreamsList');
+
+    if (!streamsList) return;
+
+    if (streams.length === 0) {
+        streamsList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-broadcast-tower" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz canlı yayın bulunmuyor</p>
+                <p style="font-size: 14px;">Takip ettiğiniz firmalardan biri canlı yayın başlattığında burada görünecek</p>
+            </div>
+        `;
+        return;
+    }
+
+    streamsList.innerHTML = streams.map(stream => `
+        <div class="action-card" style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 5px 0; color: #dc2626; display: flex; align-items: center; gap: 10px;">
+                        <span class="badge badge-danger" style="animation: pulse 2s infinite;">🔴 CANLI</span>
+                        ${stream.title || 'Canlı Yayın'}
+                    </h3>
+                    <p style="margin: 0 0 10px 0; color: #ffffff;">
+                        <i class="fas fa-building"></i> ${stream.companyName}
+                    </p>
+                    <p style="margin: 0; color: #999; font-size: 14px;">
+                        <i class="fas fa-users"></i> ${stream.viewers || 0} İzleyici
+                    </p>
+                </div>
+                <button class="btn btn-primary" onclick="joinCustomerLivestream('${stream.id}')">
+                    <i class="fas fa-play"></i>
+                    Yayına Katıl
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Load Following list (for customer)
+function loadCustomerFollowing() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userId = currentUser.id;
+
+    if (!userId) return;
+
+    const following = window.followService.getFollowing(userId);
+    const followingList = document.getElementById('followingList');
+
+    if (!followingList) return;
+
+    if (following.length === 0) {
+        followingList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-star" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz firma takip etmiyorsunuz</p>
+                <p style="font-size: 14px;">Firmaları takip ederek onların canlı yayınlarını izleyebilirsiniz</p>
+            </div>
+        `;
+        return;
+    }
+
+    followingList.innerHTML = following.map(company => `
+        <div class="action-card" style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 5px 0; color: #ffffff;">${company.name}</h3>
+                    <p style="margin: 0; color: #999; font-size: 14px;">
+                        <span class="role-badge">${company.role}</span>
+                    </p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">
+                        Takip: ${new Date(company.followedAt).toLocaleDateString('tr-TR')}
+                    </p>
+                </div>
+                <button class="btn btn-outline btn-small" onclick="unfollowCompany('${company.id}')">
+                    <i class="fas fa-star"></i>
+                    Takipten Çık
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    // Setup search
+    const followingSearch = document.getElementById('followingSearch');
+    if (followingSearch) {
+        followingSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = followingList.querySelectorAll('.action-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('h3').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+}
+
+// Unfollow Company
+function unfollowCompany(companyId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    if (confirm('Bu firmayı takipten çıkmak istediğinize emin misiniz?')) {
+        try {
+            window.followService.unfollowCompany(companyId);
+            showAlert('Firma takipten çıkarıldı', 'success');
+            loadCustomerFollowing();
+        } catch (e) {
+            console.error('Error unfollowing company:', e);
+            showAlert('Hata oluştu', 'error');
+        }
+    }
+}
+
+// Join customer livestream
+function joinCustomerLivestream(streamId) {
+    window.location.href = `../live-stream.html?id=${streamId}`;
+}
+
+// Export functions
+window.loadFollowers = loadFollowers;
+window.inviteFollowerToLivestream = inviteFollowerToLivestream;
+window.loadCustomerLiveStreams = loadCustomerLiveStreams;
+window.loadCustomerFollowing = loadCustomerFollowing;
+window.unfollowCompany = unfollowCompany;
+window.joinCustomerLivestream = joinCustomerLivestream;
+
 console.log('Panel Application JavaScript Loaded Successfully');
