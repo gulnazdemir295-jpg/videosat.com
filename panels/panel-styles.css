@@ -402,7 +402,7 @@
 
 /* Filters */
 .filters {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1.5rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -433,7 +433,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .filter-group select:focus,
@@ -566,7 +566,7 @@
 }
 
 .producer-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -795,7 +795,7 @@
     gap: 0.5rem;
     padding: 0.5rem;
     border-radius: 0.375rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid #e5e7eb;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -830,7 +830,7 @@
 
 /* Active Stream */
 .active-stream {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     border: 1px solid #e5e7eb;
@@ -918,7 +918,7 @@
     overflow-y: auto;
     margin-bottom: 1rem;
     padding: 0.5rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.375rem;
     border: 1px solid #e5e7eb;
 }
@@ -958,7 +958,7 @@
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 0;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     border: 1px solid #e5e7eb;
@@ -1129,7 +1129,7 @@
 }
 
 .report-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1.5rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1163,7 +1163,7 @@
 }
 
 .package-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1245,7 +1245,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .modal-form input:focus,
@@ -1351,7 +1351,7 @@
 
 /* Admin Panel Specific Styles */
 .commission-settings {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1403,7 +1403,7 @@
 }
 
 .commission-calculations {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1417,7 +1417,7 @@
 }
 
 .settings-section {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1452,7 +1452,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .setting-group input:focus,
@@ -1488,7 +1488,7 @@
 }
 
 .department-status {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1504,7 +1504,7 @@
 }
 
 .department-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1581,7 +1581,7 @@
 }
 
 .ceo-quick-actions {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1601,7 +1601,7 @@
 }
 
 .critical-alerts {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1622,7 +1622,7 @@
 
 .alert-item.warning {
     border-left-color: #f59e0b;
-    background: #fffbeb;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
 }
 
 .alert-item.info {
@@ -1631,7 +1631,7 @@
 }
 
 .department-overview {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1666,7 +1666,7 @@
 }
 
 .department-management {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1685,7 +1685,7 @@
 }
 
 .central-account-overview {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1700,7 +1700,7 @@
 }
 
 .account-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1769,7 +1769,7 @@
 }
 
 .payment-schedule {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1809,7 +1809,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
 }
@@ -1854,7 +1854,7 @@
 }
 
 .payment-history {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -1989,7 +1989,7 @@
 }
 
 .invitation-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 2px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -2183,7 +2183,7 @@
 }
 
 .chart-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2218,7 +2218,7 @@
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     color: #374151;
 }
 
@@ -2237,7 +2237,7 @@
 .activities-card,
 .notifications-card,
 .quick-access-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2383,7 +2383,7 @@
 }
 
 .critical-alerts {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2421,7 +2421,7 @@
 }
 
 .alert-item.medium {
-    background: #fffbeb;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
     border-left-color: #f59e0b;
 }
 

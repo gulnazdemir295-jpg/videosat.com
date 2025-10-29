@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #000000 !important; /* Siyah */
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -128,7 +128,7 @@
 }
 
 .overview-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -229,7 +229,7 @@
 
 /* Operations Tabs */
 .operations-tabs {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
@@ -266,7 +266,7 @@
 }
 
 .operations-tabs .tab-btn.active {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     color: var(--primary-600);
     border-bottom: 2px solid var(--primary-600);
 }
@@ -288,7 +288,7 @@
 }
 
 .chart-container {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -314,7 +314,7 @@
     border: 1px solid var(--gray-300);
     border-radius: 6px;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .chart-container canvas {
@@ -325,7 +325,7 @@
 /* Process Status and Resource Alerts */
 .process-status,
 .resource-alerts {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -498,7 +498,7 @@
 }
 
 .process-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid var(--gray-200);
     border-radius: 12px;
     overflow: hidden;
@@ -635,7 +635,7 @@
 }
 
 .resource-category {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -667,7 +667,7 @@
 }
 
 .resource-card:hover {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     box-shadow: var(--shadow-sm);
 }
 
@@ -752,7 +752,7 @@
 }
 
 .metric-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
@@ -804,7 +804,7 @@
 }
 
 .optimization-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);

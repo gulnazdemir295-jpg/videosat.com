@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #000000 !important; /* Siyah */
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -120,7 +120,7 @@
 /* Reports Management Specific Styles */
 
 .reports-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-.overview-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: .3s; }
+.overview-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: .3s; }
 .overview-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .overview-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary-500), var(--primary-400)); }
 .overview-card .card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, var(--primary-500), var(--primary-400)); }
@@ -129,10 +129,10 @@
 .card-change.positive { background: var(--success-100); color: var(--success-700); }
 .card-change.negative { background: var(--error-100); color: var(--error-700); }
 
-.reports-tabs { background: #fff; border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; }
+.reports-tabs { background: #1f1f1f !important; /* Koyu arka plan */ border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .reports-tabs .tab-nav { display: flex; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); overflow-x: auto; }
 .reports-tabs .tab-btn { flex: 1; padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-600); transition: .3s; min-width: 120px; }
-.reports-tabs .tab-btn.active { background: #fff; color: var(--primary-600); border-bottom: 2px solid var(--primary-600); }
+.reports-tabs .tab-btn.active { background: #1f1f1f !important; /* Koyu arka plan */ color: var(--primary-600); border-bottom: 2px solid var(--primary-600); }
 .reports-tabs .tab-content { display: none; padding: 2rem; }
 .reports-tabs .tab-content.active { display: block; }
 
@@ -141,7 +141,7 @@
 .report-filters .form-control { min-width: 150px; }
 
 .reports-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
-.report-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
+.report-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
 .report-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .report-header h3 { margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--gray-800); }
@@ -163,7 +163,7 @@
 .status-badge.archived { background: var(--error-100); color: var(--error-700); }
 
 .custom-reports-builder { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-.builder-section { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
+.builder-section { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
 .builder-section h3 { margin: 0 0 1rem; font-size: 1.125rem; font-weight: 600; color: var(--gray-800); }
 .builder-form .form-group { margin-bottom: 1rem; }
 .builder-form .form-group label { display: block; margin-bottom: .5rem; font-weight: 500; color: var(--gray-700); }

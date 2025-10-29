@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #000000 !important; /* Siyah */
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -154,7 +154,7 @@
 }
 
 .overview-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -255,7 +255,7 @@
 
 /* Payment Tabs */
 .payment-tabs {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
@@ -292,7 +292,7 @@
 }
 
 .payment-tabs .tab-btn.active {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     color: var(--primary-600);
     border-bottom: 2px solid var(--primary-600);
 }
@@ -314,7 +314,7 @@
 }
 
 .chart-container {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -340,7 +340,7 @@
     border: 1px solid var(--gray-300);
     border-radius: 6px;
     font-size: 0.875rem;
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .chart-container canvas {
@@ -351,7 +351,7 @@
 /* Recent Transactions and Payment Alerts */
 .recent-transactions,
 .payment-alerts {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -502,7 +502,7 @@
 
 /* Transactions Table */
 .transactions-table-container {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -629,7 +629,7 @@
 }
 
 .gateway-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border: 1px solid var(--gray-200);
     border-radius: 12px;
     overflow: hidden;
@@ -766,7 +766,7 @@
 }
 
 .summary-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
@@ -797,7 +797,7 @@
 }
 
 .analytics-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
@@ -831,7 +831,7 @@
 }
 
 .security-card {
-    background: white;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);

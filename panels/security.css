@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #000000 !important; /* Siyah */
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -120,7 +120,7 @@
 /* Security Management Specific Styles */
 
 .security-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-.overview-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: .3s; }
+.overview-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; transition: .3s; }
 .overview-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .overview-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary-500), var(--primary-400)); }
 .overview-card .card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, var(--primary-500), var(--primary-400)); }
@@ -129,10 +129,10 @@
 .card-change.positive { background: var(--success-100); color: var(--success-700); }
 .card-change.negative { background: var(--error-100); color: var(--error-700); }
 
-.security-tabs { background: #fff; border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; }
+.security-tabs { background: #1f1f1f !important; /* Koyu arka plan */ border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .security-tabs .tab-nav { display: flex; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); overflow-x: auto; }
 .security-tabs .tab-btn { flex: 1; padding: 1rem 1.5rem; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--gray-600); transition: .3s; min-width: 120px; }
-.security-tabs .tab-btn.active { background: #fff; color: var(--primary-600); border-bottom: 2px solid var(--primary-600); }
+.security-tabs .tab-btn.active { background: #1f1f1f !important; /* Koyu arka plan */ color: var(--primary-600); border-bottom: 2px solid var(--primary-600); }
 .security-tabs .tab-content { display: none; padding: 2rem; }
 .security-tabs .tab-content.active { display: block; }
 
@@ -141,7 +141,7 @@
 .threat-filters .form-control, .incident-filters .form-control, .user-filters .form-control, .analytics-filters .form-control { min-width: 150px; }
 
 .threats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
-.threat-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; position: relative; }
+.threat-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; position: relative; }
 .threat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .threat-card.critical { border-left: 4px solid var(--error-500); }
 .threat-card.high { border-left: 4px solid var(--warning-500); }
@@ -189,14 +189,14 @@
 .role-badge.employee { background: var(--info-100); color: var(--info-700); }
 .role-badge.customer { background: var(--success-100); color: var(--success-700); }
 
-.incidents-table-container, .analytics-grid { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; box-shadow: var(--shadow-sm); }
+.incidents-table-container, .analytics-grid { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; box-shadow: var(--shadow-sm); }
 .incidents-table { width: 100%; border-collapse: collapse; }
 .incidents-table th { background: var(--gray-50); padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200); font-size: .875rem; }
 .incidents-table td { padding: 1rem; border-bottom: 1px solid var(--gray-100); }
 .incidents-table tr:hover { background: var(--gray-50); }
 
 .users-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-.user-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
+.user-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
 .user-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .user-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
 .user-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-100); display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-size: 1.25rem; }
@@ -208,7 +208,7 @@
 .user-actions { display: flex; gap: .5rem; }
 
 .policies-grid, .compliance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
-.policy-card, .compliance-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
+.policy-card, .compliance-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: .3s; }
 .policy-card:hover, .compliance-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .policy-header, .compliance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .policy-header h3, .compliance-header h3 { margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--gray-800); }
@@ -222,7 +222,7 @@
 .policy-actions, .compliance-actions { display: flex; gap: .5rem; }
 
 .compliance-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.stat-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow-sm); }
+.stat-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow-sm); }
 .stat-card h4 { margin: 0 0 .5rem; color: var(--gray-600); font-size: .875rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
 .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--gray-800); }
 
@@ -232,7 +232,7 @@
 .compliance-score.low { background: var(--error-100); color: var(--error-700); }
 
 .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; padding: 1.5rem; }
-.analytics-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
+.analytics-card { background: #1f1f1f !important; /* Koyu arka plan */ border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
 .analytics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .chart-container { height: 300px; display: flex; align-items: center; justify-content: center; background: var(--gray-50); border-radius: 8px; }
 

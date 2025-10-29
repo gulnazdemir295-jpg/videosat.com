@@ -484,10 +484,10 @@ document.addEventListener('click', function(e) {
 window.addEventListener('scroll', function() {
     const navbar = document.querySelector('.navbar');
     if (window.scrollY > 100) {
-        navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.98)';
+        navbar.style.backgroundColor = 'rgba(0, 0, 0, 0.98)'; // Siyah - siyah tema
         navbar.style.boxShadow = 'var(--shadow-md)';
     } else {
-        navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        navbar.style.backgroundColor = 'rgba(0, 0, 0, 0.95)'; // Siyah - siyah tema
         navbar.style.boxShadow = 'none';
     }
 });

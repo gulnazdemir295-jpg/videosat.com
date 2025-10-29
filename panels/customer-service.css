@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #000000 !important; /* Siyah */
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
@@ -120,7 +120,7 @@
 /* Customer Service Specific Styles */
 
 .customer-service-overview { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:1.5rem; margin-bottom:2rem; }
-.overview-card { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); position:relative; overflow:hidden; transition:.3s; }
+.overview-card { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); position:relative; overflow:hidden; transition:.3s; }
 .overview-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .overview-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--primary-500),var(--primary-400)); }
 .overview-card .card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; margin-bottom:1rem; background:linear-gradient(135deg,var(--primary-500),var(--primary-400)); }
@@ -129,18 +129,18 @@
 .card-change.positive { background:var(--success-100); color:var(--success-700); }
 .card-change.negative { background:var(--warning-100); color:var(--warning-700); }
 
-.customer-service-tabs { background:#fff; border-radius:12px; box-shadow:var(--shadow-sm); overflow:hidden; }
+.customer-service-tabs { background: #1f1f1f !important; /* Koyu arka plan */ border-radius:12px; box-shadow:var(--shadow-sm); overflow:hidden; }
 .customer-service-tabs .tab-nav { display:flex; background:var(--gray-50); border-bottom:1px solid var(--gray-200); overflow-x:auto; }
 .customer-service-tabs .tab-btn { flex:1; padding:1rem 1.5rem; background:none; border:none; cursor:pointer; font-weight:500; color:var(--gray-600); transition:.3s; min-width:120px; }
-.customer-service-tabs .tab-btn.active { background:#fff; color:var(--primary-600); border-bottom:2px solid var(--primary-600); }
+.customer-service-tabs .tab-btn.active { background: #1f1f1f !important; /* Koyu arka plan */ color:var(--primary-600); border-bottom:2px solid var(--primary-600); }
 .customer-service-tabs .tab-content { display:none; padding:2rem; }
 .customer-service-tabs .tab-content.active { display:block; }
 
 .dashboard-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(400px,1fr)); gap:2rem; }
-.chart-container { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
+.chart-container { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
 .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
 
-.recent-tickets, .support-alerts { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
+.recent-tickets, .support-alerts { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
 .ticket-item { display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid var(--gray-100); }
 .ticket-item:last-child { border-bottom:none; }
 .ticket-info { flex:1; }
@@ -166,7 +166,7 @@
 .status-badge.active { background:var(--success-100); color:var(--success-700); }
 .status-badge.waiting { background:var(--warning-100); color:var(--warning-700); }
 
-.tickets-table-container, .feedback-list, .analytics-grid { background:#fff; border:1px solid var(--gray-200); border-radius:12px; box-shadow:var(--shadow-sm); }
+.tickets-table-container, .feedback-list, .analytics-grid { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; box-shadow:var(--shadow-sm); }
 .tickets-table { width:100%; border-collapse:collapse; }
 .tickets-table th { background:var(--gray-50); padding:1rem; text-align:left; font-weight:600; color:var(--gray-700); border-bottom:1px solid var(--gray-200); font-size:.875rem; }
 .tickets-table td { padding:1rem; border-bottom:1px solid var(--gray-100); }
@@ -175,7 +175,7 @@
 
 .chat-dashboard { display:grid; grid-template-columns: 380px 1fr; gap:1.5rem; }
 .chat-stats { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:1rem; }
-.stat-card { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1rem; text-align:center; }
+.stat-card { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1rem; text-align:center; }
 .stat-card h4 { margin:0 0 .5rem; color:var(--gray-600); font-size:.875rem; font-weight:500; }
 .stat-value { font-size:1.25rem; font-weight:700; color:var(--gray-800); }
 .chat-list { display:flex; flex-direction:column; gap:.5rem; }
@@ -185,7 +185,7 @@
 .chat-meta small { color:var(--gray-600); }
 
 .feedback-summary { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
-.summary-card { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; text-align:center; box-shadow:var(--shadow-sm); }
+.summary-card { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; text-align:center; box-shadow:var(--shadow-sm); }
 .summary-card h4 { margin:0 0 .5rem; color:var(--gray-600); font-size:.875rem; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
 .summary-value { font-size:1.5rem; font-weight:700; color:var(--gray-800); }
 
@@ -197,7 +197,7 @@
 .feedback-date { color:var(--gray-500); }
 
 .analytics-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(380px,1fr)); gap:2rem; padding:1.5rem; }
-.analytics-card { background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
+.analytics-card { background: #1f1f1f !important; /* Koyu arka plan */ border:1px solid var(--gray-200); border-radius:12px; padding:1.5rem; box-shadow:var(--shadow-sm); }
 .analytics-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
 
 .alert-item { display:flex; align-items:center; gap:1rem; padding:1rem; border-radius:8px; margin-bottom:.5rem; border-left:4px solid; }
