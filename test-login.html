@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test - VideoSat Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #333;
+            border-radius: 8px;
+        }
+        .test-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #b91c1c;
+        }
+        .test-btn.success {
+            background: #16a34a;
+        }
+        .test-btn.warning {
+            background: #d97706;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #444;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        .info { color: #60a5fa; }
+        .login-form {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .login-form input {
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #444;
+            color: white;
+        }
+        .login-form input:focus {
+            outline: none;
+            border-color: #dc2626;
+        }
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-item {
+            padding: 8px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        .user-email {
+            font-weight: bold;
+        }
+        .user-role {
+            color: #60a5fa;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔐 Login Test - VideoSat Platform</h1>
+        <p>Bu sayfa giriş sistemini test eder ve hataları analiz eder.</p>
+        
+        <div class="test-section">
+            <h3>1. Test Kullanıcıları Oluştur</h3>
+            <button class="test-btn" onclick="createTestUsers()">Test Kullanıcıları Oluştur</button>
+            <button class="test-btn warning" onclick="clearAllUsers()">Tüm Kullanıcıları Temizle</button>
+            <div class="status" id="userStatus">Test kullanıcıları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Giriş Testi</h3>
+            <div class="login-form">
+                <input type="email" id="testEmail" placeholder="E-posta" value="hammaddeci@videosat.com">
+                <input type="password" id="testPassword" placeholder="Şifre" value="test123">
+                <button class="test-btn" onclick="testLoginFunction()">Giriş Test Et</button>
+                <button class="test-btn success" onclick="testRealLogin()">Gerçek Giriş Yap</button>
+            </div>
+            <div class="status" id="loginStatus">Giriş test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Admin Giriş Testi</h3>
+            <div class="login-form">
+                <input type="email" id="adminTestEmail" placeholder="Admin E-posta" value="admin@videosat.com">
+                <input type="password" id="adminTestPassword" placeholder="Admin Şifre" value="admin123">
+                <button class="test-btn" onclick="testAdminLogin()">Admin Giriş Test Et</button>
+            </div>
+            <div class="status" id="adminStatus">Admin giriş test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Mevcut Kullanıcılar</h3>
+            <button class="test-btn" onclick="listUsers()">Kullanıcıları Listele</button>
+            <div class="user-list" id="userList">Kullanıcı listesi burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Giriş Logları</h3>
+            <button class="test-btn" onclick="showLoginLogs()">Giriş Loglarını Göster</button>
+            <button class="test-btn warning" onclick="clearLoginLogs()">Logları Temizle</button>
+            <div class="status" id="logStatus">Giriş logları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. İstatistikler</h3>
+            <button class="test-btn" onclick="showStatistics()">İstatistikleri Göster</button>
+            <div class="status" id="statisticsStatus">İstatistikler burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>6. Debug Bilgileri</h3>
+            <button class="test-btn" onclick="showDebugInfo()">Debug Bilgilerini Göster</button>
+            <div class="status" id="debugStatus">Debug bilgileri burada görünecek...</div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="index.html" style="color: #dc2626;">→ Ana Sayfa</a> |
+            <a href="live-stream.html" style="color: #dc2626;">→ Canlı Yayın</a> |
+            <a href="panels/hammaddeci.html" style="color: #dc2626;">→ Hammaddeci Paneli</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script-loader.js"></script>
+    <script src="create-test-user.js"></script>
+    <script src="login-logger.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // Test fonksiyonları
+        async function createTestUsers() {
+            const status = document.getElementById('userStatus');
+            status.innerHTML = 'Test kullanıcıları oluşturuluyor...';
+            
+            try {
+                await createAllTestUsers();
+                const users = listAllUsers();
+                
+                let result = '✅ Test kullanıcıları oluşturuldu!\n\n';
+                result += 'Test Kullanıcıları:\n';
+                users.forEach((user, index) => {
+                    result += `${index + 1}. ${user.email} (${user.role})\n`;
+                    result += `   Şifre: test123\n`;
+                    result += `   Şirket: ${user.companyName}\n\n`;
+                });
+                
+                status.innerHTML = result;
+                
+            } catch (error) {
+                status.innerHTML = `❌ Hata: ${error.message}`;
+            }
+        }
+        
+        async function testLoginFunction() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const status = document.getElementById('loginStatus');
+            
+            status.innerHTML = `Giriş testi yapılıyor: ${email}...`;
+            
+            try {
+                const result = await testLogin(email, password);
+                
+                if (result.success) {
+                    status.innerHTML = `✅ Giriş başarılı!\n\nKullanıcı Bilgileri:\n` +
+                        `📧 Email: ${result.user.email}\n` +
+                        `👤 Rol: ${result.user.role}\n` +
+                        `🏢 Şirket: ${result.user.companyName}\n` +
+                        `🔐 Hash: ${result.user.passwordHash.substring(0, 20)}...`;
+                } else {
+                    status.innerHTML = `❌ Giriş başarısız!\n\nHata: ${result.error}\n\n` +
+                        `Debug bilgileri için Console'u kontrol edin.`;
+                }
+                
+            } catch (error) {
+                status.innerHTML = `❌ Test hatası: ${error.message}`;
+            }
+        }
+        
+        // Gerçek giriş testi
+        async function testRealLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            try {
+                // handleLogin fonksiyonunu çağır
+                const event = {
+                    preventDefault: () => {},
+                    target: {
+                        querySelector: () => ({
+                            innerHTML: 'Giriş yapılıyor...',
+                            disabled: true
+                        })
+                    }
+                };
+                
+                await handleLogin(event);
+                
+                document.getElementById('loginStatus').innerHTML = `
+                    <div class="success">✅ Gerçek giriş testi başlatıldı!</div>
+                    <div class="info">Konsolu kontrol edin ve yönlendirmeyi bekleyin...</div>
+                `;
+                
+            } catch (error) {
+                document.getElementById('loginStatus').innerHTML = `
+                    <div class="error">❌ Gerçek giriş testi hatası: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // Admin giriş testi
+        async function testAdminLogin() {
+            const email = document.getElementById('adminTestEmail').value;
+            const password = document.getElementById('adminTestPassword').value;
+            
+            try {
+                // handleAdminLogin fonksiyonunu çağır
+                const event = {
+                    preventDefault: () => {},
+                    target: {
+                        querySelector: () => ({
+                            innerHTML: 'Admin girişi yapılıyor...',
+                            disabled: true
+                        })
+                    }
+                };
+                
+                await handleAdminLogin(event);
+                
+                document.getElementById('adminStatus').innerHTML = `
+                    <div class="success">✅ Admin giriş testi başlatıldı!</div>
+                    <div class="info">Konsolu kontrol edin ve yönlendirmeyi bekleyin...</div>
+                `;
+                
+            } catch (error) {
+                document.getElementById('adminStatus').innerHTML = `
+                    <div class="error">❌ Admin giriş testi hatası: ${error.message}</div>
+                `;
+            }
+        }
+        
+        function listUsers() {
+            const users = listAllUsers();
+            const userList = document.getElementById('userList');
+            
+            if (users.length === 0) {
+                userList.innerHTML = '<div style="color: #999; text-align: center;">Kullanıcı bulunamadı</div>';
+                return;
+            }
+            
+            userList.innerHTML = users.map(user => `
+                <div class="user-item">
+                    <div>
+                        <div class="user-email">${user.email}</div>
+                        <div class="user-role">${user.role} - ${user.companyName}</div>
+                    </div>
+                    <div style="color: #999; font-size: 12px;">
+                        ${user.status}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showLoginLogs() {
+            const status = document.getElementById('logStatus');
+            
+            if (!window.loginLogger) {
+                status.innerHTML = '❌ Login Logger yüklenmedi';
+                return;
+            }
+            
+            const logs = window.loginLogger.getAllLogs(20);
+            const failedLogs = window.loginLogger.getFailedLogs(10);
+            
+            let result = '📋 Giriş Logları (Son 20):\n\n';
+            
+            if (logs.length === 0) {
+                result += 'Henüz giriş denemesi yok.\n';
+            } else {
+                logs.forEach((log, index) => {
+                    const time = new Date(log.timestamp).toLocaleString();
+                    const status = log.success ? '✅' : '❌';
+                    result += `${index + 1}. ${status} ${log.email} - ${time}\n`;
+                    if (log.error) {
+                        result += `   Hata: ${log.error}\n`;
+                    }
+                });
+            }
+            
+            result += '\n📊 Başarısız Girişler (Son 10):\n\n';
+            if (failedLogs.length === 0) {
+                result += 'Başarısız giriş yok.\n';
+            } else {
+                failedLogs.forEach((log, index) => {
+                    const time = new Date(log.timestamp).toLocaleString();
+                    result += `${index + 1}. ❌ ${log.email} - ${time}\n`;
+                    result += `   Hata: ${log.error}\n`;
+                });
+            }
+            
+            status.innerHTML = result;
+        }
+        
+        function clearLoginLogs() {
+            if (window.loginLogger) {
+                window.loginLogger.clearLogs();
+                document.getElementById('logStatus').innerHTML = '✅ Loglar temizlendi';
+            } else {
+                document.getElementById('logStatus').innerHTML = '❌ Login Logger yüklenmedi';
+            }
+        }
+        
+        function showStatistics() {
+            const status = document.getElementById('statisticsStatus');
+            
+            if (!window.loginLogger) {
+                status.innerHTML = '❌ Login Logger yüklenmedi';
+                return;
+            }
+            
+            const stats = window.loginLogger.getStatistics();
+            
+            let result = '📊 Giriş İstatistikleri:\n\n';
+            result += `Toplam Deneme: ${stats.total}\n`;
+            result += `Başarılı: ${stats.successful}\n`;
+            result += `Başarısız: ${stats.failed}\n`;
+            result += `Başarı Oranı: ${stats.successRate}\n\n`;
+            result += `Bugün:\n`;
+            result += `  Toplam: ${stats.today.total}\n`;
+            result += `  Başarılı: ${stats.today.successful}\n`;
+            result += `  Başarısız: ${stats.today.failed}\n\n`;
+            result += `Kilitli Hesaplar: ${stats.lockedAccounts}\n`;
+            
+            status.innerHTML = result;
+        }
+        
+        function showDebugInfo() {
+            const status = document.getElementById('debugStatus');
+            
+            let result = '🔍 Debug Bilgileri:\n\n';
+            
+            // LocalStorage bilgileri
+            result += 'LocalStorage:\n';
+            result += `  users: ${localStorage.getItem('users') ? 'Mevcut' : 'Yok'}\n`;
+            result += `  currentUser: ${localStorage.getItem('currentUser') ? 'Mevcut' : 'Yok'}\n`;
+            result += `  loginLogs: ${localStorage.getItem('loginLogs') ? 'Mevcut' : 'Yok'}\n\n`;
+            
+            // Kullanıcı sayısı
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            result += `Kullanıcı Sayısı: ${users.length}\n\n`;
+            
+            // Mevcut kullanıcı
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser) {
+                result += `Mevcut Kullanıcı:\n`;
+                result += `  Email: ${currentUser.email}\n`;
+                result += `  Rol: ${currentUser.role}\n`;
+                result += `  Şirket: ${currentUser.companyName}\n`;
+            } else {
+                result += `Mevcut Kullanıcı: Yok\n`;
+            }
+            
+            // Login Logger durumu
+            result += `\nLogin Logger: ${window.loginLogger ? 'Yüklendi' : 'Yüklenmedi'}\n`;
+            
+            if (window.loginLogger) {
+                const stats = window.loginLogger.getStatistics();
+                result += `Log Sayısı: ${stats.total}\n`;
+                result += `Kilitli Hesaplar: ${stats.lockedAccounts}\n`;
+            }
+            
+            status.innerHTML = result;
+        }
+        
+        // Sayfa yüklendiğinde otomatik test
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Login Test sayfası yüklendi');
+            showDebugInfo();
+        });
+    </script>
+</body>
+</html>
+

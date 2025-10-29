@@ -515,6 +515,8 @@
                 // Script'leri sırayla yükle
                 await window.scriptLoader.loadScripts([
                     'modules/module-loader.js',
+                    'create-test-user.js',
+                    'login-logger.js',
                     'setup-test-users.js',
                     'app.js',
                     'services/payment-service.js',
@@ -527,23 +529,71 @@
                 
                 console.log('✅ Ana sayfa scriptleri yüklendi');
                 
+                // Event listener'ları ekle
+                setupEventListeners();
+                
             } catch (error) {
                 console.error('❌ Ana sayfa script yükleme hatası:', error);
             }
         });
+        
+        // Event listener'ları kur
+        function setupEventListeners() {
+            // Giriş formu event listener
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+                console.log('✅ Giriş formu event listener eklendi');
+            } else {
+                console.warn('⚠️ Giriş formu bulunamadı');
+            }
+            
+            // Kayıt formu event listener
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegister);
+                console.log('✅ Kayıt formu event listener eklendi');
+            } else {
+                console.warn('⚠️ Kayıt formu bulunamadı');
+            }
+            
+            // Admin giriş formu event listener
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            if (adminLoginForm) {
+                adminLoginForm.addEventListener('submit', handleAdminLogin);
+                console.log('✅ Admin giriş formu event listener eklendi');
+            }
+        }
     </script>
     <script>
         // Sayfa yüklendiğinde test kullanıcılarını otomatik oluştur
         document.addEventListener('DOMContentLoaded', async function() {
-            // Eğer kullanıcılar yoksa, otomatik oluştur
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const testEmails = ['hammaddeci@videosat.com', 'uretici@videosat.com', 'toptanci@videosat.com'];
-            const hasTestUsers = testEmails.some(email => users.some(u => u.email === email));
-            
-            if (!hasTestUsers && typeof setupTestUsers === 'function') {
-                await setupTestUsers();
-                console.log('✅ Test hesapları otomatik oluşturuldu!');
-            }
+            // Script'ler yüklendikten sonra çalıştır
+            setTimeout(async () => {
+                // Eğer kullanıcılar yoksa, otomatik oluştur
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const testEmails = ['hammaddeci@videosat.com', 'uretici@videosat.com', 'toptanci@videosat.com'];
+                const hasTestUsers = testEmails.some(email => users.some(u => u.email === email));
+                
+                if (!hasTestUsers) {
+                    console.log('👤 Test kullanıcıları oluşturuluyor...');
+                    try {
+                        if (typeof createAllTestUsers === 'function') {
+                            await createAllTestUsers();
+                            console.log('✅ Test kullanıcıları oluşturuldu');
+                        } else if (typeof setupTestUsers === 'function') {
+                            await setupTestUsers();
+                            console.log('✅ Test hesapları oluşturuldu (eski sistem)');
+                        } else {
+                            console.warn('⚠️ Test kullanıcı oluşturma fonksiyonu bulunamadı');
+                        }
+                    } catch (error) {
+                        console.error('❌ Test kullanıcıları oluşturma hatası:', error);
+                    }
+                } else {
+                    console.log(`👥 ${users.length} kullanıcı mevcut`);
+                }
+            }, 2000);
         });
     </script>
 </body>

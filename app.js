@@ -114,9 +114,103 @@ function closeModal(modalId) {
     }
 }
 
+// Handle Admin Login
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('adminUsername').value.trim().toLowerCase();
+    const password = document.getElementById('adminPassword').value;
+    
+    if (!email || !password) {
+        showAlert('Lütfen tüm alanları doldurun.', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Admin girişi yapılıyor...';
+    submitBtn.disabled = true;
+    
+    let loginSuccess = false;
+    let errorMessage = null;
+    
+    try {
+        console.log(`🔐 Admin giriş denemesi: ${email}`);
+        
+        // Admin kullanıcıları (basit kontrol)
+        const adminUsers = [
+            { email: 'admin@videosat.com', password: 'admin123', role: 'admin' },
+            { email: 'admin@basvideo.com', password: 'admin123', role: 'admin' }
+        ];
+        
+        const adminUser = adminUsers.find(u => u.email === email && u.password === password);
+        
+        if (!adminUser) {
+            errorMessage = 'Admin e-posta ya da şifre hatalı!';
+            console.log(`❌ Admin kullanıcı bulunamadı: ${email}`);
+            showAlert(errorMessage, 'error');
+            return;
+        }
+        
+        console.log(`✅ Admin kullanıcı bulundu: ${adminUser.email}`);
+        
+        // Admin kullanıcısını oluştur
+        const user = {
+            id: Date.now(),
+            email: adminUser.email,
+            role: adminUser.role,
+            companyName: 'VideoSat Admin',
+            firstName: 'Admin',
+            lastName: 'User',
+            phone: '+90 555 000 0000',
+            address: 'Admin Adresi',
+            city: 'istanbul',
+            sector: 'admin',
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+        };
+        
+        // currentUser olarak ayarla
+        currentUser = user;
+        isLoggedIn = true;
+        userRole = user.role;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        loginSuccess = true;
+        
+        // Close modal and redirect to dashboard
+        closeModal('adminLoginModal');
+        showAlert('Admin olarak başarıyla giriş yaptınız!', 'success');
+        
+        // Redirect to admin dashboard
+        setTimeout(() => {
+            redirectToDashboard();
+        }, 1000);
+        
+    } catch(err) {
+        errorMessage = 'Admin girişi sırasında bir hata oluştu: ' + err.message;
+        console.error('❌ Admin giriş hatası:', err);
+        showAlert(errorMessage, 'error');
+    } finally {
+        // Login attempt'i logla
+        if (window.loginLogger) {
+            window.loginLogger.logLoginAttempt(email, password, loginSuccess, errorMessage);
+        }
+        
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
 // Global function for window access
 window.closeModal = closeModal;
 window.showAlert = showAlert;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.handleAdminLogin = handleAdminLogin;
+window.redirectToDashboard = redirectToDashboard;
 
 function switchToRegister() {
     closeModal('loginModal');
@@ -139,12 +233,21 @@ async function sha256(str) {
 async function handleLogin(e) {
     e.preventDefault();
     
-    const email = document.getElementById('loginEmail').value;
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value;
     
     if (!email || !password) {
         showAlert('Lütfen tüm alanları doldurun.', 'error');
         return;
+    }
+    
+    // Kilitleme kontrolü
+    if (window.loginLogger) {
+        const lockStatus = window.loginLogger.isUserLocked(email);
+        if (lockStatus && lockStatus.locked) {
+            showAlert(lockStatus.message, 'error');
+            return;
+        }
     }
     
     // Show loading state
@@ -153,32 +256,65 @@ async function handleLogin(e) {
     submitBtn.innerHTML = '<span class="loading"></span> Giriş yapılıyor...';
     submitBtn.disabled = true;
     
+    let loginSuccess = false;
+    let errorMessage = null;
+    
     try {
-      // Şifreyi hash'le
-      const passwordHash = await sha256(password);
-      // User veritabanını al
-      let users = JSON.parse(localStorage.getItem('users')||'[]');
-      const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
-      if (!user) { showAlert('E-posta ya da şifre hatalı!','error'); return; }
-      // currentUser olarak ayarla
-      currentUser = user;
-      isLoggedIn = true;
-      userRole = user.role;
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      // Close modal and redirect to dashboard
-      closeModal('loginModal');
-      showAlert('Başarıyla giriş yaptınız!', 'success');
-      
-      // Redirect to appropriate dashboard
-      setTimeout(() => {
-          redirectToDashboard();
-      }, 1000);
-      
+        console.log(`🔐 Giriş denemesi: ${email}`);
+        
+        // Şifreyi hash'le
+        const passwordHash = await sha256(password);
+        console.log(`🔑 Şifre hash'lendi: ${passwordHash.substring(0, 10)}...`);
+        
+        // User veritabanını al
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        console.log(`👥 Toplam kullanıcı sayısı: ${users.length}`);
+        
+        // Kullanıcıyı bul
+        const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
+        
+        if (!user) {
+            errorMessage = 'E-posta ya da şifre hatalı!';
+            console.log(`❌ Kullanıcı bulunamadı: ${email}`);
+            
+            // Debug: Kullanıcıları listele
+            console.log('📋 Mevcut kullanıcılar:', users.map(u => ({ email: u.email, role: u.role })));
+            
+            showAlert(errorMessage, 'error');
+            return;
+        }
+        
+        console.log(`✅ Kullanıcı bulundu: ${user.email} (${user.role})`);
+        
+        // currentUser olarak ayarla
+        currentUser = user;
+        isLoggedIn = true;
+        userRole = user.role;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        loginSuccess = true;
+        
+        // Close modal and redirect to dashboard
+        closeModal('loginModal');
+        showAlert('Başarıyla giriş yaptınız!', 'success');
+        
+        // Redirect to appropriate dashboard
+        setTimeout(() => {
+            redirectToDashboard();
+        }, 1000);
+        
     } catch(err) {
-      showAlert('Giriş sırasında bir hata oluştu.','error');
+        errorMessage = 'Giriş sırasında bir hata oluştu: ' + err.message;
+        console.error('❌ Giriş hatası:', err);
+        showAlert(errorMessage, 'error');
     } finally {
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
+        // Login attempt'i logla
+        if (window.loginLogger) {
+            window.loginLogger.logLoginAttempt(email, password, loginSuccess, errorMessage);
+        }
+        
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 
@@ -352,8 +488,13 @@ function getCompanyNameFromEmail(email) {
 }
 
 function redirectToDashboard() {
-    if (!userRole) {
-        // Ana sayfaya yönlendir
+    console.log('🔄 Dashboard yönlendirmesi başlatılıyor...');
+    console.log('👤 Kullanıcı rolü:', userRole);
+    console.log('🔐 Giriş durumu:', isLoggedIn);
+    console.log('👤 Mevcut kullanıcı:', currentUser);
+    
+    if (!userRole || !isLoggedIn || !currentUser) {
+        console.warn('⚠️ Kullanıcı bilgileri eksik, ana sayfaya yönlendiriliyor');
         const basePath = getBasePath();
         window.location.href = basePath + 'index.html';
         return;
@@ -370,6 +511,7 @@ function redirectToDashboard() {
     
     const dashboardUrl = dashboardUrls[userRole];
     if (!dashboardUrl) {
+        console.error('❌ Bilinmeyen rol:', userRole);
         const basePath = getBasePath();
         window.location.href = basePath + 'index.html';
         return;
@@ -377,7 +519,24 @@ function redirectToDashboard() {
     
     // Path'i doğru oluştur
     const basePath = getBasePath();
-    window.location.href = basePath + dashboardUrl;
+    const fullUrl = basePath + dashboardUrl;
+    
+    console.log('🎯 Yönlendiriliyor:', fullUrl);
+    console.log('📁 Base path:', basePath);
+    console.log('📄 Dashboard URL:', dashboardUrl);
+    
+    // Yönlendirme öncesi son kontrol
+    if (window.loginLogger) {
+        window.loginLogger.logLoginAttempt(
+            currentUser.email, 
+            '***', 
+            true, 
+            null
+        );
+    }
+    
+    // Yönlendir
+    window.location.href = fullUrl;
 }
 
 // Base path'i doğru şekilde belirle
