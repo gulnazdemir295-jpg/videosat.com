@@ -23,6 +23,21 @@ function initializePanel() {
     // Check authentication
     const savedUser = localStorage.getItem('currentUser');
     if (!savedUser) {
+        // Ana sayfaya yönlendir
+        window.location.href = '../index.html';
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(savedUser);
+        // Eğer user geçersizse yönlendir
+        if (!user || !user.role) {
+            window.location.href = '../index.html';
+            return;
+        }
+    } catch (e) {
+        // JSON parse hatası - ana sayfaya yönlendir
+        localStorage.removeItem('currentUser');
         window.location.href = '../index.html';
         return;
     }
@@ -38,6 +53,23 @@ function initializePanel() {
     
     // Setup modal close listeners
     setupModalCloseListeners();
+    
+    // Panel logo'yu tıklanabilir yap - anasayfaya yönlendir
+    setupPanelLogoClick();
+}
+
+// Panel logo'ya tıklama fonksiyonu
+function setupPanelLogoClick() {
+    const panelLogo = document.querySelector('.panel-logo');
+    if (panelLogo) {
+        // Eğer zaten bir link değilse, tıklama olayı ekle
+        if (!panelLogo.querySelector('a')) {
+            panelLogo.style.cursor = 'pointer';
+            panelLogo.addEventListener('click', function() {
+                window.location.href = '../index.html';
+            });
+        }
+    }
 }
 
 // Setup Modal Close Listeners

@@ -33,6 +33,21 @@
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.panel-logo:hover {
+    opacity: 0.8;
+}
+
+.panel-logo a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
 }
 
 .panel-logo i {

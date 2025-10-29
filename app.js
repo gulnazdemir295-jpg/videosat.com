@@ -59,16 +59,36 @@ function setupEventListeners() {
     // Smooth Scrolling for Navigation Links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+            const href = this.getAttribute('href');
+            // Ana sayfadaki anchor linkleri için smooth scroll
+            if (href === '#home' || href === '#features' || href === '#pricing' || href === '#contact') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    const offsetTop = target.offsetTop - 80; // Navbar yüksekliği için offset
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
     });
+    
+    // Nav logo için özel işlem
+    const navLogo = document.querySelector('.nav-logo');
+    if (navLogo && navLogo.getAttribute('href') === 'index.html') {
+        navLogo.addEventListener('click', function(e) {
+            // Eğer zaten anasayfadaysak, sayfanın başına scroll yap
+            if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
 }
 
 // Authentication Functions
@@ -333,7 +353,9 @@ function getCompanyNameFromEmail(email) {
 
 function redirectToDashboard() {
     if (!userRole) {
-        window.location.href = 'index.html';
+        // Ana sayfaya yönlendir
+        const basePath = getBasePath();
+        window.location.href = basePath + 'index.html';
         return;
     }
     
@@ -346,8 +368,39 @@ function redirectToDashboard() {
         'admin': 'panels/admin.html'
     };
     
-    const dashboardUrl = dashboardUrls[userRole] || 'index.html';
-    window.location.href = dashboardUrl;
+    const dashboardUrl = dashboardUrls[userRole];
+    if (!dashboardUrl) {
+        const basePath = getBasePath();
+        window.location.href = basePath + 'index.html';
+        return;
+    }
+    
+    // Path'i doğru oluştur
+    const basePath = getBasePath();
+    window.location.href = basePath + dashboardUrl;
+}
+
+// Base path'i doğru şekilde belirle
+function getBasePath() {
+    const path = window.location.pathname;
+    
+    // Eğer panels klasöründeysek, bir üst dizine çık
+    if (path.includes('panels/')) {
+        return '../';
+    }
+    
+    // Ana dizindeysek boş string döndür
+    if (path.endsWith('/') || path === '' || path === '/') {
+        return '';
+    }
+    
+    // Dosya adı varsa, dosya adını kaldır
+    const fileName = path.split('/').pop();
+    if (fileName && fileName.includes('.')) {
+        return '';
+    }
+    
+    return '';
 }
 
 function updateUIForLoggedInUser() {
@@ -382,12 +435,13 @@ function logout() {
     
     // Anasayfaya yönlendir
     setTimeout(() => {
+        const basePath = getBasePath();
         // Eğer panel sayfasındaysak anasayfaya dön
         if (window.location.pathname.includes('panels/')) {
             window.location.href = '../index.html';
         } else {
             // Zaten anasayfadaysak sayfayı yenile
-            window.location.reload();
+            window.location.href = basePath + 'index.html';
         }
     }, 1000);
 }
@@ -620,7 +674,8 @@ async function handleAdminLogin(e) {
             
             // Redirect to admin panel
             setTimeout(() => {
-                window.location.href = 'panels/admin.html';
+                const basePath = getBasePath();
+                window.location.href = basePath + 'panels/admin.html';
             }, 1000);
             
         } else {
