@@ -1,4 +1,4 @@
-// VideoSat Platform - Script Loader
+// VideoSat Platform - Script Loader v2
 // Güvenilir script yükleme ve hata yönetimi
 
 class ScriptLoader {

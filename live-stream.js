@@ -1414,4 +1414,4 @@ window.sendInvitation = sendInvitation;
 window.sendMessage = sendMessage;
 window.handleMessageKeyPress = handleMessageKeyPress;
 
-console.log('✅ Enhanced Live Stream System Loaded');
+console.log('✅ Enhanced Live Stream System Loaded v2');

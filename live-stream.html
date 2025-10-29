@@ -622,7 +622,7 @@
     <div id="alertContainer"></div>
 
     <!-- Scripts -->
-    <script src="script-loader.js"></script>
+    <script src="script-loader.js?v=2"></script>
     <script>
         // Güvenilir script yükleme
         document.addEventListener('DOMContentLoaded', async function() {
@@ -631,20 +631,23 @@
             // Önce script-loader'ı kontrol et
             if (typeof window.scriptLoader === 'undefined') {
                 console.error('❌ script-loader.js yüklenmedi!');
-                alert('Hata: script-loader.js yüklenemedi. Sayfayı yenileyin.');
+                
+                // Fallback: Direkt script yükleme
+                console.log('🔄 Fallback: Direkt script yükleme başlatılıyor...');
+                await loadScriptsDirectly();
                 return;
             }
             
             try {
                 // Script'leri sırayla yükle
                 await window.scriptLoader.loadScripts([
-                    'modules/module-loader.js',
-                    'app.js',
-                    'services/payment-service.js',
-                    'services/order-service.js',
-                    'live-stream.js'
+                    'modules/module-loader.js?v=2',
+                    'app.js?v=2',
+                    'services/payment-service.js?v=2',
+                    'services/order-service.js?v=2',
+                    'live-stream.js?v=2'
                 ], {
-                    timeout: 15000, // 15 saniye timeout
+                    timeout: 20000, // 20 saniye timeout
                     continueOnError: true // Kritik olmayan scriptler için devam et
                 });
                 
@@ -827,6 +830,164 @@
                 };
             }
         });
+        
+        // Direkt script yükleme fonksiyonu
+        async function loadScriptsDirectly() {
+            console.log('🔄 Direkt script yükleme başlatılıyor...');
+            
+            const scripts = [
+                'modules/module-loader.js?v=2',
+                'app.js?v=2',
+                'services/payment-service.js?v=2',
+                'services/order-service.js?v=2',
+                'live-stream.js?v=2'
+            ];
+            
+            for (const scriptSrc of scripts) {
+                try {
+                    await loadScript(scriptSrc);
+                    console.log(`✅ Script yüklendi: ${scriptSrc}`);
+                } catch (error) {
+                    console.warn(`⚠️ Script yüklenemedi: ${scriptSrc}`, error);
+                }
+            }
+            
+            // Fonksiyonları kontrol et ve butonları aktif et
+            setTimeout(function() {
+                console.log('🔍 Fonksiyonlar kontrol ediliyor (direkt yükleme)...');
+                checkAndActivateFunctions();
+            }, 2000);
+        }
+        
+        // Tek script yükleme fonksiyonu
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = false;
+                script.onload = () => resolve(script);
+                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Fonksiyon kontrolü ve buton aktivasyonu
+        function checkAndActivateFunctions() {
+            // Kritik fonksiyonları kontrol et
+            const criticalFunctions = {
+                'skipPaymentStep': function() {
+                    console.log('Fallback skipPaymentStep() çağrıldı');
+                    try {
+                        localStorage.setItem('livestreamBalance', '120');
+                        
+                        const preStreamSetup = document.getElementById('preStreamSetup');
+                        const mainContent = document.getElementById('mainContent');
+                        
+                        if (preStreamSetup) {
+                            preStreamSetup.classList.remove('active');
+                        }
+                        
+                        if (mainContent) {
+                            mainContent.style.display = 'grid';
+                        }
+                        
+                        alert('Test modu: 2 saat bakiye eklendi.');
+                        console.log('Fallback skipPaymentStep() başarıyla tamamlandı');
+                    } catch (error) {
+                        console.error('Fallback skipPaymentStep() hatası:', error);
+                        alert('Hata: ' + error.message);
+                    }
+                },
+                'showAlert': function(message, type = 'info') {
+                    console.log(`Alert: ${message} (${type})`);
+                    alert(message);
+                },
+                'requestCameraAccess': function() {
+                    console.log('Fallback requestCameraAccess() çağrıldı');
+                    alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
+                },
+                'startStream': function() {
+                    console.log('Fallback startStream() çağrıldı');
+                    alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
+                }
+            };
+            
+            // Eksik fonksiyonları ekle
+            Object.keys(criticalFunctions).forEach(funcName => {
+                if (typeof window[funcName] !== 'function') {
+                    console.warn(`⚠️ ${funcName} fonksiyonu yüklenmedi, fallback kullanılıyor`);
+                    window[funcName] = criticalFunctions[funcName];
+                } else {
+                    console.log(`✅ ${funcName} fonksiyonu mevcut`);
+                }
+            });
+            
+            // Butonları aktif hale getir
+            activateButtonsDirectly();
+            
+            console.log('🎉 Canlı yayın sayfası hazır (direkt yükleme)!');
+        }
+        
+        // Direkt buton aktivasyonu
+        function activateButtonsDirectly() {
+            console.log('🔘 Butonlar aktif hale getiriliyor (direkt)...');
+            
+            // Kamera erişimi butonunu aktif et
+            const cameraBtn = document.getElementById('cameraAccessBtn');
+            if (cameraBtn) {
+                cameraBtn.disabled = false;
+                cameraBtn.style.opacity = '1';
+                cameraBtn.style.cursor = 'pointer';
+                console.log('✅ Kamera erişimi butonu aktif edildi (direkt)');
+            }
+            
+            // Yayın başlat butonunu aktif et
+            const startBtn = document.getElementById('startStreamBtn');
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                console.log('✅ Yayın başlat butonu aktif edildi (direkt)');
+            }
+            
+            // Event listener'ları ekle
+            addButtonEventListenersDirectly();
+        }
+        
+        // Direkt event listener'ları ekle
+        function addButtonEventListenersDirectly() {
+            console.log('🎧 Event listener\'lar ekleniyor (direkt)...');
+            
+            // Kamera erişimi butonu
+            const cameraBtn = document.getElementById('cameraAccessBtn');
+            if (cameraBtn) {
+                cameraBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('📹 Kamera erişimi butonuna tıklandı (direkt)');
+                    if (typeof requestCameraAccess === 'function') {
+                        requestCameraAccess();
+                    } else {
+                        alert('Kamera erişimi fonksiyonu yüklenmedi. Sayfayı yenileyin.');
+                    }
+                });
+                console.log('✅ Kamera erişimi event listener eklendi (direkt)');
+            }
+            
+            // Yayın başlat butonu
+            const startBtn = document.getElementById('startStreamBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🎬 Yayın başlat butonuna tıklandı (direkt)');
+                    if (typeof startStream === 'function') {
+                        startStream();
+                    } else {
+                        alert('Yayın başlatma fonksiyonu yüklenmedi. Sayfayı yenileyin.');
+                    }
+                });
+                console.log('✅ Yayın başlat event listener eklendi (direkt)');
+            }
+        }
     </script>
 </body>
 </html>

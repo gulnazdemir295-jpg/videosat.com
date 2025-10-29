@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSat - Acil Durum Canlı Yayın</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #dc2626;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .live-badge {
+            background: #dc2626;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .video-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
+            border: 1px solid #404040;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000000;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            margin-bottom: 20px;
+            border: 2px solid #dc2626;
+        }
+
+        #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000000;
+        }
+
+        #localVideo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            border: 3px solid #dc2626;
+            border-radius: 10px;
+            z-index: 10;
+            background: #000000;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+        }
+
+        .waiting-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+
+        .waiting-message i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            color: #dc2626;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .control-btn.start {
+            background: #28a745;
+            color: white;
+        }
+
+        .control-btn.start:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .control-btn.stop {
+            background: #dc2626;
+            color: white;
+        }
+
+        .control-btn.stop:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
+        }
+
+        .control-btn.end {
+            background: #6c757d;
+            color: white;
+        }
+
+        .control-btn.end:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-info {
+            text-align: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            border: 1px solid #dc2626;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
+            border: 1px solid #404040;
+        }
+
+        .card h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc2626;
+            padding: 15px;
+            background: #0a0a0a;
+            border-radius: 10px;
+            border: 1px solid #dc2626;
+        }
+
+        .emergency-notice {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emergency-notice">
+            <i class="fas fa-exclamation-triangle"></i> ACİL DURUM MODU - Basitleştirilmiş Canlı Yayın Sistemi
+        </div>
+        
+        <div class="header">
+            <h1><i class="fas fa-video"></i> VideoSat Canlı Yayın (Acil Durum)</h1>
+            <div class="live-badge" id="liveBadge">
+                <i class="fas fa-circle"></i> <span id="liveStatus">HAZIRLANIYOR</span>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="video-section">
+                <div class="status-info" id="statusInfo">
+                    <i class="fas fa-info-circle"></i> Kamera ve mikrofon erişimi için izin verin
+                </div>
+
+                <div class="video-container">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <div class="waiting-message" id="waitingMessage">
+                        <i class="fas fa-video"></i>
+                        <p>Kamera başlatılıyor...</p>
+                    </div>
+                </div>
+
+                <div class="video-controls">
+                    <button class="control-btn start" onclick="requestCameraAccess()" id="cameraAccessBtn">
+                        <i class="fas fa-camera"></i> Kamera Erişimi İste
+                    </button>
+                    <button class="control-btn start" onclick="startStream()" id="startStreamBtn">
+                        <i class="fas fa-play"></i> Yayını Başlat
+                    </button>
+                    <button class="control-btn stop" onclick="stopStream()" disabled id="stopBtn">
+                        <i class="fas fa-stop"></i> Yayını Durdur
+                    </button>
+                    <button class="control-btn end" onclick="endStream()" id="endStreamBtn">
+                        <i class="fas fa-times"></i> Yayını Sonlandır
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h3><i class="fas fa-clock"></i> Yayın Süresi</h3>
+                    <div class="timer" id="timer">00:00:00</div>
+                    <p style="text-align: center; margin-top: 10px; color: #999;">
+                        <i class="fas fa-link"></i> <span id="balanceDisplay">Bakiye: 2 saat (Test)</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Acil durum canlı yayın sistemi
+        let localStream = null;
+        let isStreaming = false;
+        let streamStartTime = null;
+        let timerInterval = null;
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚨 Acil durum canlı yayın sistemi başlatıldı');
+            
+            // Bakiye ayarla
+            localStorage.setItem('livestreamBalance', '120');
+            
+            // Butonları aktif et
+            activateButtons();
+            
+            console.log('✅ Acil durum sistemi hazır');
+        });
+
+        // Butonları aktif et
+        function activateButtons() {
+            const cameraBtn = document.getElementById('cameraAccessBtn');
+            const startBtn = document.getElementById('startStreamBtn');
+            
+            if (cameraBtn) {
+                cameraBtn.disabled = false;
+                cameraBtn.style.opacity = '1';
+                console.log('✅ Kamera butonu aktif');
+            }
+            
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                console.log('✅ Yayın başlat butonu aktif');
+            }
+        }
+
+        // Kamera erişimi iste
+        async function requestCameraAccess() {
+            console.log('📹 Kamera erişimi isteniyor...');
+            
+            try {
+                updateStatus('Kamera ve mikrofon erişimi isteniyor...');
+                
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: true
+                });
+                
+                const localVideo = document.getElementById('localVideo');
+                const waitingMessage = document.getElementById('waitingMessage');
+                
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+                }
+                
+                if (waitingMessage) {
+                    waitingMessage.style.display = 'none';
+                }
+                
+                updateStatus('✅ Kamera erişimi başarılı! Yayını başlatabilirsiniz.');
+                
+                // Yayın başlat butonunu aktif et
+                const startBtn = document.getElementById('startStreamBtn');
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1';
+                }
+                
+                alert('Kamera erişimi başarılı! Artık yayını başlatabilirsiniz.');
+                
+            } catch (error) {
+                console.error('❌ Kamera erişim hatası:', error);
+                updateStatus('❌ Kamera erişimi reddedildi: ' + error.message);
+                alert('Kamera erişimi reddedildi: ' + error.message);
+            }
+        }
+
+        // Yayını başlat
+        async function startStream() {
+            console.log('🎬 Yayın başlatılıyor...');
+            
+            if (!localStream) {
+                alert('Önce kamera erişimi isteyin!');
+                return;
+            }
+            
+            try {
+                updateStatus('Yayın başlatılıyor...');
+                
+                const localVideo = document.getElementById('localVideo');
+                const remoteVideo = document.getElementById('remoteVideo');
+                const waitingMessage = document.getElementById('waitingMessage');
+                
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                    localVideo.style.display = 'block';
+                }
+                
+                if (waitingMessage) {
+                    waitingMessage.style.display = 'none';
+                }
+                
+                if (remoteVideo) {
+                    remoteVideo.style.background = '#000000';
+                }
+                
+                updateStatus('✅ Yayın başlatıldı!');
+                isStreaming = true;
+                streamStartTime = Date.now();
+                
+                // Butonları güncelle
+                const startBtn = document.getElementById('startStreamBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                
+                if (startBtn) {
+                    startBtn.disabled = true;
+                    startBtn.style.opacity = '0.5';
+                }
+                
+                if (stopBtn) {
+                    stopBtn.disabled = false;
+                    stopBtn.style.opacity = '1';
+                }
+                
+                // Live badge güncelle
+                const liveBadge = document.getElementById('liveBadge');
+                const liveStatus = document.getElementById('liveStatus');
+                if (liveBadge) {
+                    liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>';
+                }
+                if (liveStatus) {
+                    liveStatus.textContent = 'CANLI';
+                }
+                
+                // Timer başlat
+                startTimer();
+                
+                alert('🎉 Yayın başarıyla başlatıldı!');
+                console.log('✅ Yayın başarıyla başlatıldı');
+                
+            } catch (error) {
+                console.error('❌ Yayın başlatma hatası:', error);
+                updateStatus('❌ Yayın başlatılamadı: ' + error.message);
+                alert('Yayın başlatılamadı: ' + error.message);
+            }
+        }
+
+        // Yayını durdur
+        function stopStream() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = null;
+            }
+            
+            isStreaming = false;
+            updateStatus('Yayın duraklatıldı.');
+            
+            // Butonları güncelle
+            const startBtn = document.getElementById('startStreamBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+            }
+            
+            if (stopBtn) {
+                stopBtn.disabled = true;
+                stopBtn.style.opacity = '0.5';
+            }
+            
+            // Timer durdur
+            stopTimer();
+            
+            // Live badge güncelle
+            const liveBadge = document.getElementById('liveBadge');
+            const liveStatus = document.getElementById('liveStatus');
+            if (liveBadge) {
+                liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>DURAKLATILDI</span>';
+            }
+            if (liveStatus) {
+                liveStatus.textContent = 'DURAKLATILDI';
+            }
+        }
+
+        // Yayını sonlandır
+        function endStream() {
+            if (confirm('Yayını sonlandırmak istediğinize emin misiniz?')) {
+                stopStream();
+                
+                // Live badge güncelle
+                const liveBadge = document.getElementById('liveBadge');
+                const liveStatus = document.getElementById('liveStatus');
+                if (liveBadge) {
+                    liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>SONLANDIRILDI</span>';
+                }
+                if (liveStatus) {
+                    liveStatus.textContent = 'SONLANDIRILDI';
+                }
+                
+                alert('Yayın sonlandırıldı.');
+            }
+        }
+
+        // Timer başlat
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!streamStartTime) return;
+                
+                const elapsed = Date.now() - streamStartTime;
+                const seconds = Math.floor(elapsed / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                
+                const displayHours = String(hours).padStart(2, '0');
+                const displayMinutes = String(minutes % 60).padStart(2, '0');
+                const displaySeconds = String(seconds % 60).padStart(2, '0');
+                
+                const timerElement = document.getElementById('timer');
+                if (timerElement) {
+                    timerElement.textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+                }
+            }, 1000);
+        }
+
+        // Timer durdur
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Durum güncelle
+        function updateStatus(message) {
+            const statusInfo = document.getElementById('statusInfo');
+            if (statusInfo) {
+                statusInfo.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+            }
+        }
+
+        // Global fonksiyonlar
+        window.requestCameraAccess = requestCameraAccess;
+        window.startStream = startStream;
+        window.stopStream = stopStream;
+        window.endStream = endStream;
+
+        console.log('✅ Acil durum canlı yayın sistemi yüklendi');
+    </script>
+</body>
+</html>
