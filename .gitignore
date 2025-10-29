@@ -46,6 +46,12 @@ coverage/
 
 # Dependency directories
 node_modules/
+
+# Environment files (sensitive data)
+config.env
+.env
+*.env
+!config.env.example
 jspm_packages/
 
 # Optional npm cache directory

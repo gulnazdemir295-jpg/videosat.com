@@ -1,11 +1,13 @@
 // AWS IVS Service - Tarayıcıdan Canlı Yayın
 class AWSIVSService {
     constructor() {
-        // AWS IVS Credentials (AWS Console'dan kopyalandı)
-        this.streamingEndpoint = 'rtmps://global-live.mux.com:443/app/';
-        this.streamKey = 'sk_us-east-1_eAWtBjlj56zE_yYXjvk2F9Ji7AgmLSqXI0R1ZOnOFSw';
-        this.playbackUrl = 'https://390d27dc4a33.us-east-1.playback.live-video.net/api/video/v1/us-east-1.328185871955.channel.gnI3jUnKmV1K.m3u8';
-        this.channelId = 'gnI3jUnKmV1K'; // Channel ID playback URL'den çıkarıldı
+        // AWS IVS Credentials
+        // ⚠️ GÜVENLİK: Production'da environment variables kullan!
+        // Şimdilik simulated/dummy values
+        this.streamingEndpoint = 'rtmps://ENDPOINT_BURAYA';
+        this.streamKey = 'stream_key_buraya'; // GÜVENLİ YERE SAKLA!
+        this.playbackUrl = 'playback_url_buraya';
+        this.channelId = 'channel_id_buraya';
         
         // Internal state
         this.isStreaming = false;
