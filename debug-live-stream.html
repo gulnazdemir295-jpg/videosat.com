@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Canlı Yayın</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .debug-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #dc2626;
+        }
+        .debug-section h3 {
+            color: #dc2626;
+            margin-bottom: 15px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #28a745; color: white; }
+        .error { background: #dc2626; color: white; }
+        .warning { background: #ffc107; color: black; }
+        .info { background: #17a2b8; color: white; }
+        .test-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #b91c1c;
+        }
+        .test-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        video {
+            width: 100%;
+            max-width: 500px;
+            background: #000;
+            border: 2px solid #dc2626;
+            border-radius: 10px;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-bug"></i> Canlı Yayın Debug Sayfası</h1>
+    
+    <div class="debug-section">
+        <h3>1. Sistem Kontrolü</h3>
+        <div id="systemStatus" class="status info">Sistem kontrol ediliyor...</div>
+        <button class="test-btn" onclick="checkSystem()">Sistem Kontrol Et</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>2. Kamera Erişimi Testi</h3>
+        <div id="cameraStatus" class="status info">Kamera erişimi test ediliyor...</div>
+        <button class="test-btn" onclick="testCamera()">Kamera Test Et</button>
+        <video id="testVideo" autoplay muted playsinline style="display: none;"></video>
+    </div>
+    
+    <div class="debug-section">
+        <h3>3. Script Yükleme Testi</h3>
+        <div id="scriptStatus" class="status info">Script'ler kontrol ediliyor...</div>
+        <button class="test-btn" onclick="checkScripts()">Script'leri Kontrol Et</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>4. Canlı Yayın Testi</h3>
+        <div id="streamStatus" class="status info">Canlı yayın test ediliyor...</div>
+        <button class="test-btn" onclick="testLiveStream()">Canlı Yayın Test Et</button>
+        <button class="test-btn" onclick="stopTest()" id="stopBtn" disabled>Durdur</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>5. Hata Logları</h3>
+        <div id="errorLog" class="log">Hata logları burada görünecek...</div>
+        <button class="test-btn" onclick="clearLog()">Logları Temizle</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>6. Çözüm Önerileri</h3>
+        <div id="solutions">
+            <p>Test sonuçlarına göre çözüm önerileri burada görünecek...</p>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="live-stream.html" style="color: #dc2626;">← Canlı Yayın Sayfasına Dön</a>
+    </div>
+
+    <script>
+        let testStream = null;
+        let logContainer = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logContainer = document.getElementById('errorLog');
+            checkSystem();
+        });
+        
+        // Log function
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logContainer.textContent += logEntry;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Clear log
+        function clearLog() {
+            logContainer.textContent = '';
+        }
+        
+        // Check system
+        function checkSystem() {
+            const status = document.getElementById('systemStatus');
+            let issues = [];
+            let solutions = [];
+            
+            // Check HTTPS
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                issues.push('HTTPS gereklidir');
+                solutions.push('Sunucuyu HTTPS ile çalıştırın');
+            }
+            
+            // Check WebRTC support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                issues.push('WebRTC desteklenmiyor');
+                solutions.push('Modern tarayıcı kullanın (Chrome, Firefox, Safari, Edge)');
+            }
+            
+            // Check getUserMedia
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                addLog('WebRTC destekleniyor', 'success');
+            } else {
+                addLog('WebRTC desteklenmiyor', 'error');
+            }
+            
+            // Check localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addLog('localStorage çalışıyor', 'success');
+            } catch (e) {
+                issues.push('localStorage çalışmıyor');
+                solutions.push('Tarayıcı ayarlarını kontrol edin');
+                addLog('localStorage hatası: ' + e.message, 'error');
+            }
+            
+            // Update status
+            if (issues.length === 0) {
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Sistem uyumlu';
+                status.className = 'status success';
+                addLog('Sistem kontrolü başarılı', 'success');
+            } else {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + issues.join(', ');
+                status.className = 'status error';
+                addLog('Sistem sorunları: ' + issues.join(', '), 'error');
+            }
+            
+            // Update solutions
+            updateSolutions(solutions);
+        }
+        
+        // Test camera
+        async function testCamera() {
+            const status = document.getElementById('cameraStatus');
+            const video = document.getElementById('testVideo');
+            
+            try {
+                addLog('Kamera erişimi isteniyor...', 'info');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kamera erişimi isteniyor...';
+                status.className = 'status info';
+                
+                testStream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: true
+                });
+                
+                video.srcObject = testStream;
+                video.style.display = 'block';
+                
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Kamera erişimi başarılı';
+                status.className = 'status success';
+                addLog('Kamera erişimi başarılı', 'success');
+                
+            } catch (error) {
+                status.innerHTML = '<i class="fas fa-times-circle"></i> Kamera erişimi başarısız: ' + error.message;
+                status.className = 'status error';
+                addLog('Kamera hatası: ' + error.message, 'error');
+                
+                // Specific error solutions
+                if (error.name === 'NotAllowedError') {
+                    addLog('Çözüm: Tarayıcı ayarlarından kamera izni verin', 'warning');
+                } else if (error.name === 'NotFoundError') {
+                    addLog('Çözüm: Kamera cihazı bulunamadı', 'warning');
+                } else if (error.name === 'NotReadableError') {
+                    addLog('Çözüm: Kamera başka uygulama tarafından kullanılıyor', 'warning');
+                }
+            }
+        }
+        
+        // Check scripts
+        function checkScripts() {
+            const status = document.getElementById('scriptStatus');
+            const requiredScripts = [
+                'script-loader.js',
+                'app.js',
+                'live-stream.js'
+            ];
+            
+            let loadedScripts = 0;
+            let missingScripts = [];
+            
+            requiredScripts.forEach(script => {
+                if (document.querySelector(`script[src*="${script}"]`)) {
+                    loadedScripts++;
+                    addLog(`Script yüklendi: ${script}`, 'success');
+                } else {
+                    missingScripts.push(script);
+                    addLog(`Script eksik: ${script}`, 'error');
+                }
+            });
+            
+            // Check functions
+            const requiredFunctions = [
+                'startStream',
+                'requestCameraAccess',
+                'skipPaymentStep',
+                'showAlert'
+            ];
+            
+            requiredFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    addLog(`Fonksiyon mevcut: ${func}`, 'success');
+                } else {
+                    addLog(`Fonksiyon eksik: ${func}`, 'error');
+                }
+            });
+            
+            if (missingScripts.length === 0) {
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Tüm script\'ler yüklendi';
+                status.className = 'status success';
+            } else {
+                status.innerHTML = '<i class="fas fa-times-circle"></i> Eksik script\'ler: ' + missingScripts.join(', ');
+                status.className = 'status error';
+            }
+        }
+        
+        // Test live stream
+        async function testLiveStream() {
+            const status = document.getElementById('streamStatus');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            try {
+                addLog('Canlı yayın testi başlatılıyor...', 'info');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Canlı yayın testi...';
+                status.className = 'status info';
+                
+                // Test camera access first
+                if (!testStream) {
+                    await testCamera();
+                    if (!testStream) {
+                        throw new Error('Kamera erişimi gerekli');
+                    }
+                }
+                
+                // Test startStream function
+                if (typeof window.startStream === 'function') {
+                    addLog('startStream fonksiyonu mevcut', 'success');
+                    
+                    // Simulate stream start
+                    status.innerHTML = '<i class="fas fa-check-circle"></i> Canlı yayın testi başarılı';
+                    status.className = 'status success';
+                    addLog('Canlı yayın testi başarılı', 'success');
+                    
+                    stopBtn.disabled = false;
+                    
+                } else {
+                    throw new Error('startStream fonksiyonu bulunamadı');
+                }
+                
+            } catch (error) {
+                status.innerHTML = '<i class="fas fa-times-circle"></i> Canlı yayın testi başarısız: ' + error.message;
+                status.className = 'status error';
+                addLog('Canlı yayın test hatası: ' + error.message, 'error');
+            }
+        }
+        
+        // Stop test
+        function stopTest() {
+            if (testStream) {
+                testStream.getTracks().forEach(track => track.stop());
+                testStream = null;
+            }
+            
+            document.getElementById('testVideo').srcObject = null;
+            document.getElementById('testVideo').style.display = 'none';
+            
+            const status = document.getElementById('streamStatus');
+            status.innerHTML = '<i class="fas fa-stop-circle"></i> Test durduruldu';
+            status.className = 'status info';
+            
+            document.getElementById('stopBtn').disabled = true;
+            addLog('Test durduruldu', 'info');
+        }
+        
+        // Update solutions
+        function updateSolutions(solutions) {
+            const solutionsDiv = document.getElementById('solutions');
+            if (solutions.length === 0) {
+                solutionsDiv.innerHTML = '<p style="color: #28a745;">✅ Sistem uyumlu, sorun yok!</p>';
+            } else {
+                solutionsDiv.innerHTML = '<h4>Çözüm Önerileri:</h4><ul>' + 
+                    solutions.map(s => `<li>${s}</li>`).join('') + 
+                    '</ul>';
+            }
+        }
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            addLog('JavaScript hatası: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')', 'error');
+        });
+        
+        // Unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            addLog('Promise hatası: ' + e.reason, 'error');
+        });
+    </script>
+</body>
+</html>

@@ -30,27 +30,53 @@ const products = [
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    loadUserData();
-    checkInvitationContext();
-    loadProducts();
-    loadStreamBalance();
-    checkWebRTCSupport();
-    setupInvitationSystem();
-    checkActiveStream();
+    console.log('🎬 Live Stream JS başlatılıyor...');
     
-    // Connect to WebSocket service if available
-    if (window.websocketService) {
-        window.websocketService.connect();
-        setupWebSocketListeners();
-    }
-    
-    // Fallback: Add event listener to skip button if onclick doesn't work
-    const skipBtn = document.getElementById('skipPaymentBtn');
-    if (skipBtn) {
-        skipBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            skipPaymentStep();
-        });
+    try {
+        loadUserData();
+        checkInvitationContext();
+        loadProducts();
+        loadStreamBalance();
+        checkWebRTCSupport();
+        setupInvitationSystem();
+        checkActiveStream();
+        
+        // Connect to WebSocket service if available
+        if (window.websocketService) {
+            window.websocketService.connect();
+            setupWebSocketListeners();
+        }
+        
+        // Fallback: Add event listener to skip button if onclick doesn't work
+        const skipBtn = document.getElementById('skipPaymentBtn');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                skipPaymentStep();
+            });
+        }
+        
+        // Add event listeners for other buttons
+        const cameraBtn = document.querySelector('button[onclick*="requestCameraAccess"]');
+        if (cameraBtn) {
+            cameraBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                requestCameraAccess();
+            });
+        }
+        
+        const startBtn = document.querySelector('button[onclick*="startStream"]');
+        if (startBtn) {
+            startBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                startStream();
+            });
+        }
+        
+        console.log('✅ Live Stream JS başlatıldı');
+        
+    } catch (error) {
+        console.error('❌ Live Stream JS başlatma hatası:', error);
     }
 });
 
@@ -423,12 +449,23 @@ function showBuyStreamTimeModal() {
 
 // Start stream
 async function startStream() {
-    if (!checkWebRTCSupport()) return;
+    console.log('🎬 Yayın başlatılıyor...');
+    
+    if (!checkWebRTCSupport()) {
+        console.error('❌ WebRTC desteklenmiyor');
+        return;
+    }
     
     // Check if camera access is already granted
     if (!localStream) {
+        console.warn('⚠️ Kamera erişimi yok, önce kamera erişimi iste');
         updateStatus('Önce kamera erişimi isteyin!');
-        showAlert('Lütfen önce "Kamera Erişimi İste" butonuna tıklayın.', 'warning');
+        
+        if (typeof showAlert === 'function') {
+            showAlert('Lütfen önce "Kamera Erişimi İste" butonuna tıklayın.', 'warning');
+        } else {
+            alert('Lütfen önce "Kamera Erişimi İste" butonuna tıklayın.');
+        }
         return;
     }
     
@@ -436,11 +473,13 @@ async function startStream() {
     const balance = parseFloat(localStorage.getItem('livestreamBalance') || '0');
     if (balance === 0 && isStreamer) {
         if (!confirm('Yayın bakiyeniz yok. Test için devam etmek ister misiniz?')) {
+            console.log('❌ Kullanıcı bakiye olmadığı için yayını iptal etti');
             return;
         }
     }
     
     try {
+        console.log('📺 Yayın başlatılıyor...');
         updateStatus('Yayın başlatılıyor...');
         
         // Display local video
@@ -452,10 +491,12 @@ async function startStream() {
             // Streamer: local video sağ alt, remote video ana ekran (başka bir yayından gelirse)
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
+            console.log('📹 Yayıncı video gösterildi');
         } else {
             // Viewer: local video sağ alt, remote video ana ekran (streamer'dan)
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
+            console.log('👀 İzleyici video gösterildi');
         }
         
         if (waitingMessage) {
@@ -463,7 +504,9 @@ async function startStream() {
         }
         
         // Set remote video background
-        remoteVideo.style.background = '#000000';
+        if (remoteVideo) {
+            remoteVideo.style.background = '#000000';
+        }
         
         updateStatus('✅ Yayın başlatıldı! Diğer kullanıcılara görünüyorsunuz.');
         isStreaming = true;
@@ -471,6 +514,7 @@ async function startStream() {
         
         // Generate stream ID
         streamId = `STREAM-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        console.log('🆔 Stream ID:', streamId);
         
         // Save active stream
         const streamData = {
@@ -481,26 +525,43 @@ async function startStream() {
             selectedProducts: selectedProducts
         };
         localStorage.setItem('activeLivestream', JSON.stringify(streamData));
+        console.log('💾 Stream verisi kaydedildi');
         
         // Enable/disable buttons
         const startBtn = document.querySelector('.control-btn.start[onclick*="startStream"]');
         const stopBtn = document.getElementById('stopBtn');
         
-        if (startBtn) startBtn.disabled = true;
-        if (stopBtn) stopBtn.disabled = false;
+        if (startBtn) {
+            startBtn.disabled = true;
+            console.log('⏸️ Başlat butonu devre dışı bırakıldı');
+        }
+        if (stopBtn) {
+            stopBtn.disabled = false;
+            console.log('⏹️ Durdur butonu aktif edildi');
+        }
         
         // Update live badge
-        document.getElementById('liveBadge').innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>';
-        document.getElementById('liveStatus').textContent = 'CANLI';
+        const liveBadge = document.getElementById('liveBadge');
+        const liveStatus = document.getElementById('liveStatus');
+        if (liveBadge) {
+            liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>';
+        }
+        if (liveStatus) {
+            liveStatus.textContent = 'CANLI';
+        }
+        console.log('🔴 Canlı durumu güncellendi');
         
         // Start timer
         startTimer();
+        console.log('⏰ Timer başlatıldı');
         
         // Add participant
         addParticipant(isStreamer ? 'Siz (Yayıncı)' : 'Siz (Katılımcı)', true);
+        console.log('👤 Katılımcı eklendi');
         
         // Start WebRTC connection (simplified)
         startWebRTC();
+        console.log('🌐 WebRTC bağlantısı başlatıldı');
         
         // Notify viewers
         if (window.websocketService) {
@@ -508,15 +569,27 @@ async function startStream() {
                 streamId: streamId,
                 streamer: currentUser?.companyName || 'Yayıncı'
             });
+            console.log('📡 WebSocket bildirimi gönderildi');
         }
         
         // Show success message
-        showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
+        if (typeof showAlert === 'function') {
+            showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
+        } else {
+            alert('🎉 Yayın başarıyla başlatıldı!');
+        }
+        
+        console.log('✅ Yayın başarıyla başlatıldı');
         
     } catch (error) {
-        console.error('Error starting stream:', error);
+        console.error('❌ Yayın başlatma hatası:', error);
         updateStatus('❌ Yayın başlatılamadı: ' + error.message);
-        showAlert('Yayın başlatılamadı: ' + error.message, 'error');
+        
+        if (typeof showAlert === 'function') {
+            showAlert('Yayın başlatılamadı: ' + error.message, 'error');
+        } else {
+            alert('Yayın başlatılamadı: ' + error.message);
+        }
     }
 }
 
@@ -894,8 +967,15 @@ window.addEventListener('beforeunload', function() {
 
 // Request Camera Access
 async function requestCameraAccess() {
+    console.log('📹 Kamera erişimi isteniyor...');
+    
     try {
         updateStatus('Kamera ve mikrofon erişimi isteniyor...');
+        
+        // Check if getUserMedia is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('WebRTC desteklenmiyor. Lütfen modern bir tarayıcı kullanın.');
+        }
         
         // Request camera and microphone access
         localStream = await navigator.mediaDevices.getUserMedia({
@@ -910,6 +990,8 @@ async function requestCameraAccess() {
             }
         });
         
+        console.log('✅ Kamera erişimi başarılı');
+        
         // Display local video
         const localVideo = document.getElementById('localVideo');
         const remoteVideo = document.getElementById('remoteVideo');
@@ -918,6 +1000,7 @@ async function requestCameraAccess() {
         if (localVideo) {
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
+            console.log('📺 Yerel video gösterildi');
         }
         
         if (waitingMessage) {
@@ -932,14 +1015,41 @@ async function requestCameraAccess() {
         updateStatus('✅ Kamera ve mikrofon erişimi başarılı! Yayını başlatabilirsiniz.');
         
         // Enable start button
-        const startBtn = document.querySelector('.control-btn.start');
-        if (startBtn && startBtn.onclick.toString().includes('startStream')) {
+        const startBtn = document.querySelector('.control-btn.start[onclick*="startStream"]');
+        if (startBtn) {
             startBtn.disabled = false;
+            console.log('▶️ Yayın başlat butonu aktif edildi');
+        }
+        
+        // Show success message
+        if (typeof showAlert === 'function') {
+            showAlert('Kamera erişimi başarılı! Artık yayını başlatabilirsiniz.', 'success');
+        } else {
+            alert('Kamera erişimi başarılı! Artık yayını başlatabilirsiniz.');
         }
         
     } catch (error) {
-        console.error('Error accessing media devices:', error);
-        updateStatus('❌ Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.');
+        console.error('❌ Kamera erişim hatası:', error);
+        
+        let errorMessage = 'Kamera veya mikrofon erişimi reddedildi.';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage = 'Kamera erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = 'Kamera cihazı bulunamadı. Lütfen kamera bağlantısını kontrol edin.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = 'Kamera başka uygulama tarafından kullanılıyor. Lütfen diğer uygulamaları kapatın.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage = 'Kamera ayarları desteklenmiyor. Lütfen farklı bir kamera deneyin.';
+        }
+        
+        updateStatus('❌ ' + errorMessage);
+        
+        if (typeof showAlert === 'function') {
+            showAlert(errorMessage, 'error');
+        } else {
+            alert(errorMessage);
+        }
     }
 }
 

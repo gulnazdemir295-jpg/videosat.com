@@ -615,6 +615,13 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Live Stream sayfası yükleniyor...');
             
+            // Önce script-loader'ı kontrol et
+            if (typeof window.scriptLoader === 'undefined') {
+                console.error('❌ script-loader.js yüklenmedi!');
+                alert('Hata: script-loader.js yüklenemedi. Sayfayı yenileyin.');
+                return;
+            }
+            
             try {
                 // Script'leri sırayla yükle
                 await window.scriptLoader.loadScripts([
@@ -624,7 +631,7 @@
                     'services/order-service.js',
                     'live-stream.js'
                 ], {
-                    timeout: 10000, // 10 saniye timeout
+                    timeout: 15000, // 15 saniye timeout
                     continueOnError: true // Kritik olmayan scriptler için devam et
                 });
                 
@@ -632,11 +639,11 @@
                 
                 // Fonksiyonları kontrol et ve fallback ekle
                 setTimeout(function() {
-                    if (typeof skipPaymentStep !== 'function') {
-                        console.warn('skipPaymentStep fonksiyonu yüklenmedi, fallback kullanılıyor');
-                        
-                        // Fallback skipPaymentStep fonksiyonu
-                        window.skipPaymentStep = function() {
+                    console.log('🔍 Fonksiyonlar kontrol ediliyor...');
+                    
+                    // Kritik fonksiyonları kontrol et
+                    const criticalFunctions = {
+                        'skipPaymentStep': function() {
                             console.log('Fallback skipPaymentStep() çağrıldı');
                             try {
                                 localStorage.setItem('livestreamBalance', '120');
@@ -652,24 +659,45 @@
                                     mainContent.style.display = 'grid';
                                 }
                                 
-                                alert('Test modu: 2 saat bakiye eklendi.');
+                                if (typeof showAlert === 'function') {
+                                    showAlert('Test modu: 2 saat bakiye eklendi.', 'info');
+                                } else {
+                                    alert('Test modu: 2 saat bakiye eklendi.');
+                                }
                                 console.log('Fallback skipPaymentStep() başarıyla tamamlandı');
                             } catch (error) {
                                 console.error('Fallback skipPaymentStep() hatası:', error);
                                 alert('Hata: ' + error.message);
                             }
-                        };
-                    }
+                        },
+                        'showAlert': function(message, type = 'info') {
+                            console.log(`Alert: ${message} (${type})`);
+                            alert(message);
+                        },
+                        'requestCameraAccess': function() {
+                            console.log('Fallback requestCameraAccess() çağrıldı');
+                            alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
+                        },
+                        'startStream': function() {
+                            console.log('Fallback startStream() çağrıldı');
+                            alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
+                        }
+                    };
                     
-                    // Diğer kritik fonksiyonları kontrol et
-                    const criticalFunctions = ['showAlert', 'loadStreamBalance', 'hidePreStreamSetup'];
-                    criticalFunctions.forEach(funcName => {
+                    // Eksik fonksiyonları ekle
+                    Object.keys(criticalFunctions).forEach(funcName => {
                         if (typeof window[funcName] !== 'function') {
-                            console.warn(`${funcName} fonksiyonu yüklenmedi`);
+                            console.warn(`⚠️ ${funcName} fonksiyonu yüklenmedi, fallback kullanılıyor`);
+                            window[funcName] = criticalFunctions[funcName];
+                        } else {
+                            console.log(`✅ ${funcName} fonksiyonu mevcut`);
                         }
                     });
                     
-                }, 2000);
+                    // Sayfa hazır olduğunu bildir
+                    console.log('🎉 Canlı yayın sayfası hazır!');
+                    
+                }, 3000);
                 
             } catch (error) {
                 console.error('❌ Script yükleme hatası:', error);
@@ -684,6 +712,18 @@
                     
                     if (preStreamSetup) preStreamSetup.style.display = 'none';
                     if (mainContent) mainContent.style.display = 'grid';
+                };
+                
+                window.showAlert = function(message, type) {
+                    alert(message);
+                };
+                
+                window.requestCameraAccess = function() {
+                    alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
+                };
+                
+                window.startStream = function() {
+                    alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
                 };
             }
         });
