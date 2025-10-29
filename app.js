@@ -285,10 +285,13 @@ function getUserRoleFromEmail(email) {
     const testAccounts = {
         'hammaddeci@videosat.com': 'hammaddeci',
         'uretici@videosat.com': 'uretici',
+        'toptanci@videosat.com': 'toptanci',
         'test-hammaddeci@test.com': 'hammaddeci',
         'test-uretici@test.com': 'uretici',
+        'test-toptanci@test.com': 'toptanci',
         'hammadde123@test.com': 'hammaddeci',
-        'uretici123@test.com': 'uretici'
+        'uretici123@test.com': 'uretici',
+        'toptanci123@test.com': 'toptanci'
     };
     
     // Check if it's a known test account

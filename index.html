@@ -503,9 +503,24 @@
     <div id="forgotPasswordModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Şifremi Unuttum</h2><span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span></div><form id="forgotPasswordForm" class="auth-form"><div class="form-group"><label>Kayıtlı e-posta</label><input id="forgotEmail" type="email" required></div><button type="submit" class="btn btn-primary btn-block">Şifre Sıfırlama Talebi Gönder</button></form></div></div>
     
     <script src="modules/module-loader.js"></script>
+    <script src="setup-test-users.js"></script>
     <script src="app.js"></script>
     <script src="services/payment-service.js"></script>
     <script src="services/order-service.js"></script>
     <script src="cookie-consent.js"></script>
+    <script>
+        // Sayfa yüklendiğinde test kullanıcılarını otomatik oluştur
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Eğer kullanıcılar yoksa, otomatik oluştur
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const testEmails = ['hammaddeci@videosat.com', 'uretici@videosat.com', 'toptanci@videosat.com'];
+            const hasTestUsers = testEmails.some(email => users.some(u => u.email === email));
+            
+            if (!hasTestUsers && typeof setupTestUsers === 'function') {
+                await setupTestUsers();
+                console.log('✅ Test hesapları otomatik oluşturuldu!');
+            }
+        });
+    </script>
 </body>
 </html>
