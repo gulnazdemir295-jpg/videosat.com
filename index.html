@@ -505,12 +505,33 @@
     <!-- Şifremi Unuttum Modal -->
     <div id="forgotPasswordModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Şifremi Unuttum</h2><span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span></div><form id="forgotPasswordForm" class="auth-form"><div class="form-group"><label>Kayıtlı e-posta</label><input id="forgotEmail" type="email" required></div><button type="submit" class="btn btn-primary btn-block">Şifre Sıfırlama Talebi Gönder</button></form></div></div>
     
-    <script src="modules/module-loader.js"></script>
-    <script src="setup-test-users.js"></script>
-    <script src="app.js"></script>
-    <script src="services/payment-service.js"></script>
-    <script src="services/order-service.js"></script>
-    <script src="cookie-consent.js"></script>
+    <script src="script-loader.js"></script>
+    <script>
+        // Güvenilir script yükleme
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Ana sayfa yükleniyor...');
+            
+            try {
+                // Script'leri sırayla yükle
+                await window.scriptLoader.loadScripts([
+                    'modules/module-loader.js',
+                    'setup-test-users.js',
+                    'app.js',
+                    'services/payment-service.js',
+                    'services/order-service.js',
+                    'cookie-consent.js'
+                ], {
+                    timeout: 10000,
+                    continueOnError: true
+                });
+                
+                console.log('✅ Ana sayfa scriptleri yüklendi');
+                
+            } catch (error) {
+                console.error('❌ Ana sayfa script yükleme hatası:', error);
+            }
+        });
+    </script>
     <script>
         // Sayfa yüklendiğinde test kullanıcılarını otomatik oluştur
         document.addEventListener('DOMContentLoaded', async function() {

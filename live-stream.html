@@ -465,7 +465,7 @@
                     <button class="btn btn-primary" onclick="showBuyStreamTimeModal()">
                         <i class="fas fa-shopping-cart"></i> Süre Paketi Satın Al
                     </button>
-                    <button class="skip-payment-btn" onclick="skipPaymentStep()">
+                    <button class="skip-payment-btn" onclick="skipPaymentStep()" id="skipPaymentBtn">
                         <i class="fas fa-forward"></i> Bu Adımı Atla (Test İçin)
                     </button>
                 </div>
@@ -586,10 +586,84 @@
     <div id="alertContainer"></div>
 
     <!-- Scripts -->
-    <script src="modules/module-loader.js"></script>
-    <script src="app.js"></script>
-    <script src="services/payment-service.js"></script>
-    <script src="services/order-service.js"></script>
-    <script src="live-stream.js"></script>
+    <script src="script-loader.js"></script>
+    <script>
+        // Güvenilir script yükleme
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Live Stream sayfası yükleniyor...');
+            
+            try {
+                // Script'leri sırayla yükle
+                await window.scriptLoader.loadScripts([
+                    'modules/module-loader.js',
+                    'app.js',
+                    'services/payment-service.js',
+                    'services/order-service.js',
+                    'live-stream.js'
+                ], {
+                    timeout: 10000, // 10 saniye timeout
+                    continueOnError: true // Kritik olmayan scriptler için devam et
+                });
+                
+                console.log('✅ Tüm scriptler yüklendi');
+                
+                // Fonksiyonları kontrol et ve fallback ekle
+                setTimeout(function() {
+                    if (typeof skipPaymentStep !== 'function') {
+                        console.warn('skipPaymentStep fonksiyonu yüklenmedi, fallback kullanılıyor');
+                        
+                        // Fallback skipPaymentStep fonksiyonu
+                        window.skipPaymentStep = function() {
+                            console.log('Fallback skipPaymentStep() çağrıldı');
+                            try {
+                                localStorage.setItem('livestreamBalance', '120');
+                                
+                                const preStreamSetup = document.getElementById('preStreamSetup');
+                                const mainContent = document.getElementById('mainContent');
+                                
+                                if (preStreamSetup) {
+                                    preStreamSetup.classList.remove('active');
+                                }
+                                
+                                if (mainContent) {
+                                    mainContent.style.display = 'grid';
+                                }
+                                
+                                alert('Test modu: 2 saat bakiye eklendi.');
+                                console.log('Fallback skipPaymentStep() başarıyla tamamlandı');
+                            } catch (error) {
+                                console.error('Fallback skipPaymentStep() hatası:', error);
+                                alert('Hata: ' + error.message);
+                            }
+                        };
+                    }
+                    
+                    // Diğer kritik fonksiyonları kontrol et
+                    const criticalFunctions = ['showAlert', 'loadStreamBalance', 'hidePreStreamSetup'];
+                    criticalFunctions.forEach(funcName => {
+                        if (typeof window[funcName] !== 'function') {
+                            console.warn(`${funcName} fonksiyonu yüklenmedi`);
+                        }
+                    });
+                    
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Script yükleme hatası:', error);
+                
+                // Acil durum fallback'leri
+                window.skipPaymentStep = function() {
+                    alert('Acil durum modu: 2 saat bakiye eklendi.');
+                    localStorage.setItem('livestreamBalance', '120');
+                    
+                    const preStreamSetup = document.getElementById('preStreamSetup');
+                    const mainContent = document.getElementById('mainContent');
+                    
+                    if (preStreamSetup) preStreamSetup.style.display = 'none';
+                    if (mainContent) mainContent.style.display = 'grid';
+                };
+            }
+        });
+    </script>
 </body>
 </html>

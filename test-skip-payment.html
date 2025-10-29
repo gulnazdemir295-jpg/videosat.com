@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Skip Payment Button</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .test-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .test-btn:hover {
+            background: #b91c1c;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #333;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Skip Payment Button Test</h1>
+        <p>Bu sayfa "Bu Adımı Atla" butonunun çalışıp çalışmadığını test eder.</p>
+        
+        <button class="test-btn" onclick="testSkipPayment()">
+            Test: Bu Adımı Atla
+        </button>
+        
+        <button class="test-btn" onclick="testShowAlert()">
+            Test: Show Alert
+        </button>
+        
+        <div class="status" id="status">
+            Test sonuçları burada görünecek...
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="live-stream.html" style="color: #dc2626;">→ Canlı Yayın Sayfasına Git</a><br>
+            <a href="https://basvideo.com/live-stream.html" style="color: #dc2626;">→ Production Canlı Yayın (basvideo.com)</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="live-stream.js"></script>
+    
+    <script>
+        function testSkipPayment() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Testing skipPaymentStep()...';
+            
+            try {
+                if (typeof skipPaymentStep === 'function') {
+                    skipPaymentStep();
+                    status.innerHTML = '✅ skipPaymentStep() fonksiyonu çalıştı!';
+                } else {
+                    status.innerHTML = '❌ skipPaymentStep() fonksiyonu bulunamadı!';
+                }
+            } catch (error) {
+                status.innerHTML = '❌ Hata: ' + error.message;
+            }
+        }
+        
+        function testShowAlert() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Testing showAlert()...';
+            
+            try {
+                if (typeof showAlert === 'function') {
+                    showAlert('Test mesajı!', 'success');
+                    status.innerHTML = '✅ showAlert() fonksiyonu çalıştı!';
+                } else {
+                    status.innerHTML = '❌ showAlert() fonksiyonu bulunamadı!';
+                }
+            } catch (error) {
+                status.innerHTML = '❌ Hata: ' + error.message;
+            }
+        }
+        
+        // Sayfa yüklendiğinde fonksiyonları kontrol et
+        document.addEventListener('DOMContentLoaded', function() {
+            const status = document.getElementById('status');
+            let message = 'Fonksiyon durumu:<br>';
+            
+            if (typeof skipPaymentStep === 'function') {
+                message += '✅ skipPaymentStep: Tanımlı<br>';
+            } else {
+                message += '❌ skipPaymentStep: Tanımsız<br>';
+            }
+            
+            if (typeof showAlert === 'function') {
+                message += '✅ showAlert: Tanımlı<br>';
+            } else {
+                message += '❌ showAlert: Tanımsız<br>';
+            }
+            
+            if (typeof hidePreStreamSetup === 'function') {
+                message += '✅ hidePreStreamSetup: Tanımlı<br>';
+            } else {
+                message += '❌ hidePreStreamSetup: Tanımsız<br>';
+            }
+            
+            status.innerHTML = message;
+        });
+    </script>
+</body>
+</html>

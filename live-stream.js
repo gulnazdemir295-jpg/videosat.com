@@ -43,6 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
         window.websocketService.connect();
         setupWebSocketListeners();
     }
+    
+    // Fallback: Add event listener to skip button if onclick doesn't work
+    const skipBtn = document.getElementById('skipPaymentBtn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            skipPaymentStep();
+        });
+    }
 });
 
 // Load User Data
@@ -336,26 +345,75 @@ function loadStreamBalance() {
 
 // Skip Payment Step (Test için)
 function skipPaymentStep() {
-    // Test için bakiye ekle
-    localStorage.setItem('livestreamBalance', '120'); // 2 saat
-    loadStreamBalance();
-    hidePreStreamSetup();
-    showAlert('Test modu: 2 saat bakiye eklendi.', 'info');
+    console.log('skipPaymentStep() çağrıldı');
+    
+    try {
+        // Test için bakiye ekle
+        localStorage.setItem('livestreamBalance', '120'); // 2 saat
+        console.log('Bakiye eklendi: 120 dakika');
+        
+        // Bakiye yükle
+        loadStreamBalance();
+        console.log('Bakiye yüklendi');
+        
+        // Pre-stream setup'ı gizle
+        hidePreStreamSetup();
+        console.log('Pre-stream setup gizlendi');
+        
+        // Ana içeriği göster
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.style.display = 'grid';
+            console.log('Ana içerik gösterildi');
+        }
+        
+        // Bildirim göster
+        if (typeof showAlert === 'function') {
+            showAlert('Test modu: 2 saat bakiye eklendi.', 'info');
+        } else {
+            alert('Test modu: 2 saat bakiye eklendi.');
+        }
+        
+        console.log('skipPaymentStep() başarıyla tamamlandı');
+        
+    } catch (error) {
+        console.error('skipPaymentStep() hatası:', error);
+        alert('Hata: ' + error.message);
+    }
 }
 
 // Hide Pre-Stream Setup
 function hidePreStreamSetup() {
-    document.getElementById('preStreamSetup').classList.remove('active');
-    document.getElementById('mainContent').style.display = 'grid';
+    try {
+        const preStreamSetup = document.getElementById('preStreamSetup');
+        const mainContent = document.getElementById('mainContent');
+        
+        if (preStreamSetup) {
+            preStreamSetup.classList.remove('active');
+            console.log('Pre-stream setup gizlendi');
+        }
+        
+        if (mainContent) {
+            mainContent.style.display = 'grid';
+            console.log('Ana içerik gösterildi');
+        }
+    } catch (error) {
+        console.error('hidePreStreamSetup() hatası:', error);
+    }
 }
 
 // Show Buy Stream Time Modal
 function showBuyStreamTimeModal() {
     // Load payment modal from panel-app.js if available
-    if (window.showBuyStreamTimeModal) {
+    if (window.showBuyStreamTimeModal && window.showBuyStreamTimeModal !== showBuyStreamTimeModal) {
         window.showBuyStreamTimeModal();
     } else {
-        showAlert('Ödeme sistemi yükleniyor...', 'info');
+        // showAlert fonksiyonu yüklenmemişse fallback kullan
+        if (typeof showAlert === 'function') {
+            showAlert('Ödeme sistemi yükleniyor...', 'info');
+        } else {
+            alert('Ödeme sistemi yükleniyor...');
+        }
         // Fallback: redirect to panel
         setTimeout(() => {
             window.location.href = '../panels/hammaddeci.html#live-stream';
@@ -842,5 +900,8 @@ window.showBuyStreamTimeModal = showBuyStreamTimeModal;
 window.startNewStream = startNewStream;
 window.goToDashboard = goToDashboard;
 window.selectProduct = selectProduct;
+window.startStream = startStream;
+window.stopStream = stopStream;
+window.endStream = endStream;
 
 console.log('✅ Enhanced Live Stream System Loaded');

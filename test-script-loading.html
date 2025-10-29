@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Loading Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #333;
+            border-radius: 8px;
+        }
+        .test-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #b91c1c;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #444;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Script Loading Test</h1>
+        <p>Bu sayfa script yükleme sistemini test eder.</p>
+        
+        <div class="test-section">
+            <h3>1. Script Loader Test</h3>
+            <button class="test-btn" onclick="testScriptLoader()">Script Loader Test Et</button>
+            <div class="status" id="loaderStatus">Test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Live Stream Script Test</h3>
+            <button class="test-btn" onclick="testLiveStreamScripts()">Live Stream Scriptleri Test Et</button>
+            <div class="status" id="liveStreamStatus">Test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Panel Script Test</h3>
+            <button class="test-btn" onclick="testPanelScripts()">Panel Scriptleri Test Et</button>
+            <div class="status" id="panelStatus">Test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Fonksiyon Varlık Testi</h3>
+            <button class="test-btn" onclick="testFunctionAvailability()">Fonksiyonları Test Et</button>
+            <div class="status" id="functionStatus">Test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Hata Yönetimi Testi</h3>
+            <button class="test-btn" onclick="testErrorHandling()">Hata Yönetimini Test Et</button>
+            <div class="status" id="errorStatus">Test sonuçları burada görünecek...</div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="live-stream.html" style="color: #dc2626;">→ Live Stream Sayfası</a> |
+            <a href="index.html" style="color: #dc2626;">→ Ana Sayfa</a> |
+            <a href="panels/hammaddeci.html" style="color: #dc2626;">→ Hammaddeci Paneli</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script-loader.js"></script>
+    
+    <script>
+        // Test fonksiyonları
+        function testScriptLoader() {
+            const status = document.getElementById('loaderStatus');
+            let result = 'Script Loader Test Sonuçları:<br>';
+            
+            if (typeof window.scriptLoader !== 'undefined') {
+                result += '<span class="success">✅ Script Loader yüklendi</span><br>';
+                result += `Yüklenen scriptler: ${window.scriptLoader.getLoadedScripts().length}<br>`;
+                result += `Başarısız scriptler: ${window.scriptLoader.getFailedScripts().length}<br>`;
+            } else {
+                result += '<span class="error">❌ Script Loader yüklenmedi</span><br>';
+            }
+            
+            status.innerHTML = result;
+        }
+        
+        async function testLiveStreamScripts() {
+            const status = document.getElementById('liveStreamStatus');
+            status.innerHTML = 'Live Stream scriptleri yükleniyor...';
+            
+            try {
+                await window.scriptLoader.loadScripts([
+                    'app.js',
+                    'live-stream.js'
+                ], {
+                    timeout: 5000,
+                    continueOnError: true
+                });
+                
+                let result = 'Live Stream Script Test Sonuçları:<br>';
+                result += '<span class="success">✅ Scriptler yüklendi</span><br>';
+                
+                // Fonksiyonları kontrol et
+                const functions = ['skipPaymentStep', 'showAlert', 'loadStreamBalance'];
+                functions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        result += `<span class="success">✅ ${func} fonksiyonu mevcut</span><br>`;
+                    } else {
+                        result += `<span class="error">❌ ${func} fonksiyonu eksik</span><br>`;
+                    }
+                });
+                
+                status.innerHTML = result;
+                
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Hata: ${error.message}</span>`;
+            }
+        }
+        
+        async function testPanelScripts() {
+            const status = document.getElementById('panelStatus');
+            status.innerHTML = 'Panel scriptleri yükleniyor...';
+            
+            try {
+                await window.scriptLoader.loadScripts([
+                    'app.js',
+                    'panels/panel-app.js'
+                ], {
+                    timeout: 5000,
+                    continueOnError: true
+                });
+                
+                let result = 'Panel Script Test Sonuçları:<br>';
+                result += '<span class="success">✅ Scriptler yüklendi</span><br>';
+                
+                // Panel fonksiyonlarını kontrol et
+                const functions = ['loadUserData', 'initializePanel', 'showAlert'];
+                functions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        result += `<span class="success">✅ ${func} fonksiyonu mevcut</span><br>`;
+                    } else {
+                        result += `<span class="error">❌ ${func} fonksiyonu eksik</span><br>`;
+                    }
+                });
+                
+                status.innerHTML = result;
+                
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Hata: ${error.message}</span>`;
+            }
+        }
+        
+        function testFunctionAvailability() {
+            const status = document.getElementById('functionStatus');
+            let result = 'Fonksiyon Varlık Test Sonuçları:<br>';
+            
+            const criticalFunctions = [
+                'showAlert',
+                'skipPaymentStep',
+                'loadStreamBalance',
+                'hidePreStreamSetup',
+                'startStream',
+                'stopStream'
+            ];
+            
+            criticalFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    result += `<span class="success">✅ ${func}</span><br>`;
+                } else {
+                    result += `<span class="error">❌ ${func}</span><br>`;
+                }
+            });
+            
+            status.innerHTML = result;
+        }
+        
+        function testErrorHandling() {
+            const status = document.getElementById('errorStatus');
+            let result = 'Hata Yönetimi Test Sonuçları:<br>';
+            
+            // Mevcut olmayan script yüklemeyi test et
+            window.scriptLoader.loadScript('non-existent-script.js')
+                .then(() => {
+                    result += '<span class="error">❌ Hata yakalanmadı</span><br>';
+                })
+                .catch((error) => {
+                    result += '<span class="success">✅ Hata yakalandı: ' + error.message + '</span><br>';
+                })
+                .finally(() => {
+                    status.innerHTML = result;
+                });
+        }
+        
+        // Sayfa yüklendiğinde otomatik test
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Script Loading Test sayfası yüklendi');
+            testScriptLoader();
+        });
+    </script>
+</body>
+</html>

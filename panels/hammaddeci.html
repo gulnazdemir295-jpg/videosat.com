@@ -720,14 +720,34 @@
     
     <!-- Scripts -->
     <!-- Module Loader -->
-    <script src="../modules/module-loader.js"></script>
-    
-    <script src="../app.js"></script>
-    <script src="../services/cart-service.js"></script>
-    <script src="../services/stock-service.js"></script>
-    <script src="../services/order-service.js"></script>
-    <script src="../services/follow-service.js"></script>
-    <script src="panel-app.js"></script>
-    <script src="../services/payment-service.js"></script>
+    <script src="../script-loader.js"></script>
+    <script>
+        // Güvenilir script yükleme
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Hammaddeci paneli yükleniyor...');
+            
+            try {
+                // Script'leri sırayla yükle
+                await window.scriptLoader.loadScripts([
+                    '../modules/module-loader.js',
+                    '../app.js',
+                    '../services/cart-service.js',
+                    '../services/stock-service.js',
+                    '../services/order-service.js',
+                    '../services/follow-service.js',
+                    'panel-app.js',
+                    '../services/payment-service.js'
+                ], {
+                    timeout: 10000,
+                    continueOnError: true
+                });
+                
+                console.log('✅ Hammaddeci paneli scriptleri yüklendi');
+                
+            } catch (error) {
+                console.error('❌ Hammaddeci paneli script yükleme hatası:', error);
+            }
+        });
+    </script>
 </body>
 </html>
