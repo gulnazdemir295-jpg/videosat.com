@@ -3122,4 +3122,184 @@ window.loadCustomerFollowing = loadCustomerFollowing;
 window.unfollowCompany = unfollowCompany;
 window.joinCustomerLivestream = joinCustomerLivestream;
 
+// ============================================
+// ADDITIONAL FOLLOW FUNCTIONS FOR ALL ROLES
+// ============================================
+
+// Follow a hammaddeci (for Üretici role)
+function followHammaddeci(supplierId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        showAlert('Takip sistemi kullanılamıyor', 'error');
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const supplier = users.find(u => u.id === supplierId && u.role === 'hammaddeci');
+    
+    if (!supplier) {
+        showAlert('Hammaddeci bulunamadı', 'error');
+        return;
+    }
+
+    try {
+        const followed = window.followService.followCompany(
+            supplier.id,
+            supplier.companyName || supplier.name,
+            supplier.role
+        );
+
+        if (followed) {
+            showAlert(`${supplier.companyName || supplier.name} takip edildi`, 'success');
+            loadSuppliersGrid(); // Reload grid
+        } else {
+            showAlert('Zaten takip ediliyor', 'info');
+        }
+    } catch (e) {
+        console.error('Error following hammaddeci:', e);
+        showAlert('Hata oluştu', 'error');
+    }
+}
+
+// Unfollow a hammaddeci (for Üretici role)
+function unfollowHammaddeci(supplierId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    if (confirm('Takipten çıkmak istediğinize emin misiniz?')) {
+        try {
+            window.followService.unfollowCompany(supplierId);
+            showAlert('Takipten çıkarıldı', 'success');
+            loadSuppliersGrid();
+        } catch (e) {
+            console.error('Error unfollowing:', e);
+            showAlert('Hata oluştu', 'error');
+        }
+    }
+}
+
+// Follow a producer (for Toptancı role)
+function followProducer(producerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        showAlert('Takip sistemi kullanılamıyor', 'error');
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const producer = users.find(u => u.id === producerId && u.role === 'uretici');
+    
+    if (!producer) {
+        showAlert('Üretici bulunamadı', 'error');
+        return;
+    }
+
+    try {
+        const followed = window.followService.followCompany(
+            producer.id,
+            producer.companyName || producer.name,
+            producer.role
+        );
+
+        if (followed) {
+            showAlert(`${producer.companyName || producer.name} takip edildi`, 'success');
+            loadProducers(); // Reload producers list
+        } else {
+            showAlert('Zaten takip ediliyor', 'info');
+        }
+    } catch (e) {
+        console.error('Error following producer:', e);
+        showAlert('Hata oluştu', 'error');
+    }
+}
+
+// Unfollow a producer (for Toptancı role)
+function unfollowProducer(producerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    if (confirm('Takipten çıkmak istediğinize emin misiniz?')) {
+        try {
+            window.followService.unfollowCompany(producerId);
+            showAlert('Takipten çıkarıldı', 'success');
+            loadProducers();
+        } catch (e) {
+            console.error('Error unfollowing:', e);
+            showAlert('Hata oluştu', 'error');
+        }
+    }
+}
+
+// Load Suppliers Grid with Follow Buttons
+function loadSuppliersGrid() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const grid = document.getElementById('suppliersGrid');
+    if (!grid) return;
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const suppliers = users.filter(u => u.role === 'hammaddeci');
+    
+    if (suppliers.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-box" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz hammaddeci yok</p>
+            </div>
+        `;
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const following = window.followService.getFollowing(currentUser.id);
+
+    grid.innerHTML = suppliers.map(supplier => {
+        const isFollowing = following.some(f => f.id === supplier.id);
+        
+        return `
+        <div class="producer-card">
+            <div class="producer-header">
+                <div class="producer-avatar">
+                    ${(supplier.companyName || supplier.name).charAt(0)}
+                </div>
+                <div class="producer-info">
+                    <h3>${supplier.companyName || supplier.name}</h3>
+                    <p>Hammaddeci</p>
+                </div>
+            </div>
+            <div class="producer-details">
+                <p><i class="fas fa-envelope"></i> ${supplier.email}</p>
+                <p><i class="fas fa-phone"></i> ${supplier.phone || '-'}</p>
+            </div>
+            <div class="producer-actions">
+                ${isFollowing ? `
+                    <button class="btn btn-success btn-small" onclick="unfollowHammaddeci('${supplier.id}')">
+                        <i class="fas fa-check"></i>
+                        Takip Ediliyor
+                    </button>
+                ` : `
+                    <button class="btn btn-primary btn-small" onclick="followHammaddeci('${supplier.id}')">
+                        <i class="fas fa-star"></i>
+                        Takip Et
+                    </button>
+                `}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Export additional functions
+window.followHammaddeci = followHammaddeci;
+window.unfollowHammaddeci = unfollowHammaddeci;
+window.followProducer = followProducer;
+window.unfollowProducer = unfollowProducer;
+window.loadSuppliersGrid = loadSuppliersGrid;
+
 console.log('Panel Application JavaScript Loaded Successfully');
