@@ -26,16 +26,20 @@
                     Dashboard
                 </a>
                 <a href="#products" class="nav-link" data-section="products">
-                    <i class="fas fa-box"></i>
-                    Ürün Yönetimi
+                    <i class="fas fa-box-open"></i>
+                    Ürünler
                 </a>
                 <a href="#sellers" class="nav-link" data-section="sellers">
                     <i class="fas fa-store"></i>
                     Satıcılar
                 </a>
-                <a href="#orders" class="nav-link" data-section="orders">
+                <a href="#cart" class="nav-link" data-section="cart">
                     <i class="fas fa-shopping-cart"></i>
-                    Siparişler
+                    Sepet <span class="cart-badge" id="navCartBadge" style="display: none;">0</span>
+                </a>
+                <a href="#orders" class="nav-link" data-section="orders">
+                    <i class="fas fa-file-invoice"></i>
+                    Siparişlerim
                 </a>
                 <a href="#live-stream" class="nav-link" data-section="live-stream">
                     <i class="fas fa-broadcast-tower"></i>
@@ -150,12 +154,8 @@
         <!-- Products Section -->
         <section id="products" class="panel-section">
             <div class="section-header">
-                <h1>Ürün Yönetimi</h1>
-                <p>Hammadde ürünlerinizi yönetin</p>
-                <button class="btn btn-primary" onclick="showAddProductModal()">
-                    <i class="fas fa-plus"></i>
-                    Yeni Ürün Ekle
-                </button>
+                <h1>Ürünler</h1>
+                <p>Satıcılardan ürün keşfedin ve sepete ekleyin</p>
             </div>
 
             <!-- Product Filters -->
@@ -202,12 +202,25 @@
                             <th>Birim Fiyat</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
+                            <th>Sepet</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
                         <!-- Products will be populated by JavaScript -->
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart" class="panel-section">
+            <div class="section-header">
+                <h1><i class="fas fa-shopping-cart"></i> Sepetim</h1>
+                <p>Sepetinizdeki ürünleri görüntüleyin ve sipariş verin</p>
+            </div>
+
+            <div id="cartContent">
+                <!-- Cart items will be populated by JavaScript -->
             </div>
         </section>
 
@@ -257,56 +270,77 @@
         <!-- Orders Section -->
         <section id="orders" class="panel-section">
             <div class="section-header">
-                <h1>Sipariş Yönetimi</h1>
-                <p>Gelen ve giden siparişlerinizi takip edin</p>
+                <h1>Siparişlerim</h1>
+                <p>Verdiğiniz siparişleri takip edin</p>
             </div>
 
             <!-- Order Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" data-tab="incoming">Gelen Siparişler</button>
-                <button class="tab-btn" data-tab="outgoing">Giden Siparişler</button>
+                <button class="tab-btn active" data-tab="all">Tüm Siparişlerim</button>
+                <button class="tab-btn" data-tab="pending">Bekleyen</button>
+                <button class="tab-btn" data-tab="completed">Tamamlanan</button>
             </div>
 
-            <!-- Incoming Orders -->
-            <div id="incomingOrders" class="tab-content active">
+            <!-- All Orders -->
+            <div id="all" class="tab-content active">
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Sipariş No</th>
-                                <th>Üretici</th>
-                                <th>Ürün</th>
-                                <th>Miktar</th>
-                                <th>Tutar</th>
+                                <th>Satıcı</th>
+                                <th>Ürünler</th>
+                                <th>Toplam Tutar</th>
                                 <th>Tarih</th>
                                 <th>Durum</th>
                                 <th>İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody id="incomingOrdersBody">
+                        <tbody id="allOrdersBody">
                             <!-- Orders will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Outgoing Orders -->
-            <div id="outgoingOrders" class="tab-content">
+            <!-- Pending Orders -->
+            <div id="pending" class="tab-content">
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Sipariş No</th>
-                                <th>Üretici</th>
-                                <th>Ürün</th>
-                                <th>Miktar</th>
-                                <th>Tutar</th>
+                                <th>Satıcı</th>
+                                <th>Ürünler</th>
+                                <th>Toplam Tutar</th>
                                 <th>Tarih</th>
                                 <th>Durum</th>
                                 <th>İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody id="outgoingOrdersBody">
+                        <tbody id="pendingOrdersBody">
+                            <!-- Orders will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Completed Orders -->
+            <div id="completed" class="tab-content">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Satıcı</th>
+                                <th>Ürünler</th>
+                                <th>Toplam Tutar</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="completedOrdersBody">
                             <!-- Orders will be populated by JavaScript -->
                         </tbody>
                     </table>
@@ -622,9 +656,11 @@
     <script src="../modules/module-loader.js"></script>
     
     <script src="../app.js"></script>
+    <script src="../services/cart-service.js"></script>
+    <script src="../services/stock-service.js"></script>
+    <script src="../services/order-service.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
-    <script src="../services/order-service.js"></script>
     
     <!-- FALLBACK FUNCTIONS - ALWAYS WORKS -->
     <script>
