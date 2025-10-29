@@ -3669,4 +3669,83 @@ window.loadSuppliersGrid = loadSuppliersGrid;
 window.loadSellers = loadSellers;
 window.loadWholesalers = loadWholesalers;
 
+// ============================================
+// BROWSER-BASED STREAMING (AWS IVS)
+// ============================================
+
+// Yayın başlat (Tarayıcıdan)
+async function startBrowserStream() {
+    const btn = document.getElementById('startStreamBtn');
+    const status = document.getElementById('streamStatus');
+    const preview = document.getElementById('browserVideoPreview');
+    
+    try {
+        // Butonu devre dışı bırak
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Başlatılıyor...';
+        
+        // AWS IVS Service'i kontrol et
+        if (!window.awsIVSService) {
+            throw new Error('AWS IVS Service yüklü değil');
+        }
+        
+        // Stream başlat
+        const stream = await window.awsIVSService.startBrowserStream();
+        
+        // Video preview'i göster
+        if (preview && stream) {
+            preview.srcObject = stream;
+            preview.style.display = 'block';
+        }
+        
+        // UI güncelle
+        btn.style.display = 'none';
+        if (status) {
+            status.style.display = 'block';
+        }
+        
+        showAlert('✅ Yayın başladı! Müşterileriniz şimdi izleyebilir. 🎉', 'success');
+        
+    } catch (e) {
+        console.error('Stream başlatma hatası:', e);
+        showAlert('❌ Hata: ' + e.message, 'error');
+        
+        // Butonu geri getir
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-video"></i> Yayını Başlat';
+    }
+}
+
+// Yayını durdur
+function stopBrowserStream() {
+    const btn = document.getElementById('startStreamBtn');
+    const status = document.getElementById('streamStatus');
+    const preview = document.getElementById('browserVideoPreview');
+    
+    // Stream'i durdur
+    if (window.awsIVSService) {
+        window.awsIVSService.stopStream();
+    }
+    
+    // UI güncelle
+    if (btn) {
+        btn.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-video"></i> Yayını Başlat';
+    }
+    if (status) {
+        status.style.display = 'none';
+    }
+    if (preview) {
+        preview.style.display = 'none';
+        preview.srcObject = null;
+    }
+    
+    showAlert('⏹️ Yayın durduruldu', 'info');
+}
+
+// Export to window
+window.startBrowserStream = startBrowserStream;
+window.stopBrowserStream = stopBrowserStream;
+
 console.log('Panel Application JavaScript Loaded Successfully');

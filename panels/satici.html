@@ -380,6 +380,45 @@
                 </div>
             </div>
 
+            <!-- Browser Stream Section (YENİ!) -->
+            <div class="browser-stream-section" style="margin-top: 30px; padding: 24px; background: #1a1a1a; border-radius: 8px; border: 1px solid #404040;">
+                <h3 style="color: #ff0000; margin-bottom: 10px;">
+                    <i class="fas fa-video"></i> Tarayıcıdan Canlı Yayın
+                </h3>
+                <p style="color: #999; margin-bottom: 20px;">
+                    OBS gerektirmez! Tek tıkla yayına başla - Tişört satan amca bile kullanabilir 😊
+                </p>
+                
+                <!-- Yayın butonu -->
+                <button id="startStreamBtn" class="btn btn-primary btn-large" onclick="startBrowserStream()" style="width: 100%; max-width: 400px;">
+                    <i class="fas fa-video"></i>
+                    Yayını Başlat
+                </button>
+                
+                <!-- Yayın durumu (başlatıktan sonra görünecek) -->
+                <div id="streamStatus" style="display: none; margin-top: 20px;">
+                    <div style="background: #000; border: 2px solid #ff0000; padding: 16px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="color: #ff0000; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-circle" style="animation: pulse 2s infinite;"></i>
+                            CANLI YAYIN AKTİF
+                        </div>
+                        <p style="color: #999; margin-top: 8px; font-size: 14px;">
+                            📺 İzleyiciler bu yayını görebilir
+                        </p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-danger" onclick="stopBrowserStream()" style="flex: 1;">
+                            <i class="fas fa-stop"></i>
+                            Yayını Durdur
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Video preview -->
+                <video id="browserVideoPreview" autoplay muted style="width: 100%; max-width: 600px; margin-top: 20px; border-radius: 8px; display: none; background: #000;"></video>
+            </div>
+
             <!-- Stream Setup -->
             <div class="stream-setup">
                 <h2>Canlı Yayın Kurulumu</h2>
@@ -711,6 +750,7 @@
     <script src="../services/stock-service.js"></script>
     <script src="../services/order-service.js"></script>
     <script src="../services/follow-service.js"></script>
+    <script src="../services/aws-ivs-service.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     
