@@ -41,9 +41,13 @@
                     <i class="fas fa-file-invoice"></i>
                     Siparişlerim
                 </a>
-                <a href="#live-stream" class="nav-link" data-section="live-stream">
+                <a href="#live-streams" class="nav-link" data-section="live-streams">
                     <i class="fas fa-broadcast-tower"></i>
-                    Canlı Yayın
+                    Canlı Yayınlar
+                </a>
+                <a href="#following" class="nav-link" data-section="following">
+                    <i class="fas fa-star"></i>
+                    Takip Ettiğim Firmalar
                 </a>
                 <a href="#messages" class="nav-link" data-section="messages">
                     <i class="fas fa-envelope"></i>
@@ -348,110 +352,39 @@
             </div>
         </section>
 
-        <!-- Live Stream Section -->
-        <section id="live-stream" class="panel-section">
+        <!-- Live Streams Section (Takip Edilen Firmaların Yayınları) -->
+        <section id="live-streams" class="panel-section">
             <div class="section-header">
-                <h1>Canlı Yayın</h1>
-                <p>Ürünlerinizi canlı olarak tanıtın ve satın</p>
+                <h1>Canlı Yayınlar</h1>
+                <p>Takip ettiğiniz firmaların canlı yayınlarını izleyin</p>
             </div>
 
-            <!-- Stream Balance -->
-            <div class="stream-balance">
-                <div class="balance-card">
-                    <div class="balance-info">
-                        <h3>Canlı Yayın Bakiyesi</h3>
-                        <div class="balance-amount">
-                            <span id="streamBalanceHours">0</span>
-                            <span>saat</span>
-                        </div>
-                    </div>
-                    <div class="balance-actions">
-                        <button class="btn btn-primary" onclick="showBuyStreamTimeModal()">
-                            <i class="fas fa-plus"></i>
-                            Süre Satın Al
-                        </button>
-                        <a href="#" class="btn btn-outline" onclick="skipPurchase()">
-                            <i class="fas fa-forward"></i>
-                            Bu Adımı Atla
-                        </a>
-                    </div>
+            <!-- Live Streams List -->
+            <div class="live-streams-list" id="liveStreamsList">
+                <!-- Will be populated by JavaScript -->
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fas fa-broadcast-tower" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                    <p>Henüz canlı yayın bulunmuyor</p>
+                    <p style="font-size: 14px;">Firmalardan biri canlı yayın başlattığında burada görünecek</p>
                 </div>
             </div>
+        </section>
 
-            <!-- Stream Setup -->
-            <div class="stream-setup">
-                <h2>Canlı Yayın Kurulumu</h2>
-                <form id="streamSetupForm" class="stream-form">
-                    <div class="form-group">
-                        <label>Satılacak Ürünler</label>
-                        <div class="product-selection" id="streamProductSelection">
-                            <!-- Products will be populated by JavaScript -->
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Slogan Cümleleri</label>
-                        <textarea id="streamSlogans" placeholder="Canlı yayında kullanacağınız slogan cümlelerini yazın..." rows="4"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Yayın Başlığı</label>
-                        <input type="text" id="streamTitle" placeholder="Canlı yayın başlığınızı yazın...">
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" onclick="previewStream()">
-                            <i class="fas fa-eye"></i>
-                            Önizleme
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-broadcast-tower"></i>
-                            Yayını Başlat
-                        </button>
-                    </div>
-                </form>
+        <!-- Following Section -->
+        <section id="following" class="panel-section">
+            <div class="section-header">
+                <h1>Takip Ettiğim Firmalar</h1>
+                <p>Takip ettiğiniz firmaları yönetin ve onları canlı yayına davet edin</p>
             </div>
 
-            <!-- Active Stream -->
-            <div id="activeStream" class="active-stream hidden">
-                <h2>Aktif Canlı Yayın</h2>
-                <div class="stream-container">
-                    <div class="stream-video">
-                        <video id="localVideo" autoplay muted></video>
-                        <div class="stream-overlay">
-                            <div class="stream-info">
-                                <h3 id="currentStreamTitle">Yayın Başlığı</h3>
-                                <p id="currentStreamSlogan">Slogan</p>
-                            </div>
-                            <div class="stream-controls">
-                                <button class="btn btn-danger" onclick="stopStream()">
-                                    <i class="fas fa-stop"></i>
-                                    Yayını Durdur
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stream-sidebar">
-                        <div class="stream-products">
-                            <h4>Satılan Ürünler</h4>
-                            <div id="streamProductsList">
-                                <!-- Products will be populated by JavaScript -->
-                            </div>
-                        </div>
-                        <div class="stream-chat">
-                            <h4>Canlı Sohbet</h4>
-                            <div class="chat-messages" id="streamChatMessages">
-                                <!-- Chat messages will be populated by JavaScript -->
-                            </div>
-                            <div class="chat-input">
-                                <input type="text" id="streamChatInput" placeholder="Mesaj yazın...">
-                                <button onclick="sendStreamMessage()">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Search -->
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="followingSearch" placeholder="🔍 Firma ara..." style="width: 100%; padding: 12px; border: 1px solid #404040; border-radius: 8px; background: #1a1a1a; color: #ffffff;">
+            </div>
+
+            <!-- Following List -->
+            <div class="following-list" id="followingList">
+                <!-- Will be populated by JavaScript -->
             </div>
         </section>
 
@@ -659,6 +592,7 @@
     <script src="../services/cart-service.js"></script>
     <script src="../services/stock-service.js"></script>
     <script src="../services/order-service.js"></script>
+    <script src="../services/follow-service.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     

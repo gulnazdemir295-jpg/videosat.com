@@ -52,6 +52,10 @@
                     <i class="fas fa-broadcast-tower"></i>
                     Canlı Yayın
                 </a>
+                <a href="#followers" class="nav-link" data-section="followers">
+                    <i class="fas fa-user-friends"></i>
+                    Takipçilerim
+                </a>
                 <a href="#messages" class="nav-link" data-section="messages">
                     <i class="fas fa-envelope"></i>
                     Mesajlar
@@ -449,6 +453,37 @@
             </div>
         </section>
 
+        <!-- Followers Section -->
+        <section id="followers" class="panel-section">
+            <div class="section-header">
+                <h1>Takipçilerim</h1>
+                <p>Firmanızı takip eden müşterileri görüntüleyin ve canlı yayına davet edin</p>
+            </div>
+
+            <!-- Search -->
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="followersSearch" placeholder="🔍 Takipçi ara..." style="width: 100%; padding: 12px; border: 1px solid #404040; border-radius: 8px; background: #1a1a1a; color: #ffffff;">
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalFollowersCount">0</h3>
+                        <p>Toplam Takipçi</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Followers List -->
+            <div class="followers-list" id="followersList">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </section>
+
         <!-- Messages Section -->
         <section id="messages" class="panel-section">
             <div class="section-header">
@@ -653,6 +688,7 @@
     <script src="../services/cart-service.js"></script>
     <script src="../services/stock-service.js"></script>
     <script src="../services/order-service.js"></script>
+    <script src="../services/follow-service.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
     
