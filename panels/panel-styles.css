@@ -391,7 +391,7 @@
 
 .activity-content p {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin: 0;
 }
 
@@ -406,7 +406,7 @@
     padding: 1.5rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 1.5rem;
     display: flex;
     gap: 1rem;
@@ -424,7 +424,7 @@
 .filter-group label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .filter-group select,
@@ -570,7 +570,7 @@
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     transition: all 0.2s ease;
 }
 
@@ -607,7 +607,7 @@
 }
 
 .producer-info p {
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin: 0;
     font-size: 0.875rem;
 }
@@ -617,7 +617,7 @@
 }
 
 .producer-details p {
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     font-size: 0.875rem;
     margin: 0.25rem 0;
 }
@@ -786,7 +786,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 1rem;
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .product-item {
@@ -796,7 +796,7 @@
     padding: 0.5rem;
     border-radius: 0.375rem;
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -819,7 +819,7 @@
     margin: 0;
     cursor: pointer;
     font-size: 0.875rem;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .form-actions {
@@ -833,7 +833,7 @@
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     overflow: hidden;
 }
 
@@ -892,7 +892,7 @@
 }
 
 .stream-sidebar {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-left: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
@@ -909,7 +909,7 @@
 .stream-chat h4 {
     font-size: 1rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 1rem;
 }
 
@@ -920,7 +920,7 @@
     padding: 0.5rem;
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.375rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .chat-message {
@@ -961,7 +961,7 @@
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     height: 600px;
 }
 
@@ -997,7 +997,7 @@
 }
 
 .message-item:hover {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .message-item.active {
@@ -1027,19 +1027,19 @@
 .message-info h4 {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin: 0;
 }
 
 .message-info p {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin: 0;
 }
 
 .message-preview {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin: 0;
 }
 
@@ -1059,13 +1059,13 @@
 .message-contact-info h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin: 0;
 }
 
 .message-contact-info p {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin: 0;
 }
 
@@ -1073,7 +1073,7 @@
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .no-message {
@@ -1082,7 +1082,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .no-message i {
@@ -1133,24 +1133,24 @@
     padding: 1.5rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .report-card h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 1rem;
 }
 
 .report-chart {
     height: 300px;
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     font-size: 0.875rem;
 }
 
@@ -1164,7 +1164,7 @@
 
 .package-card {
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     border-radius: 0.75rem;
     padding: 1.5rem;
     text-align: center;
@@ -1199,7 +1199,7 @@
 .package-card h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 0.5rem;
 }
 
@@ -1218,7 +1218,7 @@
 .package-features li {
     padding: 0.25rem 0;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 /* Modal Forms */
@@ -1234,7 +1234,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .modal-form input,
@@ -1355,7 +1355,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1367,17 +1367,17 @@
 }
 
 .setting-card {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1rem;
     border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     text-align: center;
 }
 
 .setting-card h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 0.5rem;
 }
 
@@ -1399,7 +1399,7 @@
 
 .setting-input span {
     font-weight: 600;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .commission-calculations {
@@ -1407,7 +1407,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .settings-sections {
@@ -1421,13 +1421,13 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .settings-section h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #e5e7eb;
@@ -1441,7 +1441,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .setting-group input,
@@ -1492,7 +1492,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1505,7 +1505,7 @@
 
 .department-card {
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     border-radius: 0.75rem;
     padding: 1.5rem;
     cursor: pointer;
@@ -1542,12 +1542,12 @@
 .dept-info h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 0.25rem;
 }
 
 .dept-info p {
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
 }
@@ -1572,12 +1572,12 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .stat-label {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .ceo-quick-actions {
@@ -1585,7 +1585,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1605,7 +1605,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .alerts-list {
@@ -1615,7 +1615,7 @@
 .alert-item {
     padding: 1rem;
     border-left: 4px solid #ef4444;
-    background: #fef2f2;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.375rem;
     margin-bottom: 0.5rem;
 }
@@ -1627,7 +1627,7 @@
 
 .alert-item.info {
     border-left-color: #3b82f6;
-    background: #eff6ff;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
 }
 
 .department-overview {
@@ -1635,7 +1635,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1648,21 +1648,21 @@
 .overview-card {
     text-align: center;
     padding: 1.5rem;
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.75rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .overview-card h3 {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     margin-bottom: 0.5rem;
 }
 
 .big-number {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .department-management {
@@ -1670,7 +1670,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .dept-cell {
@@ -1689,7 +1689,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1701,7 +1701,7 @@
 
 .account-card {
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     border-radius: 0.75rem;
     padding: 1.5rem;
     display: flex;
@@ -1773,7 +1773,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     margin-bottom: 2rem;
 }
 
@@ -1785,16 +1785,16 @@
 }
 
 .schedule-card {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     padding: 1.5rem;
     border-radius: 0.75rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .schedule-card h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     margin-bottom: 1rem;
 }
 
@@ -1811,16 +1811,16 @@
     padding: 0.75rem;
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .schedule-day .day {
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .schedule-day .description {
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     font-size: 0.875rem;
 }
 
@@ -1834,7 +1834,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .payment-amount {
@@ -1845,12 +1845,12 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .payment-amount .label {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .payment-history {
@@ -1858,7 +1858,7 @@
     padding: 2rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
 }
 
 .history-tabs {
@@ -1872,7 +1872,7 @@
     padding: 0.75rem 1rem;
     border: none;
     background: none;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.3s ease;
@@ -1884,7 +1884,7 @@
 }
 
 .history-tabs .tab-btn:hover {
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 /* Utility Classes */
@@ -2044,12 +2044,12 @@
 .invitation-info h3 {
     margin: 0;
     font-size: 1.125rem;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .invitation-info p {
     margin: 0.25rem 0 0 0;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
     font-size: 0.875rem;
 }
 
@@ -2202,7 +2202,7 @@
     margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -2219,7 +2219,7 @@
     border-radius: 6px;
     font-size: 0.875rem;
     background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
 }
 
 .chart-container {
@@ -2256,7 +2256,7 @@
     margin: 0;
     font-size: 1.125rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -2284,7 +2284,7 @@
 
 .activity-item:hover,
 .notification-item:hover {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
 }
 
 .activity-icon,
@@ -2332,18 +2332,18 @@
 .notification-content p {
     margin: 0 0 0.25rem 0;
     font-size: 0.875rem;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     font-weight: 500;
 }
 
 .activity-content small,
 .notification-content small {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #f5f5f5 !important; /* Açık gri - siyah tema */
 }
 
 .notification-item.unread {
-    background: #eff6ff;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
     border-left: 3px solid #3b82f6;
 }
 
@@ -2360,14 +2360,14 @@
     gap: 0.5rem;
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #404040 !important; /* Koyu border - siyah tema */
     text-decoration: none;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     transition: all 0.2s ease;
 }
 
 .quick-access-item:hover {
-    background: #f9fafb;
+    background: #1f1f1f !important; /* Koyu arka plan - siyah tema */
     border-color: #6366f1;
     color: #6366f1;
     transform: translateY(-2px);
@@ -2394,7 +2394,7 @@
     margin: 0 0 1rem 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -2416,7 +2416,7 @@
 }
 
 .alert-item.high {
-    background: #fef2f2;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
     border-left-color: #dc2626;
 }
 
@@ -2426,7 +2426,7 @@
 }
 
 .alert-item.low {
-    background: #eff6ff;
+    background: #2a2a2a !important; /* Koyu arka plan - siyah tema */
     border-left-color: #3b82f6;
 }
 
@@ -2458,7 +2458,7 @@
 
 .alert-content span {
     font-size: 0.875rem;
-    color: #374151;
+    color: #ffffff !important; /* Beyaz - siyah tema */
     font-weight: 500;
 }
 
