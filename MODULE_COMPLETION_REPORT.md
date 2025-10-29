@@ -167,3 +167,4 @@ Eğer rol bazlı özel işlevler gerekiyorsa:
 **🎉 Platform**: VideoSat E-Ticaret Canlı Yayın Platformu
 
 
+

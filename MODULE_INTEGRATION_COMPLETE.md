@@ -170,3 +170,4 @@ Platform artık:
 **🎯 Sonraki Adım**: Test ve kullanım
 
 
+

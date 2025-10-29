@@ -235,3 +235,4 @@
 **🎨 Renk Paleti**: Tamamen optimize edildi
 
 
+

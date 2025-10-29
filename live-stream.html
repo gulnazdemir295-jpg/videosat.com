@@ -18,9 +18,10 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000 !important; /* Siyah arka plan */
             min-height: 100vh;
-            color: #333;
+            color: #ffffff;
+            overflow-x: hidden;
         }
 
         .container {
@@ -30,38 +31,40 @@
         }
 
         .header {
-            background: white;
+            background: #1a1a1a !important;
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid #dc2626;
         }
 
         .header h1 {
-            color: #667eea;
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
         .live-badge {
-            background: #dc3545;
+            background: #dc2626;
             color: white;
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
             font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
             animation: pulse 2s infinite;
+            font-weight: bold;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            50% { opacity: 0.7; }
         }
 
         .main-content {
@@ -71,42 +74,71 @@
         }
 
         .video-section {
-            background: white;
+            background: #1a1a1a !important;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
+            border: 1px solid #404040;
         }
 
         .video-container {
             position: relative;
-            background: #000;
+            background: #000000 !important; /* Ana video container siyah */
             border-radius: 10px;
             overflow: hidden;
             aspect-ratio: 16/9;
             margin-bottom: 20px;
+            border: 2px solid #dc2626;
         }
 
-        #localVideo, #remoteVideo {
+        /* Ana görüntü - remoteVideo (büyük, tam ekran) */
+        #remoteVideo {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background: #000000;
         }
 
+        /* Yerel görüntü - localVideo (küçük, sağ alt köşe) */
         #localVideo {
             position: absolute;
             bottom: 20px;
             right: 20px;
             width: 200px;
             height: 150px;
-            border: 3px solid white;
+            border: 3px solid #dc2626;
             border-radius: 10px;
             z-index: 10;
+            background: #000000;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+        }
+
+        .waiting-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+
+        .waiting-message i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            color: #dc2626;
         }
 
         .video-controls {
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .control-btn {
@@ -129,15 +161,17 @@
 
         .control-btn.start:hover {
             background: #218838;
+            transform: scale(1.05);
         }
 
         .control-btn.stop {
-            background: #dc3545;
+            background: #dc2626;
             color: white;
         }
 
         .control-btn.stop:hover {
-            background: #c82333;
+            background: #b91c1c;
+            transform: scale(1.05);
         }
 
         .control-btn.end {
@@ -147,6 +181,7 @@
 
         .control-btn.end:hover {
             background: #5a6268;
+            transform: scale(1.05);
         }
 
         .control-btn:disabled {
@@ -161,18 +196,53 @@
         }
 
         .card {
-            background: white;
+            background: #1a1a1a !important;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
+            border: 1px solid #404040;
         }
 
         .card h3 {
-            color: #667eea;
+            color: #ffffff;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        /* Viewer Interactions */
+        .viewer-interactions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .interaction-btn {
+            padding: 10px 15px;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            background: transparent;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .interaction-btn:hover {
+            background: #dc2626;
+            transform: translateX(5px);
+        }
+
+        .interaction-btn.active {
+            background: #dc2626;
+        }
+
+        .interaction-btn i {
+            font-size: 18px;
         }
 
         .products-list {
@@ -181,28 +251,31 @@
         }
 
         .product-item {
-            padding: 10px;
-            border: 1px solid #e0e0e0;
+            padding: 12px;
+            border: 1px solid #404040;
             border-radius: 8px;
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            background: #0a0a0a;
         }
 
         .product-item:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+            border-color: #dc2626;
+            background: #1a1a1a;
+            transform: translateX(5px);
         }
 
         .product-item.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #dc2626;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
             color: white;
         }
 
         .product-name {
             font-weight: bold;
             margin-bottom: 5px;
+            color: #ffffff;
         }
 
         .product-price {
@@ -211,17 +284,18 @@
         }
 
         .product-item.active .product-price {
-            color: white;
+            color: #ffffff;
         }
 
         .timer {
             text-align: center;
             font-size: 24px;
             font-weight: bold;
-            color: #667eea;
+            color: #dc2626;
             padding: 15px;
-            background: #f8f9ff;
+            background: #0a0a0a;
             border-radius: 10px;
+            border: 1px solid #dc2626;
         }
 
         .participants {
@@ -230,19 +304,20 @@
 
         .participant {
             padding: 10px;
-            background: #f8f9fa;
+            background: #0a0a0a;
             border-radius: 8px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
+            border: 1px solid #404040;
         }
 
         .participant-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -250,25 +325,89 @@
             font-weight: bold;
         }
 
-        .waiting-message {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .waiting-message i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
         .status-info {
             text-align: center;
             padding: 15px;
-            background: #fff3cd;
+            background: #1a1a1a;
             border-radius: 10px;
             margin-bottom: 20px;
-            color: #856404;
+            color: #ffffff;
+            border: 1px solid #dc2626;
+        }
+
+        /* Pre-stream Setup */
+        .pre-stream-setup {
+            display: none;
+        }
+
+        .pre-stream-setup.active {
+            display: block;
+        }
+
+        .pre-stream-card {
+            background: #1a1a1a;
+            border: 1px solid #dc2626;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .pre-stream-card h3 {
+            color: #dc2626;
+            margin-bottom: 20px;
+        }
+
+        .payment-step {
+            display: none;
+        }
+
+        .payment-step.active {
+            display: block;
+        }
+
+        .skip-payment-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #6c757d;
+            color: #6c757d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .skip-payment-btn:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Post-stream Summary */
+        .post-stream-summary {
+            display: none;
+        }
+
+        .post-stream-summary.active {
+            display: block;
+        }
+
+        .summary-card {
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .summary-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #404040;
+        }
+
+        .summary-stat:last-child {
+            border-bottom: none;
         }
 
         @media (max-width: 1024px) {
@@ -276,26 +415,72 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Invitations Management */
+        .invitations-panel {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .invitation-item {
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .invitation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .invitation-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-video"></i> VideoSat Canlı Yayın</h1>
-            <div class="live-badge">
-                <i class="fas fa-circle"></i> CANLI
+            <div class="live-badge" id="liveBadge">
+                <i class="fas fa-circle"></i> <span id="liveStatus">HAZIRLANIYOR</span>
             </div>
         </div>
 
-        <div class="main-content">
+        <!-- Pre-Stream Setup -->
+        <div class="pre-stream-setup active" id="preStreamSetup">
+            <div class="pre-stream-card">
+                <h3><i class="fas fa-cog"></i> Yayın Öncesi Hazırlık</h3>
+                
+                <!-- Payment Step -->
+                <div class="payment-step active" id="paymentStep">
+                    <p style="margin-bottom: 15px; color: #ffffff;">
+                        Canlı yayın yapmak için süre paketi satın almanız gerekmektedir.
+                    </p>
+                    <button class="btn btn-primary" onclick="showBuyStreamTimeModal()">
+                        <i class="fas fa-shopping-cart"></i> Süre Paketi Satın Al
+                    </button>
+                    <button class="skip-payment-btn" onclick="skipPaymentStep()">
+                        <i class="fas fa-forward"></i> Bu Adımı Atla (Test İçin)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent" style="display: none;">
             <div class="video-section">
                 <div class="status-info" id="statusInfo">
                     <i class="fas fa-info-circle"></i> Kamera ve mikrofon erişimi için izin verin
                 </div>
 
                 <div class="video-container">
-                    <video id="remoteVideo" autoplay muted></video>
-                    <video id="localVideo" autoplay muted></video>
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <video id="localVideo" autoplay muted playsinline></video>
                     <div class="waiting-message" id="waitingMessage">
                         <i class="fas fa-video"></i>
                         <p>Kamera başlatılıyor...</p>
@@ -316,14 +501,30 @@
             </div>
 
             <div class="sidebar">
+                <!-- Timer Card -->
                 <div class="card">
                     <h3><i class="fas fa-clock"></i> Yayın Süresi</h3>
                     <div class="timer" id="timer">00:00:00</div>
-                    <p style="text-align: center; margin-top: 10px; color: #666;">
-                        <i class="fas fa-link"></i> Süre paketi satın al
+                    <p style="text-align: center; margin-top: 10px; color: #999;">
+                        <i class="fas fa-link"></i> <span id="balanceDisplay">Bakiye: 0 saat</span>
                     </p>
                 </div>
 
+                <!-- Viewer Interactions (For viewers, not streamer) -->
+                <div class="card viewer-interactions" id="viewerInteractions" style="display: none;">
+                    <h3><i class="fas fa-heart"></i> İnteraksiyonlar</h3>
+                    <button class="interaction-btn" id="likeBtn" onclick="toggleLike()">
+                        <i class="far fa-heart"></i> Beğen (<span id="likeCount">0</span>)
+                    </button>
+                    <button class="interaction-btn" id="followBtn" onclick="toggleFollow()">
+                        <i class="far fa-star"></i> Takip Et
+                    </button>
+                    <button class="interaction-btn" onclick="openShopping()">
+                        <i class="fas fa-shopping-cart"></i> Alışveriş
+                    </button>
+                </div>
+
+                <!-- Products Card -->
                 <div class="card">
                     <h3><i class="fas fa-box"></i> Ürünler</h3>
                     <div class="products-list" id="productsList">
@@ -331,11 +532,51 @@
                     </div>
                 </div>
 
+                <!-- Participants Card -->
                 <div class="card">
                     <h3><i class="fas fa-users"></i> Katılımcılar</h3>
                     <ul class="participants" id="participantsList">
                         <!-- Participants will be loaded here -->
                     </ul>
+                </div>
+
+                <!-- Invitations Card (For streamer) -->
+                <div class="card" id="invitationsCard" style="display: none;">
+                    <h3><i class="fas fa-envelope"></i> Davetler</h3>
+                    <div class="invitations-panel" id="invitationsPanel">
+                        <!-- Invitations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post-Stream Summary -->
+        <div class="post-stream-summary" id="postStreamSummary">
+            <div class="summary-card">
+                <h3><i class="fas fa-chart-line"></i> Yayın Özeti</h3>
+                <div class="summary-stat">
+                    <span>Toplam Süre:</span>
+                    <strong id="summaryDuration">00:00:00</strong>
+                </div>
+                <div class="summary-stat">
+                    <span>Katılımcı Sayısı:</span>
+                    <strong id="summaryParticipants">0</strong>
+                </div>
+                <div class="summary-stat">
+                    <span>Beğeni Sayısı:</span>
+                    <strong id="summaryLikes">0</strong>
+                </div>
+                <div class="summary-stat">
+                    <span>Yapılan Siparişler:</span>
+                    <strong id="summaryOrders">0</strong>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-primary" onclick="startNewStream()">
+                        <i class="fas fa-redo"></i> Yeni Yayın Başlat
+                    </button>
+                    <button class="btn btn-outline" onclick="goToDashboard()">
+                        <i class="fas fa-home"></i> Panele Dön
+                    </button>
                 </div>
             </div>
         </div>
@@ -345,13 +586,10 @@
     <div id="alertContainer"></div>
 
     <!-- Scripts -->
-    <!-- Module Loader -->
     <script src="modules/module-loader.js"></script>
-    
     <script src="app.js"></script>
     <script src="services/payment-service.js"></script>
     <script src="services/order-service.js"></script>
     <script src="live-stream.js"></script>
 </body>
 </html>
-

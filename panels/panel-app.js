@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUserData();
     loadPanelData();
     setupPanelEventListeners();
+    checkIncomingInvitations();
+    setupInvitationAutoCheck();
 });
 
 // Initialize Panel Application
@@ -959,20 +961,37 @@ function showInviteModal(producer) {
 function sendInviteToProducer(producerId) {
     const producer = producers.find(p => p.id === producerId);
     if (producer) {
+        const currentUserEmail = getCurrentUserEmail();
+        const currentUserName = getCurrentUserName();
+        
+        // Check if invitation already exists
+        const existingInvitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+        const existingInv = existingInvitations.find(inv => 
+            inv.from === currentUserEmail && 
+            inv.to === producer.email && 
+            inv.status === 'pending'
+        );
+        
+        if (existingInv) {
+            showAlert(`${producer.name} için zaten bekleyen bir davet var.`, 'warning');
+            document.getElementById('inviteModal')?.remove();
+            return;
+        }
+        
         // Save invitation to localStorage
-        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
         const invitation = {
             id: Date.now(),
-            from: getCurrentUserEmail(),
-            fromName: getCurrentUserName(),
+            from: currentUserEmail,
+            fromName: currentUserName,
             to: producer.email,
             toName: producer.name,
+            producerId: producerId,
             timestamp: new Date().toISOString(),
             status: 'pending',
-            streamUrl: '../live-stream.html'
+            streamUrl: '../live-stream.html?from=streamer'
         };
-        invitations.push(invitation);
-        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        existingInvitations.push(invitation);
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(existingInvitations));
         
         // Close modal
         document.getElementById('inviteModal')?.remove();
@@ -983,7 +1002,7 @@ function sendInviteToProducer(producerId) {
         // Optionally redirect to live stream page
         setTimeout(() => {
             if (confirm('Canlı yayına geçmek ister misiniz?')) {
-                window.location.href = '../live-stream.html';
+                window.location.href = '../live-stream.html?from=streamer';
             }
         }, 1000);
     }
@@ -1011,33 +1030,91 @@ function checkIncomingInvitations() {
     );
     
     if (myInvitations.length > 0) {
-        myInvitations.forEach(inv => {
-            showInvitationAlert(inv);
-        });
+        // Show notification for the first pending invitation
+        const firstInv = myInvitations[0];
+        showInvitationAlert(firstInv);
     }
+}
+
+// Auto-check invitations every 5 seconds
+function setupInvitationAutoCheck() {
+    setInterval(() => {
+        checkIncomingInvitations();
+    }, 5000);
 }
 
 // Show Invitation Alert
 function showInvitationAlert(invitation) {
-    if (confirm(`${invitation.fromName} sizi canlı yayına davet ediyor. Katılmak ister misiniz?`)) {
-        // Mark as accepted
-        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
-        const inv = invitations.find(i => i.id === invitation.id);
-        if (inv) {
-            inv.status = 'accepted';
-            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
-        }
+    // Check if we already showed this invitation
+    const shownInvitations = JSON.parse(sessionStorage.getItem('shownInvitations') || '[]');
+    if (shownInvitations.includes(invitation.id)) {
+        return; // Already shown
+    }
+    
+    // Mark as shown
+    shownInvitations.push(invitation.id);
+    sessionStorage.setItem('shownInvitations', JSON.stringify(shownInvitations));
+    
+    // Create a better modal instead of confirm
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'invitationAlertModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            <h2><i class="fas fa-broadcast-tower"></i> Canlı Yayın Daveti</h2>
+            <div style="padding: 20px;">
+                <p style="margin-bottom: 20px; font-size: 16px;">
+                    <strong>${invitation.fromName}</strong> sizi canlı yayına davet ediyor.
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="acceptInvitationAlert(${invitation.id})" style="flex: 1;">
+                        <i class="fas fa-check"></i> Kabul Et
+                    </button>
+                    <button class="btn btn-outline" onclick="declineInvitationAlert(${invitation.id})" style="flex: 1;">
+                        <i class="fas fa-times"></i> Reddet
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Accept Invitation from Alert
+function acceptInvitationAlert(invitationId) {
+    const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+    const invitation = invitations.find(i => i.id == invitationId);
+    
+    if (invitation) {
+        invitation.status = 'accepted';
+        invitation.acceptedAt = new Date().toISOString();
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        
+        document.getElementById('invitationAlertModal')?.remove();
+        
+        showAlert('Davet kabul edildi! Canlı yayına yönlendiriliyorsunuz...', 'success');
         
         // Redirect to live stream
-        window.location.href = invitation.streamUrl;
-    } else {
-        // Mark as rejected
-        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
-        const inv = invitations.find(i => i.id === invitation.id);
-        if (inv) {
-            inv.status = 'rejected';
-            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
-        }
+        setTimeout(() => {
+            window.location.href = `${invitation.streamUrl}&invitation=${invitationId}`;
+        }, 1500);
+    }
+}
+
+// Decline Invitation from Alert
+function declineInvitationAlert(invitationId) {
+    const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+    const invitation = invitations.find(i => i.id == invitationId);
+    
+    if (invitation) {
+        invitation.status = 'declined';
+        invitation.declinedAt = new Date().toISOString();
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        
+        document.getElementById('invitationAlertModal')?.remove();
+        
+        showAlert('Davet reddedildi.', 'info');
     }
 }
 
