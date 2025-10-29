@@ -57,20 +57,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Add event listeners for other buttons
-        const cameraBtn = document.querySelector('button[onclick*="requestCameraAccess"]');
+        const cameraBtn = document.getElementById('cameraAccessBtn');
         if (cameraBtn) {
             cameraBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                console.log('📹 Kamera erişimi butonuna tıklandı (JS)');
                 requestCameraAccess();
             });
+            // Butonu aktif hale getir
+            cameraBtn.disabled = false;
+            cameraBtn.style.opacity = '1';
+            console.log('✅ Kamera erişimi butonu aktif edildi (JS)');
         }
         
-        const startBtn = document.querySelector('button[onclick*="startStream"]');
+        const startBtn = document.getElementById('startStreamBtn');
         if (startBtn) {
             startBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                console.log('🎬 Yayın başlat butonuna tıklandı (JS)');
                 startStream();
             });
+            // Butonu aktif hale getir
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            console.log('✅ Yayın başlat butonu aktif edildi (JS)');
         }
         
         console.log('✅ Live Stream JS başlatıldı');
@@ -533,15 +543,18 @@ async function startStream() {
         console.log('💾 Stream verisi kaydedildi');
         
         // Enable/disable buttons
-        const startBtn = document.querySelector('.control-btn.start[onclick*="startStream"]');
+        const startBtn = document.getElementById('startStreamBtn');
         const stopBtn = document.getElementById('stopBtn');
         
         if (startBtn) {
             startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
             console.log('⏸️ Başlat butonu devre dışı bırakıldı');
         }
         if (stopBtn) {
             stopBtn.disabled = false;
+            stopBtn.style.opacity = '1';
+            stopBtn.style.cursor = 'pointer';
             console.log('⏹️ Durdur butonu aktif edildi');
         }
         
@@ -1020,9 +1033,11 @@ async function requestCameraAccess() {
         updateStatus('✅ Kamera ve mikrofon erişimi başarılı! Yayını başlatabilirsiniz.');
         
         // Enable start button
-        const startBtn = document.querySelector('.control-btn.start[onclick*="startStream"]');
+        const startBtn = document.getElementById('startStreamBtn');
         if (startBtn) {
             startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            startBtn.style.cursor = 'pointer';
             console.log('▶️ Yayın başlat butonu aktif edildi');
         }
         

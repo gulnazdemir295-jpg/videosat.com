@@ -188,6 +188,19 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        .control-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        
+        .control-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
 
         .sidebar {
             display: flex;
@@ -476,7 +489,7 @@
             <div class="video-section">
                 <div class="status-info" id="statusInfo">
                     <i class="fas fa-info-circle"></i> Kamera ve mikrofon erişimi için izin verin
-                    <button class="control-btn start" onclick="requestCameraAccess()" style="margin-top: 10px;">
+                    <button class="control-btn start" onclick="requestCameraAccess()" id="cameraAccessBtn" style="margin-top: 10px;">
                         <i class="fas fa-camera"></i> Kamera Erişimi İste
                     </button>
                 </div>
@@ -491,13 +504,13 @@
                 </div>
 
                 <div class="video-controls">
-                    <button class="control-btn start" onclick="startStream()">
+                    <button class="control-btn start" onclick="startStream()" id="startStreamBtn">
                         <i class="fas fa-play"></i> Yayını Başlat
                     </button>
                     <button class="control-btn stop" onclick="stopStream()" disabled id="stopBtn">
                         <i class="fas fa-stop"></i> Yayını Durdur
                     </button>
-                    <button class="control-btn end" onclick="endStream()">
+                    <button class="control-btn end" onclick="endStream()" id="endStreamBtn">
                         <i class="fas fa-times"></i> Yayını Sonlandır
                     </button>
                 </div>
@@ -694,10 +707,97 @@
                         }
                     });
                     
+                    // Butonları aktif hale getir
+                    activateButtons();
+                    
                     // Sayfa hazır olduğunu bildir
                     console.log('🎉 Canlı yayın sayfası hazır!');
                     
                 }, 3000);
+                
+                // Butonları aktif hale getir
+                function activateButtons() {
+                    console.log('🔘 Butonlar aktif hale getiriliyor...');
+                    
+                    // Kamera erişimi butonunu aktif et
+                    const cameraBtn = document.getElementById('cameraAccessBtn');
+                    if (cameraBtn) {
+                        cameraBtn.disabled = false;
+                        cameraBtn.style.opacity = '1';
+                        cameraBtn.style.cursor = 'pointer';
+                        console.log('✅ Kamera erişimi butonu aktif edildi');
+                    }
+                    
+                    // Yayın başlat butonunu aktif et
+                    const startBtn = document.getElementById('startStreamBtn');
+                    if (startBtn) {
+                        startBtn.disabled = false;
+                        startBtn.style.opacity = '1';
+                        startBtn.style.cursor = 'pointer';
+                        console.log('✅ Yayın başlat butonu aktif edildi');
+                    }
+                    
+                    // Event listener'ları ekle
+                    addButtonEventListeners();
+                }
+                
+                // Event listener'ları ekle
+                function addButtonEventListeners() {
+                    console.log('🎧 Event listener\'lar ekleniyor...');
+                    
+                    // Kamera erişimi butonu
+                    const cameraBtn = document.getElementById('cameraAccessBtn');
+                    if (cameraBtn) {
+                        cameraBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            console.log('📹 Kamera erişimi butonuna tıklandı');
+                            if (typeof requestCameraAccess === 'function') {
+                                requestCameraAccess();
+                            } else {
+                                alert('Kamera erişimi fonksiyonu yüklenmedi. Sayfayı yenileyin.');
+                            }
+                        });
+                        console.log('✅ Kamera erişimi event listener eklendi');
+                    }
+                    
+                    // Yayın başlat butonu
+                    const startBtn = document.getElementById('startStreamBtn');
+                    if (startBtn) {
+                        startBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            console.log('🎬 Yayın başlat butonuna tıklandı');
+                            if (typeof startStream === 'function') {
+                                startStream();
+                            } else {
+                                alert('Yayın başlatma fonksiyonu yüklenmedi. Sayfayı yenileyin.');
+                            }
+                        });
+                        console.log('✅ Yayın başlat event listener eklendi');
+                    }
+                    
+                    // Diğer butonlar
+                    const stopBtn = document.getElementById('stopBtn');
+                    if (stopBtn) {
+                        stopBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            console.log('⏹️ Yayın durdur butonuna tıklandı');
+                            if (typeof stopStream === 'function') {
+                                stopStream();
+                            }
+                        });
+                    }
+                    
+                    const endBtn = document.getElementById('endStreamBtn');
+                    if (endBtn) {
+                        endBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            console.log('🛑 Yayın sonlandır butonuna tıklandı');
+                            if (typeof endStream === 'function') {
+                                endStream();
+                            }
+                        });
+                    }
+                }
                 
             } catch (error) {
                 console.error('❌ Script yükleme hatası:', error);
