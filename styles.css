@@ -234,11 +234,12 @@ a:focus {
     top: 0;
     left: 0;
     right: 0;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(0, 0, 0, 0.95) !important; /* Siyah tema ile uyumlu */
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--primary-color) !important; /* Kırmızı border */
     z-index: 1000;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3); /* Kırmızı gölge */
 }
 
 .nav-container {
@@ -271,14 +272,17 @@ a:focus {
 }
 
 .nav-link {
-    color: var(--text-primary);
+    color: #ffffff !important; /* Beyaz - siyah navbar üzerinde görünür */
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
+    background-color: rgba(220, 38, 38, 0.1); /* Kırmızı vurgu */
 }
 
 .nav-auth {
@@ -297,17 +301,33 @@ a:focus {
 .hamburger span {
     width: 1.5rem;
     height: 2px;
-    background-color: var(--text-primary);
+    background-color: #ffffff !important; /* Beyaz - siyah navbar üzerinde görünür */
     transition: all 0.3s ease;
+    display: block;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translateY(8px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translateY(-8px);
 }
 
 /* Hero Section */
 .hero {
     padding: 8rem 0 4rem;
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; /* Kırmızı gradient */
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important; /* Daha zengin kırmızı gradient */
     color: #ffffff !important;
     position: relative;
     overflow: hidden;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
 }
 
 .hero::before {
@@ -317,8 +337,18 @@ a:focus {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/></svg>');
-    opacity: 0.3;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.15"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/><rect width="1000" height="1000" fill="url(%23grid)"/></svg>');
+    opacity: 0.4;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
 }
 
 .hero-container {
@@ -369,13 +399,20 @@ a:focus {
 
 .floating-card {
     position: absolute;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15) !important; /* Daha belirgin */
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.3) !important; /* Daha kalın border */
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     text-align: center;
     animation: float 6s ease-in-out infinite;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Gölge efekti */
+}
+
+.floating-card h3,
+.floating-card p {
+    color: #ffffff !important; /* Beyaz metin */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Metin gölgesi */
 }
 
 .floating-card:nth-child(1) {
@@ -443,7 +480,18 @@ section {
 
 /* Features Section */
 .features {
-    background-color: var(--bg-primary) !important; /* Siyah */
+    background: linear-gradient(180deg, #000000 0%, #1a1a1a 50%, #000000 100%) !important; /* Siyah gradient */
+    position: relative;
+}
+
+.features::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
 }
 
 .features-grid {
@@ -453,13 +501,31 @@ section {
 }
 
 .feature-card {
-    background: #1f1f1f !important; /* Koyu card */
+    background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%) !important; /* Gradient card */
     padding: 2rem;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     border: 1px solid #404040 !important; /* Koyu border */
     transition: all 0.3s ease;
     color: #ffffff !important; /* Beyaz metin */
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover::before {
+    opacity: 1;
 }
 
 .feature-card:hover {
@@ -514,6 +580,21 @@ section {
 }
 
 /* Pricing Section */
+.pricing {
+    background: linear-gradient(180deg, #1a1a1a 0%, #000000 50%, #1a1a1a 100%) !important; /* Siyah gradient */
+    position: relative;
+}
+
+.pricing::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+}
+
 .pricing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -523,13 +604,14 @@ section {
 }
 
 .pricing-card {
-    background: white;
+    background: var(--bg-card) !important; /* Koyu kart - siyah tema */
     border-radius: var(--radius-lg);
     padding: 2rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid #404040 !important; /* Koyu border */
     position: relative;
     transition: all 0.3s ease;
+    color: #ffffff !important; /* Beyaz metin */
 }
 
 .pricing-card:hover {
@@ -538,8 +620,20 @@ section {
 }
 
 .pricing-card.featured {
-    border-color: var(--primary-color);
+    border-color: var(--primary-color) !important; /* Kırmızı border */
+    border-width: 2px !important;
     transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3) !important; /* Kırmızı gölge */
+}
+
+.pricing-card.featured::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light), var(--primary-color));
 }
 
 .pricing-badge {
@@ -564,6 +658,11 @@ section {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: #ffffff !important; /* Beyaz */
+}
+
+.pricing-card .currency,
+.pricing-card .period {
+    color: #f5f5f5 !important; /* Açık gri */
 }
 
 .price {
@@ -609,7 +708,18 @@ section {
 
 /* Contact Section */
 .contact {
-    background-color: var(--bg-primary) !important; /* Siyah */
+    background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%) !important; /* Siyah gradient */
+    position: relative;
+}
+
+.contact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
 }
 
 .contact-content {
@@ -630,13 +740,19 @@ section {
 .contact-item i {
     width: 3rem;
     height: 3rem;
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important; /* Gradient icon */
     color: white;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); /* Kırmızı gölge */
+    transition: transform 0.3s ease;
+}
+
+.contact-item:hover i {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .contact-item h4 {
@@ -650,12 +766,23 @@ section {
 }
 
 .contact-form {
-    background: #1f1f1f !important; /* Koyu card */
+    background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%) !important; /* Gradient card */
     color: var(--text-primary) !important;
     border: 1px solid #404040 !important;
     padding: 2rem;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+
+.contact-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
 }
 
 /* Forms */
@@ -675,18 +802,25 @@ section {
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid #404040 !important; /* Koyu border */
     border-radius: var(--radius-md);
     font-size: 1rem;
     transition: border-color 0.2s ease;
+    background-color: var(--bg-secondary) !important; /* Koyu input arka planı */
+    color: #ffffff !important; /* Beyaz metin */
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #9ca3af !important; /* Açık gri placeholder */
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--primary-color) !important; /* Kırmızı border focus */
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important; /* Kırmızı glow */
 }
 
 .form-options {
@@ -735,9 +869,21 @@ section {
 
 /* Footer */
 .footer {
-    background-color: var(--bg-dark);
+    background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%) !important; /* Siyah gradient */
     color: white;
-    padding: 3rem 0 1rem;
+    padding: 4rem 0 1.5rem;
+    border-top: 2px solid var(--primary-color) !important; /* Kırmızı üst border */
+    position: relative;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
 }
 
 .footer-content {
@@ -811,10 +957,12 @@ section {
 }
 
 .footer-bottom {
-    border-top: 1px solid #374151;
-    padding-top: 1rem;
+    border-top: 1px solid #404040 !important; /* Koyu border */
+    padding-top: 1.5rem;
     text-align: center;
-    color: #9ca3af;
+    color: #b0b0b0 !important; /* Daha açık gri */
+    font-size: 0.875rem;
+    margin-top: 2rem;
 }
 
 /* Modal */
@@ -831,7 +979,7 @@ section {
 }
 
 .modal-content {
-    background-color: white;
+    background-color: var(--bg-card) !important; /* Koyu modal - siyah tema */
     margin: 5% auto;
     padding: 0;
     border-radius: var(--radius-lg);
@@ -839,6 +987,8 @@ section {
     max-width: 500px;
     box-shadow: var(--shadow-xl);
     animation: modalSlideIn 0.3s ease;
+    border: 2px solid var(--primary-color) !important; /* Kırmızı border */
+    color: #ffffff !important; /* Beyaz metin */
 }
 
 @keyframes modalSlideIn {
@@ -862,11 +1012,15 @@ section {
 
 .modal-header h2 {
     margin: 0;
-    color: var(--text-primary);
+    color: #ffffff !important; /* Beyaz */
+}
+
+.modal-header {
+    border-bottom-color: #404040 !important; /* Koyu border */
 }
 
 .close {
-    color: var(--text-light);
+    color: #f5f5f5 !important; /* Açık gri */
     font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
@@ -874,7 +1028,7 @@ section {
 }
 
 .close:hover {
-    color: var(--text-primary);
+    color: #ffffff !important; /* Beyaz hover */
 }
 
 .auth-form {
@@ -883,12 +1037,57 @@ section {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .nav-container {
+        padding: 0 0.75rem;
+        height: 3.5rem;
+    }
+    
+    .nav-logo {
+        font-size: 1.25rem;
+    }
+    
+    .nav-logo i {
+        font-size: 1.5rem;
+    }
+    
     .nav-menu {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.98);
+        flex-direction: column;
+        padding: 1rem;
+        border-top: 2px solid var(--primary-color);
+    }
+    
+    .nav-menu.active {
+        display: flex;
+    }
+    
+    .nav-link {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-auth {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
     }
     
     .hamburger {
         display: flex;
+    }
+    
+    .hero {
+        padding: 6rem 0 3rem;
+        min-height: auto;
     }
     
     .hero-container {
@@ -898,19 +1097,45 @@ section {
     }
     
     .hero-title {
-        font-size: 2.5rem;
+        font-size: clamp(2rem, 8vw, 2.5rem);
+        line-height: 1.2;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
     }
     
     .hero-buttons {
         justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .hero-buttons .btn {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .hero-image {
+        display: none;
+    }
+    
+    section {
+        padding: 3rem 0;
+    }
+    
+    .section-title {
+        font-size: clamp(1.75rem, 6vw, 2.25rem);
     }
     
     .features-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
     
     .pricing-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
     
     .pricing-card.featured {
@@ -922,39 +1147,110 @@ section {
         gap: 2rem;
     }
     
+    .footer {
+        padding: 3rem 0 1rem;
+    }
+    
     .footer-content {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: 2rem;
+    }
+    
+    .social-links {
+        justify-content: center;
     }
     
     .modal-content {
         margin: 10% auto;
         width: 95%;
     }
+    
+    .container {
+        padding: 0 1rem;
+    }
 }
 
 @media (max-width: 480px) {
+    .nav-container {
+        height: 3rem;
+    }
+    
+    .nav-logo {
+        font-size: 1rem;
+    }
+    
+    .nav-logo i {
+        font-size: 1.25rem;
+    }
+    
+    .hero {
+        padding: 5rem 0 2rem;
+    }
+    
     .hero-title {
-        font-size: 2rem;
+        font-size: clamp(1.75rem, 10vw, 2rem);
+        margin-bottom: 1rem;
+    }
+    
+    .hero-description {
+        font-size: 0.9375rem;
     }
     
     .section-title {
-        font-size: 2rem;
+        font-size: clamp(1.5rem, 8vw, 1.875rem);
+    }
+    
+    .section-description {
+        font-size: 0.9375rem;
+    }
+    
+    .btn {
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
     }
     
     .btn-large {
-        padding: 0.875rem 1.5rem;
+        padding: 0.75rem 1.25rem;
         font-size: 0.875rem;
     }
     
     .hero-buttons {
         flex-direction: column;
         align-items: center;
+        gap: 0.75rem;
     }
     
     .hero-buttons .btn {
         width: 100%;
-        max-width: 300px;
+        max-width: 260px;
+    }
+    
+    .feature-card,
+    .pricing-card {
+        padding: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .footer {
+        padding: 2rem 0 1rem;
+    }
+    
+    .footer-content {
+        gap: 1.5rem;
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        width: 98%;
+    }
+    
+    .auth-form {
+        padding: 1.5rem;
     }
 }
 
@@ -1054,7 +1350,7 @@ section {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -1062,10 +1358,11 @@ section {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--border-color);
+    background: var(--primary-color); /* Kırmızı scrollbar */
     border-radius: var(--radius-md);
+    border: 2px solid var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-light);
+    background: var(--primary-dark); /* Koyu kırmızı hover */
 }
