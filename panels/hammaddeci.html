@@ -41,6 +41,10 @@
                     <i class="fas fa-broadcast-tower"></i>
                     Canlı Yayın
                 </a>
+                <a href="#cart" class="nav-link" data-section="cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    Sepet <span class="cart-badge" id="navCartBadge" style="display: none;">0</span>
+                </a>
                 <a href="#messages" class="nav-link" data-section="messages">
                     <i class="fas fa-envelope"></i>
                     Mesajlar
@@ -207,12 +211,25 @@
                             <th>Birim Fiyat</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
+                            <th>Sepet</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
                         <!-- Products will be populated by JavaScript -->
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart" class="panel-section">
+            <div class="section-header">
+                <h1><i class="fas fa-shopping-cart"></i> Sepetim</h1>
+                <p>Sepetinizdeki ürünleri görüntüleyin ve sipariş verin</p>
+            </div>
+
+            <div id="cartContent">
+                <!-- Cart items will be populated by JavaScript -->
             </div>
         </section>
 
@@ -664,8 +681,10 @@
     <script src="../modules/module-loader.js"></script>
     
     <script src="../app.js"></script>
+    <script src="../services/cart-service.js"></script>
+    <script src="../services/stock-service.js"></script>
+    <script src="../services/order-service.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/payment-service.js"></script>
-    <script src="../services/order-service.js"></script>
 </body>
 </html>

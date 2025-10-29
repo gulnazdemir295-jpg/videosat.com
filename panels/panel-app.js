@@ -2,6 +2,7 @@
 let currentUser = null;
 let userRole = null;
 let products = [];
+window.products = products; // Global erişim için
 let producers = [];
 let orders = [];
 let messages = [];
@@ -16,6 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupPanelEventListeners();
     checkIncomingInvitations();
     setupInvitationAutoCheck();
+    initializeCartSystem();
+    initializeStockSystem();
 });
 
 // Initialize Panel Application
@@ -360,6 +363,9 @@ function loadSectionData(sectionId) {
         case 'producers':
             loadProducers();
             break;
+        case 'cart':
+            loadCartSection();
+            break;
         case 'orders':
             loadOrders();
             break;
@@ -495,13 +501,33 @@ function loadProducts() {
         }
     ];
     
+    window.products = products; // Global erişim için güncelle
     renderProductsTable();
 }
 
 // Render Products Table
 function renderProductsTable() {
     const tbody = document.getElementById('productsTableBody');
-    tbody.innerHTML = products.map(product => `
+    if (!tbody) return;
+    
+    // Products'ı localStorage'a kaydet (stock service için)
+    if (window.stockService) {
+        try {
+            localStorage.setItem('products', JSON.stringify(products));
+        } catch (e) {
+            console.error('Error saving products:', e);
+        }
+    }
+    
+    tbody.innerHTML = products.map(product => {
+        const isOwner = currentUser && (
+            currentUser.role === 'hammaddeci' || 
+            currentUser.role === 'uretici' || 
+            currentUser.role === 'toptanci' || 
+            currentUser.role === 'satici'
+        );
+        
+        return `
         <tr>
             <td>${product.name}</td>
             <td>${getCategoryName(product.category)}</td>
@@ -511,6 +537,7 @@ function renderProductsTable() {
             <td><span class="status-badge ${product.status}">${getStatusName(product.status)}</span></td>
             <td>
                 <div class="action-buttons">
+                    ${isOwner ? `
                     <button class="action-btn edit" onclick="editProduct(${product.id})">
                         <i class="fas fa-edit"></i>
                         Düzenle
@@ -519,10 +546,26 @@ function renderProductsTable() {
                         <i class="fas fa-trash"></i>
                         Sil
                     </button>
+                    ` : ''}
+                    <button class="action-btn view" onclick="viewProductDetails(${product.id})">
+                        <i class="fas fa-eye"></i>
+                        Detay
+                    </button>
                 </div>
             </td>
+            <td>
+                ${!isOwner && product.stock > 0 ? `
+                <button class="action-btn add-to-cart" onclick="addProductToCart(${product.id})" title="Sepete Ekle">
+                    <i class="fas fa-cart-plus"></i>
+                    Sepete Ekle
+                </button>
+                ` : product.stock === 0 ? `
+                <span class="text-muted">Stokta Yok</span>
+                ` : ''}
+            </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Get Category Name
@@ -2323,8 +2366,469 @@ window.editUser = editUser;
 window.loadInvitations = loadInvitations;
 window.acceptInvitation = acceptInvitation;
 window.declineInvitation = declineInvitation;
+window.acceptInvitationAlert = acceptInvitationAlert;
+window.declineInvitationAlert = declineInvitationAlert;
 window.updateCommissionRates = updateCommissionRates;
 window.showPaymentModal = showPaymentModal;
+
+// ==================== CART SYSTEM ====================
+
+// Initialize Cart System
+function initializeCartSystem() {
+    if (!window.cartService) {
+        console.warn('Cart Service not loaded');
+        return;
+    }
+
+    // Cart değişikliklerini dinle
+    window.cartService.onCartChange((cart, total, itemCount) => {
+        updateCartUI(cart, total, itemCount);
+    });
+
+    // Başlangıç sepet UI'ını güncelle
+    const cart = window.cartService.getCart();
+    const total = window.cartService.calculateTotal();
+    const itemCount = window.cartService.getTotalItems();
+    updateCartUI(cart, total, itemCount);
+}
+
+// Update Cart UI (Navbar'da mini sepet)
+function updateCartUI(cart, total, itemCount) {
+    // Navbar'da sepet iconunu güncelle
+    const cartIcon = document.querySelector('.cart-icon, [data-cart-icon]');
+    if (cartIcon) {
+        const badge = cartIcon.querySelector('.cart-badge') || document.createElement('span');
+        if (!badge.classList.contains('cart-badge')) {
+            badge.className = 'cart-badge';
+            badge.style.cssText = 'position: absolute; top: -8px; right: -8px; background: #dc2626; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;';
+            cartIcon.style.position = 'relative';
+            cartIcon.appendChild(badge);
+        }
+        badge.textContent = itemCount > 0 ? itemCount : '';
+        badge.style.display = itemCount > 0 ? 'flex' : 'none';
+    }
+}
+
+// Add Product to Cart
+function addProductToCart(productId) {
+    if (!window.cartService) {
+        showAlert('Sepet sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+        showAlert('Ürün bulunamadı.', 'error');
+        return;
+    }
+
+    // Stok kontrolü
+    const stockCheck = window.stockService ? 
+        window.stockService.checkStock(productId, 1) : 
+        { available: product.stock > 0 };
+
+    if (!stockCheck.available) {
+        showAlert(`Ürün stokta yok veya yetersiz stok. Mevcut stok: ${stockCheck.stock || 0}`, 'warning');
+        return;
+    }
+
+    try {
+        window.cartService.addToCart(product, 1);
+        showAlert(`${product.name} sepete eklendi!`, 'success');
+        
+        // Ürün tablosunu güncelle (stok görünümü için)
+        renderProductsTable();
+    } catch (error) {
+        showAlert(error.message || 'Sepete eklenirken hata oluştu.', 'error');
+    }
+}
+
+// View Product Details
+function viewProductDetails(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+        showAlert('Ürün bulunamadı.', 'error');
+        return;
+    }
+
+    // Ürün detay modalı oluştur
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'productDetailsModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            <h2><i class="fas fa-box"></i> ${product.name}</h2>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <p><strong>Kategori:</strong> ${getCategoryName(product.category)}</p>
+                    <p><strong>Birim:</strong> ${getUnitName(product.unit)}</p>
+                    <p><strong>Stok:</strong> ${formatStock(product.stock, product.unit)}</p>
+                    <p><strong>Fiyat:</strong> ₺${product.price.toFixed(2)}</p>
+                    <p><strong>Durum:</strong> <span class="status-badge ${product.status}">${getStatusName(product.status)}</span></p>
+                </div>
+                ${product.description ? `<div style="margin-bottom: 20px;"><p><strong>Açıklama:</strong></p><p>${product.description}</p></div>` : ''}
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    ${product.stock > 0 && (!currentUser || (currentUser.role !== 'hammaddeci' && currentUser.role !== 'uretici' && currentUser.role !== 'toptanci' && currentUser.role !== 'satici')) ? `
+                    <button class="btn btn-primary" onclick="addProductToCart(${product.id}); this.closest('.modal').remove();" style="flex: 1;">
+                        <i class="fas fa-cart-plus"></i> Sepete Ekle
+                    </button>
+                    ` : ''}
+                    <button class="btn btn-outline" onclick="this.closest('.modal').remove()" style="flex: 1;">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Initialize Stock System
+function initializeStockSystem() {
+    if (!window.stockService) {
+        console.warn('Stock Service not loaded');
+        return;
+    }
+
+    // Düşük stok uyarılarını dinle
+    window.addEventListener('lowStockWarning', (e) => {
+        const { product } = e.detail;
+        console.warn(`Düşük stok uyarısı: ${product.name} - ${product.stock}`);
+    });
+
+    window.addEventListener('stockOut', (e) => {
+        const { product } = e.detail;
+        console.error(`Stok tükendi: ${product.name}`);
+    });
+}
+
+// Load Cart Section
+function loadCartSection() {
+    if (!window.cartService) {
+        showAlert('Sepet sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    const cart = window.cartService.getCart();
+    const total = window.cartService.calculateTotal();
+    const itemCount = window.cartService.getTotalItems();
+    
+    const cartContent = document.getElementById('cartContent');
+    if (!cartContent) return;
+
+    if (cart.length === 0) {
+        cartContent.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <i class="fas fa-shopping-cart" style="font-size: 64px; color: #666; margin-bottom: 20px;"></i>
+                <h3 style="color: #999; margin-bottom: 10px;">Sepetiniz boş</h3>
+                <p style="color: #666;">Sepetinize ürün eklemek için ürün listesini ziyaret edin.</p>
+                <button class="btn btn-primary" onclick="showSection('products')" style="margin-top: 20px;">
+                    <i class="fas fa-box"></i> Ürünlere Git
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    cartContent.innerHTML = `
+        <div class="cart-items">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Fiyat</th>
+                        <th>Miktar</th>
+                        <th>Toplam</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cart.map(item => `
+                        <tr>
+                            <td>
+                                <strong>${item.productName}</strong><br>
+                                <small style="color: #999;">${getUnitName(item.unit)}</small>
+                            </td>
+                            <td>₺${item.price.toFixed(2)}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button class="btn btn-small btn-outline" onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})" ${item.quantity <= 1 ? 'disabled' : ''}>
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span>${item.quantity}</span>
+                                    <button class="btn btn-small btn-outline" onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td><strong>₺${(item.price * item.quantity).toFixed(2)}</strong></td>
+                            <td>
+                                <button class="action-btn delete" onclick="removeCartItem(${item.id})">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Toplam:</strong></td>
+                        <td colspan="2"><strong style="font-size: 18px; color: #dc2626;">₺${total.toFixed(2)}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="clearCart()">
+                    <i class="fas fa-trash"></i> Sepeti Temizle
+                </button>
+                <button class="btn btn-primary" onclick="proceedToCheckout()">
+                    <i class="fas fa-credit-card"></i> Siparişi Tamamla
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Update Cart Item Quantity
+function updateCartItemQuantity(cartItemId, newQuantity) {
+    if (!window.cartService) {
+        showAlert('Sepet sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    const cartItem = window.cartService.getCartItem(cartItemId);
+    if (!cartItem) {
+        showAlert('Sepet öğesi bulunamadı.', 'error');
+        return;
+    }
+
+    // Product bul
+    const product = products.find(p => p.id === cartItem.productId);
+    
+    try {
+        if (newQuantity <= 0) {
+            removeCartItem(cartItemId);
+        } else {
+            window.cartService.updateCartItem(cartItemId, newQuantity, product);
+            loadCartSection();
+            showAlert('Sepet güncellendi.', 'success');
+        }
+    } catch (error) {
+        showAlert(error.message || 'Sepet güncellenirken hata oluştu.', 'error');
+    }
+}
+
+// Remove Cart Item
+function removeCartItem(cartItemId) {
+    if (!window.cartService) {
+        showAlert('Sepet sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    if (confirm('Bu ürünü sepetten çıkarmak istediğinize emin misiniz?')) {
+        window.cartService.removeFromCart(cartItemId);
+        loadCartSection();
+        showAlert('Ürün sepetten çıkarıldı.', 'success');
+    }
+}
+
+// Clear Cart
+function clearCart() {
+    if (!window.cartService) {
+        showAlert('Sepet sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    if (confirm('Sepeti tamamen temizlemek istediğinize emin misiniz?')) {
+        window.cartService.clearCart();
+        loadCartSection();
+        showAlert('Sepet temizlendi.', 'success');
+    }
+}
+
+// Proceed to Checkout
+function proceedToCheckout() {
+    if (!window.cartService || !window.orderService) {
+        showAlert('Sipariş sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    const cart = window.cartService.getCart();
+    if (cart.length === 0) {
+        showAlert('Sepetiniz boş.', 'warning');
+        return;
+    }
+
+    const total = window.cartService.calculateTotal();
+    
+    // Checkout modalı göster
+    showCheckoutModal(cart, total);
+}
+
+// Show Checkout Modal
+function showCheckoutModal(cart, total) {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'checkoutModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            <h2><i class="fas fa-shopping-bag"></i> Sipariş Özeti</h2>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <h3>Sipariş Detayları</h3>
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        ${cart.map(item => `
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #404040;">
+                                <div>
+                                    <strong>${item.productName}</strong><br>
+                                    <small style="color: #999;">${item.quantity} x ₺${item.price.toFixed(2)}</small>
+                                </div>
+                                <strong>₺${(item.price * item.quantity).toFixed(2)}</strong>
+                            </div>
+                        `).join('')}
+                        <div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #dc2626; margin-top: 10px;">
+                            <strong>Toplam:</strong>
+                            <strong style="font-size: 20px; color: #dc2626;">₺${total.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="checkoutForm" onsubmit="handleCheckout(event)">
+                    <h3>Teslimat Bilgileri</h3>
+                    <div style="margin-bottom: 15px;">
+                        <label>Ad Soyad / Firma Adı *</label>
+                        <input type="text" id="checkoutName" class="form-control" required>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>Telefon *</label>
+                        <input type="tel" id="checkoutPhone" class="form-control" required>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>Email</label>
+                        <input type="email" id="checkoutEmail" class="form-control" value="${currentUser?.email || ''}">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>Adres *</label>
+                        <textarea id="checkoutAddress" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>Şehir *</label>
+                        <select id="checkoutCity" class="form-control" required>
+                            <option value="">Seçiniz</option>
+                            <option value="istanbul">İstanbul</option>
+                            <option value="ankara">Ankara</option>
+                            <option value="izmir">İzmir</option>
+                            <option value="bursa">Bursa</option>
+                            <option value="antalya">Antalya</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label>Ödeme Yöntemi *</label>
+                        <select id="checkoutPaymentMethod" class="form-control" required>
+                            <option value="cash">Nakit</option>
+                            <option value="credit_card">Kredi Kartı</option>
+                            <option value="bank_transfer">Banka Transferi</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label>Notlar (Opsiyonel)</label>
+                        <textarea id="checkoutNotes" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="btn btn-outline" onclick="this.closest('.modal').remove()" style="flex: 1;">
+                            İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fas fa-check"></i> Siparişi Onayla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Handle Checkout
+function handleCheckout(e) {
+    e.preventDefault();
+    
+    if (!window.cartService || !window.orderService) {
+        showAlert('Sipariş sistemi yüklenemedi.', 'error');
+        return;
+    }
+
+    const cart = window.cartService.getCart();
+    if (cart.length === 0) {
+        showAlert('Sepetiniz boş.', 'warning');
+        return;
+    }
+
+    const orderData = {
+        items: cart.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            quantity: item.quantity,
+            price: item.price,
+            unit: item.unit
+        })),
+        subtotal: window.cartService.calculateTotal(),
+        shippingCost: 0, // TODO: Kargo hesaplama
+        total: window.cartService.calculateTotal(),
+        customerInfo: {
+            name: document.getElementById('checkoutName').value,
+            phone: document.getElementById('checkoutPhone').value,
+            email: document.getElementById('checkoutEmail').value || currentUser?.email
+        },
+        shippingAddress: {
+            address: document.getElementById('checkoutAddress').value,
+            city: document.getElementById('checkoutCity').value
+        },
+        paymentMethod: document.getElementById('checkoutPaymentMethod').value,
+        notes: document.getElementById('checkoutNotes').value
+    };
+
+    try {
+        const order = window.orderService.createOrder(orderData);
+        
+        // Sepeti temizle
+        window.cartService.clearCart();
+        
+        // Modal'ı kapat
+        document.getElementById('checkoutModal')?.remove();
+        
+        // Başarı mesajı
+        showAlert(`Siparişiniz başarıyla oluşturuldu! Sipariş No: ${order.orderNumber}`, 'success');
+        
+        // Sepet bölümünü güncelle
+        loadCartSection();
+        
+        // Siparişler bölümüne yönlendir
+        setTimeout(() => {
+            showSection('orders');
+        }, 2000);
+        
+    } catch (error) {
+        showAlert(error.message || 'Sipariş oluşturulurken hata oluştu.', 'error');
+    }
+}
+
+// Export cart functions globally
+window.addProductToCart = addProductToCart;
+window.viewProductDetails = viewProductDetails;
+window.updateCartUI = updateCartUI;
+window.initializeCartSystem = initializeCartSystem;
+window.initializeStockSystem = initializeStockSystem;
+window.loadCartSection = loadCartSection;
+window.updateCartItemQuantity = updateCartItemQuantity;
+window.removeCartItem = removeCartItem;
+window.clearCart = clearCart;
+window.proceedToCheckout = proceedToCheckout;
+window.handleCheckout = handleCheckout;
 
 // Commission Management
 function updateCommissionRates() {
