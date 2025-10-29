@@ -363,6 +363,28 @@ function loadSectionData(sectionId) {
         case 'producers':
             loadProducers();
             break;
+        case 'sellers':
+            loadSellers(); // For customer panel - load sellers
+            break;
+        case 'suppliers':
+            loadSuppliersGrid();
+            break;
+        case 'wholesalers':
+            loadWholesalers(); // Load toptanci list with follow buttons
+            break;
+        case 'followers':
+            loadFollowers();
+            break;
+        case 'live-streams':
+            if (userRole === 'musteri') {
+                loadCustomerLiveStreams();
+            }
+            break;
+        case 'following':
+            if (userRole === 'musteri') {
+                loadCustomerFollowing();
+            }
+            break;
         case 'cart':
             loadCartSection();
             break;
@@ -842,7 +864,24 @@ function loadProducers() {
 // Render Producers Grid
 function renderProducersGrid() {
     const grid = document.getElementById('producersGrid');
-    grid.innerHTML = producers.map(producer => `
+    if (!grid) return;
+    
+    // Check if we need to add follow buttons (for toptanci role)
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userRole = currentUser.role;
+    const needsFollowButtons = (userRole === 'toptanci');
+    
+    // Get following list if needed
+    let following = [];
+    if (needsFollowButtons && window.followService) {
+        following = window.followService.getFollowing(currentUser.id);
+    }
+    
+    grid.innerHTML = producers.map(producer => {
+        // Check if already following
+        const isFollowing = needsFollowButtons && following.some(f => f.id === producer.id);
+        
+        return `
         <div class="producer-card">
             <div class="producer-header">
                 <div class="producer-avatar">
@@ -859,21 +898,36 @@ function renderProducersGrid() {
                 <p><i class="fas fa-box"></i> ${producer.products.join(', ')}</p>
             </div>
             <div class="producer-actions">
-                <button class="btn btn-outline btn-small" onclick="sendMessageToProducer(${producer.id})">
-                    <i class="fas fa-envelope"></i>
-                    Mesaj
-                </button>
-                <button class="btn btn-primary btn-small" onclick="inviteToLiveStream(${producer.id})">
-                    <i class="fas fa-broadcast-tower"></i>
-                    Davet Et
-                </button>
-                <button class="btn btn-outline btn-small" onclick="sendOfferForm(${producer.id})">
-                    <i class="fas fa-file-contract"></i>
-                    Teklif
-                </button>
+                ${needsFollowButtons ? `
+                    ${isFollowing ? `
+                        <button class="btn btn-success btn-small" onclick="unfollowProducer('${producer.id}')">
+                            <i class="fas fa-check"></i>
+                            Takip Ediliyor
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary btn-small" onclick="followProducer('${producer.id}')">
+                            <i class="fas fa-star"></i>
+                            Takip Et
+                        </button>
+                    `}
+                ` : `
+                    <button class="btn btn-outline btn-small" onclick="sendMessageToProducer(${producer.id})">
+                        <i class="fas fa-envelope"></i>
+                        Mesaj
+                    </button>
+                    <button class="btn btn-primary btn-small" onclick="inviteToLiveStream(${producer.id})">
+                        <i class="fas fa-broadcast-tower"></i>
+                        Davet Et
+                    </button>
+                    <button class="btn btn-outline btn-small" onclick="sendOfferForm(${producer.id})">
+                        <i class="fas fa-file-contract"></i>
+                        Teklif
+                    </button>
+                `}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Get City Name
@@ -920,7 +974,24 @@ function filterProducers() {
 // Render Filtered Producers Grid
 function renderFilteredProducersGrid(filteredProducers) {
     const grid = document.getElementById('producersGrid');
-    grid.innerHTML = filteredProducers.map(producer => `
+    if (!grid) return;
+    
+    // Check if we need to add follow buttons (for toptanci role)
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userRole = currentUser.role;
+    const needsFollowButtons = (userRole === 'toptanci');
+    
+    // Get following list if needed
+    let following = [];
+    if (needsFollowButtons && window.followService) {
+        following = window.followService.getFollowing(currentUser.id);
+    }
+    
+    grid.innerHTML = filteredProducers.map(producer => {
+        // Check if already following
+        const isFollowing = needsFollowButtons && following.some(f => f.id === producer.id);
+        
+        return `
         <div class="producer-card">
             <div class="producer-header">
                 <div class="producer-avatar">
@@ -937,21 +1008,36 @@ function renderFilteredProducersGrid(filteredProducers) {
                 <p><i class="fas fa-box"></i> ${producer.products.join(', ')}</p>
             </div>
             <div class="producer-actions">
-                <button class="btn btn-outline btn-small" onclick="sendMessageToProducer(${producer.id})">
-                    <i class="fas fa-envelope"></i>
-                    Mesaj
-                </button>
-                <button class="btn btn-primary btn-small" onclick="inviteToLiveStream(${producer.id})">
-                    <i class="fas fa-broadcast-tower"></i>
-                    Davet Et
-                </button>
-                <button class="btn btn-outline btn-small" onclick="sendOfferForm(${producer.id})">
-                    <i class="fas fa-file-contract"></i>
-                    Teklif
-                </button>
+                ${needsFollowButtons ? `
+                    ${isFollowing ? `
+                        <button class="btn btn-success btn-small" onclick="unfollowProducer('${producer.id}')">
+                            <i class="fas fa-check"></i>
+                            Takip Ediliyor
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary btn-small" onclick="followProducer('${producer.id}')">
+                            <i class="fas fa-star"></i>
+                            Takip Et
+                        </button>
+                    `}
+                ` : `
+                    <button class="btn btn-outline btn-small" onclick="sendMessageToProducer(${producer.id})">
+                        <i class="fas fa-envelope"></i>
+                        Mesaj
+                    </button>
+                    <button class="btn btn-primary btn-small" onclick="inviteToLiveStream(${producer.id})">
+                        <i class="fas fa-broadcast-tower"></i>
+                        Davet Et
+                    </button>
+                    <button class="btn btn-outline btn-small" onclick="sendOfferForm(${producer.id})">
+                        <i class="fas fa-file-contract"></i>
+                        Teklif
+                    </button>
+                `}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Send Message to Producer
@@ -2865,31 +2951,76 @@ function loadFollowers() {
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const companyId = currentUser.id;
+    const userRole = currentUser.role;
 
     if (!companyId) return;
 
     const followers = window.followService.getFollowers(companyId);
+    
+    // Filter followers based on role (müşteri hierarchy)
+    let validFollowers = followers;
+    if (userRole === 'hammaddeci') {
+        // Hammaddeci's customers are only üretici
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        validFollowers = followers.filter(f => {
+            const user = users.find(u => u.id === f.id);
+            return user && user.role === 'uretici';
+        });
+    } else if (userRole === 'uretici') {
+        // Üretici's customers are only toptanci
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        validFollowers = followers.filter(f => {
+            const user = users.find(u => u.id === f.id);
+            return user && user.role === 'toptanci';
+        });
+    } else if (userRole === 'toptanci') {
+        // Toptancı's customers are only satici
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        validFollowers = followers.filter(f => {
+            const user = users.find(u => u.id === f.id);
+            return user && user.role === 'satici';
+        });
+    } else if (userRole === 'satici') {
+        // Satıcı's customers are only musteri
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        validFollowers = followers.filter(f => {
+            const user = users.find(u => u.id === f.id);
+            return user && user.role === 'musteri';
+        });
+    }
+    
     const followersList = document.getElementById('followersList');
     const totalFollowersCount = document.getElementById('totalFollowersCount');
 
     if (totalFollowersCount) {
-        totalFollowersCount.textContent = followers.length;
+        totalFollowersCount.textContent = validFollowers.length;
     }
 
     if (!followersList) return;
 
-    if (followers.length === 0) {
+    if (validFollowers.length === 0) {
+        let roleSpecificMessage = 'Müşteriler sizi takip ettiğinde burada görünecek';
+        if (userRole === 'hammaddeci') {
+            roleSpecificMessage = 'Üreticiler sizi takip ettiğinde burada görünecek';
+        } else if (userRole === 'uretici') {
+            roleSpecificMessage = 'Toptancılar sizi takip ettiğinde burada görünecek';
+        } else if (userRole === 'toptanci') {
+            roleSpecificMessage = 'Satıcılar sizi takip ettiğinde burada görünecek';
+        } else if (userRole === 'satici') {
+            roleSpecificMessage = 'Müşteriler sizi takip ettiğinde burada görünecek';
+        }
+        
         followersList.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #999;">
                 <i class="fas fa-user-friends" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
                 <p>Henüz takipçiniz yok</p>
-                <p style="font-size: 14px;">Müşteriler sizi takip ettiğinde burada görünecek</p>
+                <p style="font-size: 14px;">${roleSpecificMessage}</p>
             </div>
         `;
         return;
     }
 
-    followersList.innerHTML = followers.map(follower => `
+    followersList.innerHTML = validFollowers.map(follower => `
         <div class="action-card" style="margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
@@ -3295,11 +3426,247 @@ function loadSuppliersGrid() {
     `).join('');
 }
 
+// Follow a wholesaler (for Satıcı role)
+function followWholesaler(wholesalerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        showAlert('Takip sistemi kullanılamıyor', 'error');
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const wholesaler = users.find(u => u.id === wholesalerId && u.role === 'toptanci');
+    
+    if (!wholesaler) {
+        showAlert('Toptancı bulunamadı', 'error');
+        return;
+    }
+
+    try {
+        const followed = window.followService.followCompany(
+            wholesaler.id,
+            wholesaler.companyName || wholesaler.name,
+            wholesaler.role
+        );
+
+        if (followed) {
+            showAlert(`${wholesaler.companyName || wholesaler.name} takip edildi`, 'success');
+            loadWholesalers();
+        } else {
+            showAlert('Zaten takip ediliyor', 'info');
+        }
+    } catch (e) {
+        console.error('Error following wholesaler:', e);
+        showAlert('Hata oluştu', 'error');
+    }
+}
+
+// Unfollow a wholesaler
+function unfollowWholesaler(wholesalerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    if (confirm('Takipten çıkmak istediğinize emin misiniz?')) {
+        try {
+            window.followService.unfollowCompany(wholesalerId);
+            showAlert('Takipten çıkarıldı', 'success');
+            loadWholesalers();
+        } catch (e) {
+            console.error('Error unfollowing:', e);
+            showAlert('Hata oluştu', 'error');
+        }
+    }
+}
+
+// Follow a seller (for Müşteri role)
+function followSeller(sellerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        showAlert('Takip sistemi kullanılamıyor', 'error');
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const seller = users.find(u => u.id === sellerId && u.role === 'satici');
+    
+    if (!seller) {
+        showAlert('Satıcı bulunamadı', 'error');
+        return;
+    }
+
+    try {
+        const followed = window.followService.followCompany(
+            seller.id,
+            seller.companyName || seller.name,
+            seller.role
+        );
+
+        if (followed) {
+            showAlert(`${seller.companyName || seller.name} takip edildi`, 'success');
+            loadSellers();
+        } else {
+            showAlert('Zaten takip ediliyor', 'info');
+        }
+    } catch (e) {
+        console.error('Error following seller:', e);
+        showAlert('Hata oluştu', 'error');
+    }
+}
+
+// Unfollow a seller
+function unfollowSeller(sellerId) {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    if (confirm('Takipten çıkmak istediğinize emin misiniz?')) {
+        try {
+            window.followService.unfollowCompany(sellerId);
+            showAlert('Takipten çıkarıldı', 'success');
+            loadSellers();
+        } catch (e) {
+            console.error('Error unfollowing:', e);
+            showAlert('Hata oluştu', 'error');
+        }
+    }
+}
+
+// Load Sellers for Customer Panel
+function loadSellers() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const grid = document.getElementById('producersGrid'); // Uses same grid in customer panel
+    if (!grid) return;
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const sellers = users.filter(u => u.role === 'satici');
+    
+    if (sellers.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-store" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz satıcı yok</p>
+            </div>
+        `;
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const following = window.followService.getFollowing(currentUser.id);
+
+    grid.innerHTML = sellers.map(seller => {
+        const isFollowing = following.some(f => f.id === seller.id);
+        
+        return `
+        <div class="producer-card">
+            <div class="producer-header">
+                <div class="producer-avatar">
+                    ${(seller.companyName || seller.name).charAt(0)}
+                </div>
+                <div class="producer-info">
+                    <h3>${seller.companyName || seller.name}</h3>
+                    <p>Satıcı</p>
+                </div>
+            </div>
+            <div class="producer-details">
+                <p><i class="fas fa-envelope"></i> ${seller.email}</p>
+                <p><i class="fas fa-phone"></i> ${seller.phone || '-'}</p>
+            </div>
+            <div class="producer-actions">
+                ${isFollowing ? `
+                    <button class="btn btn-success btn-small" onclick="unfollowSeller('${seller.id}')">
+                        <i class="fas fa-check"></i>
+                        Takip Ediliyor
+                    </button>
+                ` : `
+                    <button class="btn btn-primary btn-small" onclick="followSeller('${seller.id}')">
+                        <i class="fas fa-star"></i>
+                        Takip Et
+                    </button>
+                `}
+            </div>
+        </div>
+    `).join('');
+}
+
+// Load Wholesalers for Satıcı Panel
+function loadWholesalers() {
+    if (!window.followService) {
+        console.warn('Follow service not available');
+        return;
+    }
+
+    const grid = document.getElementById('producersGrid'); // Reuse producers grid
+    if (!grid) return;
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const wholesalers = users.filter(u => u.role === 'toptanci');
+    
+    if (wholesalers.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-warehouse" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz toptancı yok</p>
+            </div>
+        `;
+        return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const following = window.followService.getFollowing(currentUser.id);
+
+    grid.innerHTML = wholesalers.map(wholesaler => {
+        const isFollowing = following.some(f => f.id === wholesaler.id);
+        
+        return `
+        <div class="producer-card">
+            <div class="producer-header">
+                <div class="producer-avatar">
+                    ${(wholesaler.companyName || wholesaler.name).charAt(0)}
+                </div>
+                <div class="producer-info">
+                    <h3>${wholesaler.companyName || wholesaler.name}</h3>
+                    <p>Toptancı</p>
+                </div>
+            </div>
+            <div class="producer-details">
+                <p><i class="fas fa-envelope"></i> ${wholesaler.email}</p>
+                <p><i class="fas fa-phone"></i> ${wholesaler.phone || '-'}</p>
+            </div>
+            <div class="producer-actions">
+                ${isFollowing ? `
+                    <button class="btn btn-success btn-small" onclick="unfollowWholesaler('${wholesaler.id}')">
+                        <i class="fas fa-check"></i>
+                        Takip Ediliyor
+                    </button>
+                ` : `
+                    <button class="btn btn-primary btn-small" onclick="followWholesaler('${wholesaler.id}')">
+                        <i class="fas fa-star"></i>
+                        Takip Et
+                    </button>
+                `}
+            </div>
+        </div>
+    `).join('');
+}
+
 // Export additional functions
 window.followHammaddeci = followHammaddeci;
 window.unfollowHammaddeci = unfollowHammaddeci;
 window.followProducer = followProducer;
 window.unfollowProducer = unfollowProducer;
+window.followWholesaler = followWholesaler;
+window.unfollowWholesaler = unfollowWholesaler;
+window.followSeller = followSeller;
+window.unfollowSeller = unfollowSeller;
 window.loadSuppliersGrid = loadSuppliersGrid;
+window.loadSellers = loadSellers;
+window.loadWholesalers = loadWholesalers;
 
 console.log('Panel Application JavaScript Loaded Successfully');
