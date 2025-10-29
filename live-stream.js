@@ -282,18 +282,23 @@ function setupWebSocketListeners() {
 
 // Check WebRTC support
 function checkWebRTCSupport() {
-    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    const isSecure = window.location.protocol === 'https:' || 
+                     window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' ||
+                     window.location.hostname === 'basvideo.com';
     
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         updateStatus('❌ WebRTC desteklenmiyor. Chrome, Firefox, Safari veya Edge kullanın.');
         return false;
     }
     
-    if (!isSecure && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        updateStatus('⚠️ HTTPS gereklidir. Localhost dışında çalışmak için HTTPS kullanın.');
+    if (!isSecure) {
+        updateStatus('⚠️ HTTPS gereklidir. basvideo.com otomatik olarak HTTPS kullanır.');
+        console.warn('HTTPS kontrolü: Protocol =', window.location.protocol, 'Hostname =', window.location.hostname);
     }
     
     updateStatus('✅ WebRTC destekleniyor. Kamera/mikrofon erişimi kontrol ediliyor...');
+    console.log('✅ WebRTC destek kontrolü başarılı - Protocol:', window.location.protocol);
     return true;
 }
 
