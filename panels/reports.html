@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Raporlar - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="reports.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="finance-accounting.html" class="nav-link">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="operations.html" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="central-payment-system.html" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="human-resources.html" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="customer-service.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="marketing-advertising.html" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="rd-software.html" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & Yazılım
+                </a>
+                <a href="security.html" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik
+                </a>
+                <a href="reports.html" class="nav-link active">
+                    <i class="fas fa-chart-line"></i>
+                    CEO Raporları
+                </a>
+                <a href="#settings" class="nav-link" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    Ayarlar
+                </a>
+                <a href="#" class="nav-link logout-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main-content">
+        <header class="panel-header">
+            <h1><i class="fas fa-chart-line"></i> CEO Raporları</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showCreateReportModal()">
+                    <i class="fas fa-plus"></i> Rapor Oluştur
+                </button>
+                <button class="btn btn-outline" onclick="showScheduleReportModal()">
+                    <i class="fas fa-clock"></i> Zamanlanmış Rapor
+                </button>
+                <button class="btn btn-outline" onclick="exportAllReports()">
+                    <i class="fas fa-download"></i> Tümünü Dışa Aktar
+                </button>
+            </div>
+        </header>
+
+        <!-- Reports Overview -->
+        <section class="reports-overview">
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="totalReports">0</h3>
+                    <p>Toplam Rapor</p>
+                    <span class="card-change positive">+5 bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="activeReports">0</h3>
+                    <p>Aktif Rapor</p>
+                    <span class="card-change positive">+2 bu hafta</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="scheduledReports">0</h3>
+                    <p>Zamanlanmış</p>
+                    <span class="card-change positive">+1 bu hafta</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="sharedReports">0</h3>
+                    <p>Paylaşılan</p>
+                    <span class="card-change positive">+3 bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="exportedReports">0</h3>
+                    <p>Dışa Aktarılan</p>
+                    <span class="card-change positive">+8 bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="favoriteReports">0</h3>
+                    <p>Favori Rapor</p>
+                    <span class="card-change positive">+2 bu ay</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Tabs -->
+        <div class="reports-tabs">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('financial')">
+                    <i class="fas fa-coins"></i> Finansal
+                </button>
+                <button class="tab-btn" onclick="showTab('operational')">
+                    <i class="fas fa-cogs"></i> Operasyonel
+                </button>
+                <button class="tab-btn" onclick="showTab('sales')">
+                    <i class="fas fa-chart-line"></i> Satış
+                </button>
+                <button class="tab-btn" onclick="showTab('customer')">
+                    <i class="fas fa-users"></i> Müşteri
+                </button>
+                <button class="tab-btn" onclick="showTab('security')">
+                    <i class="fas fa-shield-alt"></i> Güvenlik
+                </button>
+                <button class="tab-btn" onclick="showTab('rd')">
+                    <i class="fas fa-flask"></i> Ar-Ge
+                </button>
+                <button class="tab-btn" onclick="showTab('custom')">
+                    <i class="fas fa-tools"></i> Özel
+                </button>
+            </div>
+
+            <!-- Financial Reports Tab -->
+            <div id="financial-tab" class="tab-content active">
+                <div class="reports-header">
+                    <h2>Finansal Raporlar</h2>
+                    <div class="report-filters">
+                        <input type="text" id="financialSearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="financialPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                            <option value="quarterly">Çeyreklik</option>
+                            <option value="yearly">Yıllık</option>
+                        </select>
+                        <select id="financialTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="income">Gelir Raporu</option>
+                            <option value="expense">Gider Raporu</option>
+                            <option value="profit">Kar Raporu</option>
+                            <option value="cashflow">Nakit Akışı</option>
+                            <option value="budget">Bütçe Raporu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Aylık Gelir Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('financial-monthly-income')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('financial-monthly-income')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('financial-monthly-income')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Gelir Raporu</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Platform gelirlerinin aylık analizi ve trend değerlendirmesi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Toplam Gelir:</span>
+                                <span class="stat-value">₺2,450,000</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Büyüme:</span>
+                                <span class="stat-value positive">+12.5%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Çeyreklik Kar Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('financial-quarterly-profit')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('financial-quarterly-profit')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('financial-quarterly-profit')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Kar Raporu</p>
+                            <p><strong>Dönem:</strong> Çeyreklik</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-15</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Net kar analizi ve karlılık oranlarının değerlendirmesi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Net Kar:</span>
+                                <span class="stat-value">₺580,000</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Kar Marjı:</span>
+                                <span class="stat-value positive">23.7%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Nakit Akışı Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('financial-cashflow')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('financial-cashflow')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('financial-cashflow')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Nakit Akışı</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-28</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Giriş ve çıkış nakit akışlarının detaylı analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Net Nakit:</span>
+                                <span class="stat-value">₺1,200,000</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Büyüme:</span>
+                                <span class="stat-value positive">+8.3%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operational Reports Tab -->
+            <div id="operational-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Operasyonel Raporlar</h2>
+                    <div class="report-filters">
+                        <input type="text" id="operationalSearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="operationalPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                        </select>
+                        <select id="operationalTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="performance">Performans</option>
+                            <option value="efficiency">Verimlilik</option>
+                            <option value="capacity">Kapasite</option>
+                            <option value="quality">Kalite</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Operasyonel Performans Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('operational-performance')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('operational-performance')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('operational-performance')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Performans</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Genel operasyonel performans metrikleri ve KPI analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Genel Verimlilik:</span>
+                                <span class="stat-value">87.5%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Sistem Uptime:</span>
+                                <span class="stat-value positive">99.2%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Kapasite Kullanım Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('operational-capacity')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('operational-capacity')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('operational-capacity')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Kapasite</p>
+                            <p><strong>Dönem:</strong> Haftalık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-28</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Kaynak kapasitesi kullanım oranları ve optimizasyon önerileri.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Kapasite Kullanımı:</span>
+                                <span class="stat-value">78.3%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Optimizasyon:</span>
+                                <span class="stat-value positive">+5.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Reports Tab -->
+            <div id="sales-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Satış Raporları</h2>
+                    <div class="report-filters">
+                        <input type="text" id="salesSearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="salesPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                        </select>
+                        <select id="salesTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="revenue">Gelir</option>
+                            <option value="orders">Sipariş</option>
+                            <option value="products">Ürün</option>
+                            <option value="customers">Müşteri</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Günlük Satış Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('sales-daily')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('sales-daily')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('sales-daily')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Gelir</p>
+                            <p><strong>Dönem:</strong> Günlük</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Günlük satış performansı ve trend analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Günlük Gelir:</span>
+                                <span class="stat-value">₺85,000</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Büyüme:</span>
+                                <span class="stat-value positive">+15.3%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Ürün Satış Analizi</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('sales-products')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('sales-products')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('sales-products')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Ürün</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-28</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Ürün bazlı satış performansı ve kategori analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">En Çok Satan:</span>
+                                <span class="stat-value">Video Kameralar</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Satış Artışı:</span>
+                                <span class="stat-value positive">+22.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Reports Tab -->
+            <div id="customer-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Müşteri Raporları</h2>
+                    <div class="report-filters">
+                        <input type="text" id="customerSearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="customerPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                        </select>
+                        <select id="customerTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="segmentation">Segmentasyon</option>
+                            <option value="behavior">Davranış</option>
+                            <option value="satisfaction">Memnuniyet</option>
+                            <option value="retention">Sadakat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Müşteri Segmentasyon Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('customer-segmentation')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('customer-segmentation')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('customer-segmentation')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Segmentasyon</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Müşteri segmentleri ve demografik analiz.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Toplam Müşteri:</span>
+                                <span class="stat-value">12,450</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Aktif Segment:</span>
+                                <span class="stat-value">Premium</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Müşteri Memnuniyet Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('customer-satisfaction')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('customer-satisfaction')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('customer-satisfaction')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Memnuniyet</p>
+                            <p><strong>Dönem:</strong> Haftalık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-28</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Müşteri memnuniyet skorları ve geri bildirim analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Memnuniyet Skoru:</span>
+                                <span class="stat-value">4.7/5.0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">İyileşme:</span>
+                                <span class="stat-value positive">+0.3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Reports Tab -->
+            <div id="security-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Güvenlik Raporları</h2>
+                    <div class="report-filters">
+                        <input type="text" id="securitySearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="securityPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                        </select>
+                        <select id="securityTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="threats">Tehditler</option>
+                            <option value="incidents">Olaylar</option>
+                            <option value="compliance">Uyumluluk</option>
+                            <option value="audit">Denetim</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Güvenlik Tehdit Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('security-threats')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('security-threats')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('security-threats')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Tehditler</p>
+                            <p><strong>Dönem:</strong> Günlük</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Güvenlik tehditleri ve risk analizi raporu.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Aktif Tehdit:</span>
+                                <span class="stat-value">3</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Güvenlik Skoru:</span>
+                                <span class="stat-value positive">85%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Uyumluluk Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('security-compliance')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('security-compliance')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('security-compliance')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Uyumluluk</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-28</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>GDPR, KVKK ve diğer uyumluluk standartları raporu.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Uyumluluk Skoru:</span>
+                                <span class="stat-value positive">91%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">GDPR:</span>
+                                <span class="stat-value positive">95%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- R&D Reports Tab -->
+            <div id="rd-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Ar-Ge Raporları</h2>
+                    <div class="report-filters">
+                        <input type="text" id="rdSearch" placeholder="Rapor ara..." class="form-control">
+                        <select id="rdPeriodFilter" class="form-control">
+                            <option value="">Tüm Dönemler</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                            <option value="quarterly">Çeyreklik</option>
+                        </select>
+                        <select id="rdTypeFilter" class="form-control">
+                            <option value="">Tüm Türler</option>
+                            <option value="projects">Projeler</option>
+                            <option value="research">Araştırma</option>
+                            <option value="innovation">İnovasyon</option>
+                            <option value="patents">Patentler</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>Ar-Ge Proje Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('rd-projects')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('rd-projects')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('rd-projects')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> Projeler</p>
+                            <p><strong>Dönem:</strong> Aylık</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-29</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>Ar-Ge projelerinin ilerleme durumu ve performans analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Aktif Proje:</span>
+                                <span class="stat-value">8</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Ortalama İlerleme:</span>
+                                <span class="stat-value positive">67%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-header">
+                            <h3>İnovasyon Raporu</h3>
+                            <div class="report-actions">
+                                <button class="btn btn-outline btn-xs" onclick="viewReport('rd-innovation')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline btn-xs" onclick="editReport('rd-innovation')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-primary btn-xs" onclick="exportReport('rd-innovation')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <p><strong>Tür:</strong> İnovasyon</p>
+                            <p><strong>Dönem:</strong> Çeyreklik</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-15</p>
+                            <p><strong>Durum:</strong> <span class="status-badge active">Aktif</span></p>
+                        </div>
+                        <div class="report-description">
+                            <p>İnovasyon projeleri ve patent başvuruları analizi.</p>
+                        </div>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Yeni İnovasyon:</span>
+                                <span class="stat-value">5</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Patent Başvurusu:</span>
+                                <span class="stat-value positive">3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Reports Tab -->
+            <div id="custom-tab" class="tab-content">
+                <div class="reports-header">
+                    <h2>Özel Raporlar</h2>
+                    <button class="btn btn-primary" onclick="showCreateReportModal()">
+                        <i class="fas fa-plus"></i> Yeni Rapor
+                    </button>
+                </div>
+
+                <div class="custom-reports-builder">
+                    <div class="builder-section">
+                        <h3>Rapor Oluşturucu</h3>
+                        <div class="builder-form">
+                            <div class="form-group">
+                                <label for="reportName">Rapor Adı</label>
+                                <input type="text" id="reportName" class="form-control" placeholder="Rapor adını girin...">
+                            </div>
+                            <div class="form-group">
+                                <label for="reportCategory">Kategori</label>
+                                <select id="reportCategory" class="form-control">
+                                    <option value="financial">Finansal</option>
+                                    <option value="operational">Operasyonel</option>
+                                    <option value="sales">Satış</option>
+                                    <option value="customer">Müşteri</option>
+                                    <option value="security">Güvenlik</option>
+                                    <option value="rd">Ar-Ge</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportPeriod">Dönem</label>
+                                <select id="reportPeriod" class="form-control">
+                                    <option value="daily">Günlük</option>
+                                    <option value="weekly">Haftalık</option>
+                                    <option value="monthly">Aylık</option>
+                                    <option value="quarterly">Çeyreklik</option>
+                                    <option value="yearly">Yıllık</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportMetrics">Metrikler</label>
+                                <div class="metrics-selector">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="revenue"> Gelir
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="profit"> Kar
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="customers"> Müşteri Sayısı
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="orders"> Sipariş Sayısı
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="performance"> Performans
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="security"> Güvenlik
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="createCustomReport()">
+                                <i class="fas fa-plus"></i> Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="builder-section">
+                        <h3>Mevcut Özel Raporlar</h3>
+                        <div class="custom-reports-list">
+                            <div class="custom-report-item">
+                                <div class="report-info">
+                                    <h4>CEO Özet Raporu</h4>
+                                    <p>Finansal, operasyonel ve güvenlik metriklerinin özeti</p>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn btn-outline btn-xs" onclick="viewReport('custom-ceo-summary')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline btn-xs" onclick="editReport('custom-ceo-summary')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-xs" onclick="exportReport('custom-ceo-summary')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="custom-report-item">
+                                <div class="report-info">
+                                    <h4>Haftalık Performans Raporu</h4>
+                                    <p>Tüm departmanların haftalık performans analizi</p>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn btn-outline btn-xs" onclick="viewReport('custom-weekly-performance')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline btn-xs" onclick="editReport('custom-weekly-performance')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-xs" onclick="exportReport('custom-weekly-performance')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="createReportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Yeni Rapor Oluştur</h2>
+                    <span class="close" onclick="closeModal('createReportModal')">&times;</span>
+                </div>
+                <form id="createReportForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="newReportName">Rapor Adı</label>
+                        <input type="text" id="newReportName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newReportCategory">Kategori</label>
+                        <select id="newReportCategory" required>
+                            <option value="financial">Finansal</option>
+                            <option value="operational">Operasyonel</option>
+                            <option value="sales">Satış</option>
+                            <option value="customer">Müşteri</option>
+                            <option value="security">Güvenlik</option>
+                            <option value="rd">Ar-Ge</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newReportPeriod">Dönem</label>
+                        <select id="newReportPeriod" required>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                            <option value="quarterly">Çeyreklik</option>
+                            <option value="yearly">Yıllık</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newReportDescription">Açıklama</label>
+                        <textarea id="newReportDescription" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Rapor Oluştur</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="scheduleReportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Zamanlanmış Rapor</h2>
+                    <span class="close" onclick="closeModal('scheduleReportModal')">&times;</span>
+                </div>
+                <form id="scheduleReportForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="scheduleReportName">Rapor Adı</label>
+                        <input type="text" id="scheduleReportName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleFrequency">Sıklık</label>
+                        <select id="scheduleFrequency" required>
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                            <option value="quarterly">Çeyreklik</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleTime">Saat</label>
+                        <input type="time" id="scheduleTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleRecipients">Alıcılar</label>
+                        <input type="email" id="scheduleRecipients" placeholder="email@example.com" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Zamanla</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <script src="../app.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="reports.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

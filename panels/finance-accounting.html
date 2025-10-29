@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Finans & Muhasebe - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="finance-accounting.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="finance-accounting.html" class="nav-link active">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="admin.html#operations" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="admin.html#payments" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="admin.html#hr" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="admin.html#customer-service" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="admin.html#marketing" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="admin.html#rd" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & İnovasyon
+                </a>
+                <a href="admin.html#security" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik & Uyumluluk
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main">
+        <div class="panel-container">
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-coins"></i> Finans & Muhasebe</h1>
+                    <p>Finansal durumu takip edin, gelir-gider analizi yapın ve muhasebe işlemlerini yönetin</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddTransactionModal()">
+                        <i class="fas fa-plus"></i>
+                        Yeni İşlem
+                    </button>
+                    <button class="btn btn-outline" onclick="exportFinancialData()">
+                        <i class="fas fa-download"></i>
+                        Rapor İndir
+                    </button>
+                    <button class="btn btn-secondary" onclick="showBudgetModal()">
+                        <i class="fas fa-wallet"></i>
+                        Bütçe Planla
+                    </button>
+                </div>
+            </div>
+
+            <!-- Financial Overview Cards -->
+            <div class="financial-overview">
+                <div class="overview-card income">
+                    <div class="card-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="totalIncome">₺2,450,000</h3>
+                        <p>Toplam Gelir</p>
+                        <span class="card-change positive">+12.5% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card expense">
+                    <div class="card-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="totalExpense">₺1,890,000</h3>
+                        <p>Toplam Gider</p>
+                        <span class="card-change negative">+8.2% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card profit">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="netProfit">₺560,000</h3>
+                        <p>Net Kar</p>
+                        <span class="card-change positive">+18.3% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card cashflow">
+                    <div class="card-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="cashFlow">₺3,200,000</h3>
+                        <p>Nakit Akışı</p>
+                        <span class="card-change positive">+5.7% bu ay</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Management Tabs -->
+            <div class="financial-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showTab('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </button>
+                    <button class="tab-btn" onclick="showTab('transactions')">
+                        <i class="fas fa-exchange-alt"></i>
+                        İşlemler
+                    </button>
+                    <button class="tab-btn" onclick="showTab('budgets')">
+                        <i class="fas fa-wallet"></i>
+                        Bütçeler
+                    </button>
+                    <button class="tab-btn" onclick="showTab('reports')">
+                        <i class="fas fa-chart-bar"></i>
+                        Raporlar
+                    </button>
+                    <button class="tab-btn" onclick="showTab('accounting')">
+                        <i class="fas fa-calculator"></i>
+                        Muhasebe
+                    </button>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <!-- Income vs Expense Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Gelir vs Gider Analizi</h3>
+                                <div class="chart-controls">
+                                    <select id="chartPeriod">
+                                        <option value="monthly">Aylık</option>
+                                        <option value="quarterly">Çeyreklik</option>
+                                        <option value="yearly">Yıllık</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="incomeExpenseChart"></canvas>
+                        </div>
+
+                        <!-- Cash Flow Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Nakit Akışı Trendi</h3>
+                                <div class="chart-controls">
+                                    <select id="cashFlowPeriod">
+                                        <option value="6months">Son 6 Ay</option>
+                                        <option value="12months">Son 12 Ay</option>
+                                        <option value="2years">Son 2 Yıl</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+
+                        <!-- Top Revenue Sources -->
+                        <div class="revenue-sources">
+                            <h3>En Yüksek Gelir Kaynakları</h3>
+                            <div class="revenue-list" id="revenueList">
+                                <!-- Revenue items will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Expense Categories -->
+                        <div class="expense-categories">
+                            <h3>Gider Kategorileri</h3>
+                            <div class="expense-list" id="expenseList">
+                                <!-- Expense items will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Tab -->
+                <div id="transactions-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Finansal İşlemler</h2>
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="transactionSearch" placeholder="İşlem ara...">
+                            </div>
+                            <select id="transactionFilter">
+                                <option value="">Tüm İşlemler</option>
+                                <option value="income">Gelir</option>
+                                <option value="expense">Gider</option>
+                                <option value="transfer">Transfer</option>
+                            </select>
+                            <select id="transactionPeriod">
+                                <option value="all">Tüm Zamanlar</option>
+                                <option value="today">Bugün</option>
+                                <option value="week">Bu Hafta</option>
+                                <option value="month">Bu Ay</option>
+                                <option value="quarter">Bu Çeyrek</option>
+                                <option value="year">Bu Yıl</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="transactions-table-container">
+                        <table class="transactions-table" id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Açıklama</th>
+                                    <th>Kategori</th>
+                                    <th>Tutar</th>
+                                    <th>Tip</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTableBody">
+                                <!-- Transaction rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Budgets Tab -->
+                <div id="budgets-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Bütçe Yönetimi</h2>
+                        <button class="btn btn-primary" onclick="showBudgetModal()">
+                            <i class="fas fa-plus"></i>
+                            Yeni Bütçe
+                        </button>
+                    </div>
+
+                    <div class="budgets-grid" id="budgetsGrid">
+                        <!-- Budget cards will be populated by JavaScript -->
+                    </div>
+
+                    <div class="budget-summary">
+                        <div class="summary-card">
+                            <h4>Toplam Bütçe</h4>
+                            <div class="summary-amount" id="totalBudget">₺15,000,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Kullanılan</h4>
+                            <div class="summary-amount used" id="usedBudget">₺12,500,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Kalan</h4>
+                            <div class="summary-amount remaining" id="remainingBudget">₺2,500,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Kullanım Oranı</h4>
+                            <div class="summary-percentage" id="budgetUsage">83.3%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Finansal Raporlar</h2>
+                        <div class="report-controls">
+                            <input type="date" id="reportStartDate">
+                            <span>ile</span>
+                            <input type="date" id="reportEndDate">
+                            <button class="btn btn-primary" onclick="generateReport()">Rapor Oluştur</button>
+                        </div>
+                    </div>
+
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Gelir-Gider Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('income-expense')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="incomeExpenseReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Kârlılık Analizi</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('profitability')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="profitabilityReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Nakit Akış Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('cashflow')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="cashFlowReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Bütçe Performansı</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('budget-performance')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="budgetPerformanceReportChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accounting Tab -->
+                <div id="accounting-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Muhasebe İşlemleri</h2>
+                        <div class="accounting-actions">
+                            <button class="btn btn-primary" onclick="showJournalEntryModal()">
+                                <i class="fas fa-plus"></i>
+                                Yevmiye Kaydı
+                            </button>
+                            <button class="btn btn-outline" onclick="showAccountModal()">
+                                <i class="fas fa-list"></i>
+                                Hesap Planı
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="accounting-grid">
+                        <div class="accounting-card">
+                            <h3>Büyük Defter</h3>
+                            <div class="accounting-table-container">
+                                <table class="accounting-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Hesap Kodu</th>
+                                            <th>Hesap Adı</th>
+                                            <th>Borç</th>
+                                            <th>Alacak</th>
+                                            <th>Bakiye</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerTableBody">
+                                        <!-- Ledger entries will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="accounting-card">
+                            <h3>Yevmiye Defteri</h3>
+                            <div class="accounting-table-container">
+                                <table class="accounting-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tarih</th>
+                                            <th>Açıklama</th>
+                                            <th>Borç</th>
+                                            <th>Alacak</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="journalTableBody">
+                                        <!-- Journal entries will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Transaction Modal -->
+    <div id="addTransactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Finansal İşlem</h2>
+                <span class="close" onclick="closeModal('addTransactionModal')">&times;</span>
+            </div>
+            <form id="addTransactionForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>İşlem Tipi</label>
+                        <select id="transactionType" required>
+                            <option value="">Seçin</option>
+                            <option value="income">Gelir</option>
+                            <option value="expense">Gider</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tutar (₺)</label>
+                        <input type="number" id="transactionAmount" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <input type="text" id="transactionDescription" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="transactionCategory" required>
+                            <option value="">Seçin</option>
+                            <option value="sales">Satış</option>
+                            <option value="marketing">Pazarlama</option>
+                            <option value="operations">Operasyon</option>
+                            <option value="hr">İnsan Kaynakları</option>
+                            <option value="technology">Teknoloji</option>
+                            <option value="other">Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tarih</label>
+                        <input type="date" id="transactionDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ek Notlar</label>
+                    <textarea id="transactionNotes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addTransactionModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">İşlem Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bütçe Planlama</h2>
+                <span class="close" onclick="closeModal('budgetModal')">&times;</span>
+            </div>
+            <form id="budgetForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bütçe Adı</label>
+                        <input type="text" id="budgetName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Dönem</label>
+                        <select id="budgetPeriod" required>
+                            <option value="monthly">Aylık</option>
+                            <option value="quarterly">Çeyreklik</option>
+                            <option value="yearly">Yıllık</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Toplam Bütçe (₺)</label>
+                        <input type="number" id="budgetAmount" min="0" step="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="budgetCategory" required>
+                            <option value="">Seçin</option>
+                            <option value="operations">Operasyon</option>
+                            <option value="marketing">Pazarlama</option>
+                            <option value="technology">Teknoloji</option>
+                            <option value="hr">İnsan Kaynakları</option>
+                            <option value="general">Genel</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="budgetDescription" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('budgetModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Bütçe Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Journal Entry Modal -->
+    <div id="journalEntryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yevmiye Kaydı</h2>
+                <span class="close" onclick="closeModal('journalEntryModal')">&times;</span>
+            </div>
+            <form id="journalEntryForm" class="auth-form">
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" id="journalDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <input type="text" id="journalDescription" required>
+                </div>
+                <div class="journal-entries" id="journalEntries">
+                    <div class="journal-entry">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Hesap</label>
+                                <select class="journal-account" required>
+                                    <option value="">Seçin</option>
+                                    <option value="100">100 - Kasa</option>
+                                    <option value="101">101 - Banka</option>
+                                    <option value="120">120 - Alıcılar</option>
+                                    <option value="320">320 - Satışlar</option>
+                                    <option value="600">600 - Satılan Malın Maliyeti</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Borç (₺)</label>
+                                <input type="number" class="journal-debit" min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Alacak (₺)</label>
+                                <input type="number" class="journal-credit" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="addJournalEntry()">Satır Ekle</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal('journalEntryModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <script src="../app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="finance-accounting.js"></script>
+</body>
+</html>

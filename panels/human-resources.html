@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO İnsan Kaynakları - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="human-resources.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="finance-accounting.html" class="nav-link">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="operations.html" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="central-payment-system.html" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="human-resources.html" class="nav-link active">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="admin.html#customer-service" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="admin.html#marketing" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="admin.html#rd" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & İnovasyon
+                </a>
+                <a href="admin.html#security" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik & Uyumluluk
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main">
+        <div class="panel-container">
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-users-cog"></i> İnsan Kaynakları</h1>
+                    <p>Çalışan yönetimi, performans takibi, maaş yönetimi ve İK süreçlerini merkezi olarak yönetin</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                        <i class="fas fa-user-plus"></i>
+                        Çalışan Ekle
+                    </button>
+                    <button class="btn btn-outline" onclick="exportHRData()">
+                        <i class="fas fa-download"></i>
+                        Rapor İndir
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPayrollModal()">
+                        <i class="fas fa-money-check-alt"></i>
+                        Bordro Oluştur
+                    </button>
+                </div>
+            </div>
+
+            <!-- HR Overview Cards -->
+            <div class="hr-overview">
+                <div class="overview-card total-employees">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="totalEmployees">156</h3>
+                        <p>Toplam Çalışan</p>
+                        <span class="card-change positive">+8 bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card active-employees">
+                    <div class="card-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="activeEmployees">148</h3>
+                        <p>Aktif Çalışan</p>
+                        <span class="card-change positive">+5 bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card avg-performance">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="avgPerformance">87.3%</h3>
+                        <p>Ortalama Performans</p>
+                        <span class="card-change positive">+2.1% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card monthly-payroll">
+                    <div class="card-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="monthlyPayroll">₺2,450,000</h3>
+                        <p>Aylık Bordro</p>
+                        <span class="card-change positive">+5.2% bu ay</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR Management Tabs -->
+            <div class="hr-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showTab('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </button>
+                    <button class="tab-btn" onclick="showTab('employees')">
+                        <i class="fas fa-users"></i>
+                        Çalışanlar
+                    </button>
+                    <button class="tab-btn" onclick="showTab('performance')">
+                        <i class="fas fa-chart-bar"></i>
+                        Performans
+                    </button>
+                    <button class="tab-btn" onclick="showTab('payroll')">
+                        <i class="fas fa-money-check-alt"></i>
+                        Bordro
+                    </button>
+                    <button class="tab-btn" onclick="showTab('reports')">
+                        <i class="fas fa-file-alt"></i>
+                        Raporlar
+                    </button>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <!-- Employee Distribution Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Departman Dağılımı</h3>
+                                <div class="chart-controls">
+                                    <select id="departmentFilter">
+                                        <option value="all">Tüm Departmanlar</option>
+                                        <option value="active">Aktif Departmanlar</option>
+                                        <option value="performance">Performansa Göre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+
+                        <!-- Performance Trend Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Performans Trendi</h3>
+                                <div class="chart-controls">
+                                    <select id="performancePeriod">
+                                        <option value="monthly">Aylık</option>
+                                        <option value="quarterly">Çeyreklik</option>
+                                        <option value="yearly">Yıllık</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="performanceTrendChart"></canvas>
+                        </div>
+
+                        <!-- Recent Activities -->
+                        <div class="recent-activities">
+                            <h3>Son Aktiviteler</h3>
+                            <div class="activities-list" id="recentActivitiesList">
+                                <!-- Recent activities will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- HR Alerts -->
+                        <div class="hr-alerts">
+                            <h3>İK Uyarıları</h3>
+                            <div class="alerts-list" id="hrAlertsList">
+                                <!-- HR alerts will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employees Tab -->
+                <div id="employees-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Çalışan Yönetimi</h2>
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="employeeSearch" placeholder="Çalışan ara...">
+                            </div>
+                            <select id="employeeFilter">
+                                <option value="">Tüm Çalışanlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                                <option value="on-leave">İzinli</option>
+                                <option value="probation">Deneme Süresi</option>
+                            </select>
+                            <select id="departmentFilter">
+                                <option value="">Tüm Departmanlar</option>
+                                <option value="sales">Satış</option>
+                                <option value="marketing">Pazarlama</option>
+                                <option value="development">Geliştirme</option>
+                                <option value="hr">İnsan Kaynakları</option>
+                                <option value="finance">Finans</option>
+                            </select>
+                            <select id="positionFilter">
+                                <option value="">Tüm Pozisyonlar</option>
+                                <option value="manager">Müdür</option>
+                                <option value="senior">Kıdemli</option>
+                                <option value="junior">Genç</option>
+                                <option value="intern">Stajyer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="employees-table-container">
+                        <table class="employees-table" id="employeesTable">
+                            <thead>
+                                <tr>
+                                    <th>Fotoğraf</th>
+                                    <th>Ad Soyad</th>
+                                    <th>Departman</th>
+                                    <th>Pozisyon</th>
+                                    <th>Maaş</th>
+                                    <th>Performans</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTableBody">
+                                <!-- Employee rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Performance Tab -->
+                <div id="performance-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Performans Yönetimi</h2>
+                        <div class="performance-controls">
+                            <input type="date" id="performanceStartDate">
+                            <span>ile</span>
+                            <input type="date" id="performanceEndDate">
+                            <button class="btn btn-primary" onclick="generatePerformanceReport()">Rapor Oluştur</button>
+                        </div>
+                    </div>
+
+                    <div class="performance-metrics">
+                        <div class="metric-card">
+                            <h4>Ortalama Performans</h4>
+                            <div class="metric-value" id="overallPerformance">87.3%</div>
+                            <div class="metric-trend positive">+2.1%</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Yüksek Performans</h4>
+                            <div class="metric-value" id="highPerformers">23</div>
+                            <div class="metric-trend positive">+3</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Gelişim Gereken</h4>
+                            <div class="metric-value" id="needsImprovement">8</div>
+                            <div class="metric-trend negative">+1</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Hedef Ulaşım</h4>
+                            <div class="metric-value" id="goalAchievement">94.2%</div>
+                            <div class="metric-trend positive">+1.8%</div>
+                        </div>
+                    </div>
+
+                    <div class="performance-grid">
+                        <div class="performance-chart">
+                            <h3>Departman Performansı</h3>
+                            <canvas id="departmentPerformanceChart"></canvas>
+                        </div>
+                        <div class="performance-chart">
+                            <h3>Performans Dağılımı</h3>
+                            <canvas id="performanceDistributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="performance-list">
+                        <h3>Performans Detayları</h3>
+                        <div class="performance-items" id="performanceItems">
+                            <!-- Performance items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payroll Tab -->
+                <div id="payroll-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Bordro Yönetimi</h2>
+                        <div class="payroll-actions">
+                            <button class="btn btn-primary" onclick="showPayrollModal()">
+                                <i class="fas fa-plus"></i>
+                                Yeni Bordro
+                            </button>
+                            <button class="btn btn-outline" onclick="processPayroll()">
+                                <i class="fas fa-calculator"></i>
+                                Bordro Hesapla
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="payroll-summary">
+                        <div class="summary-card">
+                            <h4>Toplam Maaş</h4>
+                            <div class="summary-value" id="totalSalary">₺2,450,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>SGK Primleri</h4>
+                            <div class="summary-value" id="sgkPremiums">₺367,500</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Vergi Kesintisi</h4>
+                            <div class="summary-value" id="taxDeduction">₺245,000</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Net Ödeme</h4>
+                            <div class="summary-value" id="netPayment">₺1,837,500</div>
+                        </div>
+                    </div>
+
+                    <div class="payroll-table-container">
+                        <table class="payroll-table" id="payrollTable">
+                            <thead>
+                                <tr>
+                                    <th>Çalışan</th>
+                                    <th>Departman</th>
+                                    <th>Brüt Maaş</th>
+                                    <th>SGK</th>
+                                    <th>Vergi</th>
+                                    <th>Net Maaş</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payrollTableBody">
+                                <!-- Payroll rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>İK Raporları</h2>
+                        <div class="report-controls">
+                            <input type="date" id="reportStartDate">
+                            <span>ile</span>
+                            <input type="date" id="reportEndDate">
+                            <button class="btn btn-primary" onclick="generateHRReport()">Rapor Oluştur</button>
+                        </div>
+                    </div>
+
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Çalışan Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('employee-report')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="employeeReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Performans Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('performance-report')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="performanceReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Bordro Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('payroll-report')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="payrollReportChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3>Devam Raporu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadReport('attendance-report')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="report-content">
+                                <canvas id="attendanceReportChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Employee Modal -->
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Çalışan Ekle</h2>
+                <span class="close" onclick="closeModal('addEmployeeModal')">&times;</span>
+            </div>
+            <form id="addEmployeeForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ad</label>
+                        <input type="text" id="employeeFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Soyad</label>
+                        <input type="text" id="employeeLastName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" id="employeeEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefon</label>
+                        <input type="tel" id="employeePhone" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Departman</label>
+                        <select id="employeeDepartment" required>
+                            <option value="">Seçin</option>
+                            <option value="sales">Satış</option>
+                            <option value="marketing">Pazarlama</option>
+                            <option value="development">Geliştirme</option>
+                            <option value="hr">İnsan Kaynakları</option>
+                            <option value="finance">Finans</option>
+                            <option value="operations">Operasyon</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Pozisyon</label>
+                        <select id="employeePosition" required>
+                            <option value="">Seçin</option>
+                            <option value="manager">Müdür</option>
+                            <option value="senior">Kıdemli</option>
+                            <option value="junior">Genç</option>
+                            <option value="intern">Stajyer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>İşe Başlama Tarihi</label>
+                        <input type="date" id="employeeStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Maaş (₺)</label>
+                        <input type="number" id="employeeSalary" min="0" step="100" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adres</label>
+                    <textarea id="employeeAddress" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notlar</label>
+                    <textarea id="employeeNotes" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addEmployeeModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Çalışan Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payroll Modal -->
+    <div id="payrollModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bordro Oluştur</h2>
+                <span class="close" onclick="closeModal('payrollModal')">&times;</span>
+            </div>
+            <form id="payrollForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bordro Dönemi</label>
+                        <select id="payrollPeriod" required>
+                            <option value="">Seçin</option>
+                            <option value="monthly">Aylık</option>
+                            <option value="bi-weekly">İki Haftalık</option>
+                            <option value="weekly">Haftalık</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dönem Başlangıcı</label>
+                        <input type="date" id="payrollStartDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Dönem Bitişi</label>
+                        <input type="date" id="payrollEndDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ödeme Tarihi</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Dahil Edilecek Departmanlar</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="includeSales" checked>
+                            <span class="checkmark"></span>
+                            Satış
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="includeMarketing" checked>
+                            <span class="checkmark"></span>
+                            Pazarlama
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="includeDevelopment" checked>
+                            <span class="checkmark"></span>
+                            Geliştirme
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="includeHR" checked>
+                            <span class="checkmark"></span>
+                            İnsan Kaynakları
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="includeFinance" checked>
+                            <span class="checkmark"></span>
+                            Finans
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ek Kesintiler</label>
+                    <textarea id="additionalDeductions" rows="2" placeholder="Ek kesinti açıklamaları..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('payrollModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Bordro Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <script src="../app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="human-resources.js"></script>
+</body>
+</html>

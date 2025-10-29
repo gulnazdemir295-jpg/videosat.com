@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Departman Yönetimi - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="department-management.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link active">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="admin.html#finance" class="nav-link">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="admin.html#operations" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="admin.html#payments" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="admin.html#hr" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="admin.html#customer-service" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="admin.html#marketing" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="admin.html#rd" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & İnovasyon
+                </a>
+                <a href="admin.html#security" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik & Uyumluluk
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main">
+        <div class="panel-container">
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-building"></i> Departman Yönetimi</h1>
+                    <p>Tüm departmanları yönetin, çalışanları organize edin ve performansı takip edin</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddDepartmentModal()">
+                        <i class="fas fa-plus"></i>
+                        Yeni Departman
+                    </button>
+                    <button class="btn btn-outline" onclick="exportDepartmentData()">
+                        <i class="fas fa-download"></i>
+                        Veri Dışa Aktar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalDepartments">12</h3>
+                        <p>Aktif Departman</p>
+                        <span class="stat-change positive">+2 bu ay</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalEmployees">247</h3>
+                        <p>Toplam Çalışan</p>
+                        <span class="stat-change positive">+15 bu ay</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="avgPerformance">87%</h3>
+                        <p>Ortalama Performans</p>
+                        <span class="stat-change positive">+5% bu ay</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="topDepartment">Satış</h3>
+                        <p>En İyi Departman</p>
+                        <span class="stat-change positive">94% performans</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Management Tabs -->
+            <div class="management-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showTab('departments')">
+                        <i class="fas fa-building"></i>
+                        Departmanlar
+                    </button>
+                    <button class="tab-btn" onclick="showTab('employees')">
+                        <i class="fas fa-users"></i>
+                        Çalışanlar
+                    </button>
+                    <button class="tab-btn" onclick="showTab('performance')">
+                        <i class="fas fa-chart-bar"></i>
+                        Performans
+                    </button>
+                    <button class="tab-btn" onclick="showTab('budgets')">
+                        <i class="fas fa-wallet"></i>
+                        Bütçeler
+                    </button>
+                </div>
+
+                <!-- Departments Tab -->
+                <div id="departments-tab" class="tab-content active">
+                    <div class="content-header">
+                        <h2>Departman Listesi</h2>
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="departmentSearch" placeholder="Departman ara...">
+                            </div>
+                            <select id="departmentFilter">
+                                <option value="">Tüm Departmanlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                                <option value="high-performance">Yüksek Performans</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="departments-grid" id="departmentsGrid">
+                        <!-- Department cards will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Employees Tab -->
+                <div id="employees-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Çalışan Yönetimi</h2>
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="employeeSearch" placeholder="Çalışan ara...">
+                            </div>
+                            <select id="employeeFilter">
+                                <option value="">Tüm Departmanlar</option>
+                                <option value="sales">Satış</option>
+                                <option value="marketing">Pazarlama</option>
+                                <option value="development">Geliştirme</option>
+                                <option value="support">Destek</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="employees-table-container">
+                        <table class="employees-table" id="employeesTable">
+                            <thead>
+                                <tr>
+                                    <th>Çalışan</th>
+                                    <th>Departman</th>
+                                    <th>Pozisyon</th>
+                                    <th>Performans</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTableBody">
+                                <!-- Employee rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Performance Tab -->
+                <div id="performance-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Departman Performans Analizi</h2>
+                        <div class="date-range">
+                            <input type="date" id="performanceStartDate">
+                            <span>ile</span>
+                            <input type="date" id="performanceEndDate">
+                            <button class="btn btn-primary" onclick="updatePerformanceData()">Güncelle</button>
+                        </div>
+                    </div>
+
+                    <div class="performance-charts">
+                        <div class="chart-container">
+                            <h3>Departman Performans Karşılaştırması</h3>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Aylık Performans Trendi</h3>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="performance-metrics">
+                        <div class="metric-card">
+                            <h4>En Yüksek Performans</h4>
+                            <div class="metric-value">Satış Departmanı</div>
+                            <div class="metric-detail">94% - Hedefleri aştı</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>En Düşük Performans</h4>
+                            <div class="metric-value">İnsan Kaynakları</div>
+                            <div class="metric-detail">78% - İyileştirme gerekli</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Ortalama Performans</h4>
+                            <div class="metric-value">87%</div>
+                            <div class="metric-detail">Genel başarı oranı</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budgets Tab -->
+                <div id="budgets-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Departman Bütçeleri</h2>
+                        <button class="btn btn-primary" onclick="showBudgetModal()">
+                            <i class="fas fa-plus"></i>
+                            Bütçe Ekle
+                        </button>
+                    </div>
+
+                    <div class="budgets-grid" id="budgetsGrid">
+                        <!-- Budget cards will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Department Modal -->
+    <div id="addDepartmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Departman Ekle</h2>
+                <span class="close" onclick="closeModal('addDepartmentModal')">&times;</span>
+            </div>
+            <form id="addDepartmentForm" class="auth-form">
+                <div class="form-group">
+                    <label>Departman Adı</label>
+                    <input type="text" id="departmentName" required>
+                </div>
+                <div class="form-group">
+                    <label>Departman Kodu</label>
+                    <input type="text" id="departmentCode" required>
+                </div>
+                <div class="form-group">
+                    <label>Departman Müdürü</label>
+                    <select id="departmentManager" required>
+                        <option value="">Müdür Seçin</option>
+                        <option value="manager1">Ahmet Yılmaz</option>
+                        <option value="manager2">Ayşe Demir</option>
+                        <option value="manager3">Mehmet Kaya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="departmentDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Yıllık Bütçe (₺)</label>
+                    <input type="number" id="departmentBudget" min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="departmentActive" checked>
+                        <span>Aktif Departman</span>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addDepartmentModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Departman Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Department Modal -->
+    <div id="editDepartmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Departman Düzenle</h2>
+                <span class="close" onclick="closeModal('editDepartmentModal')">&times;</span>
+            </div>
+            <form id="editDepartmentForm" class="auth-form">
+                <input type="hidden" id="editDepartmentId">
+                <div class="form-group">
+                    <label>Departman Adı</label>
+                    <input type="text" id="editDepartmentName" required>
+                </div>
+                <div class="form-group">
+                    <label>Departman Kodu</label>
+                    <input type="text" id="editDepartmentCode" required>
+                </div>
+                <div class="form-group">
+                    <label>Departman Müdürü</label>
+                    <select id="editDepartmentManager" required>
+                        <option value="">Müdür Seçin</option>
+                        <option value="manager1">Ahmet Yılmaz</option>
+                        <option value="manager2">Ayşe Demir</option>
+                        <option value="manager3">Mehmet Kaya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="editDepartmentDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Yıllık Bütçe (₺)</label>
+                    <input type="number" id="editDepartmentBudget" min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editDepartmentActive">
+                        <span>Aktif Departman</span>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editDepartmentModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bütçe Yönetimi</h2>
+                <span class="close" onclick="closeModal('budgetModal')">&times;</span>
+            </div>
+            <form id="budgetForm" class="auth-form">
+                <div class="form-group">
+                    <label>Departman</label>
+                    <select id="budgetDepartment" required>
+                        <option value="">Departman Seçin</option>
+                        <option value="sales">Satış</option>
+                        <option value="marketing">Pazarlama</option>
+                        <option value="development">Geliştirme</option>
+                        <option value="support">Destek</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Yıl</label>
+                    <select id="budgetYear" required>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Toplam Bütçe (₺)</label>
+                    <input type="number" id="budgetAmount" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Kullanılan Bütçe (₺)</label>
+                    <input type="number" id="budgetUsed" min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="budgetDescription" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('budgetModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Bütçe Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <script src="../app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="department-management.js"></script>
+</body>
+</html>

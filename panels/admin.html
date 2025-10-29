@@ -24,48 +24,48 @@
                     <i class="fas fa-tachometer-alt"></i>
                     CEO Dashboard
                 </a>
-                <a href="#departments" class="nav-link" data-section="departments">
+                <a href="department-management.html" class="nav-link">
                     <i class="fas fa-building"></i>
                     Departman Yönetimi
                 </a>
-                <a href="#finance" class="nav-link" data-section="finance">
+                <a href="finance-accounting.html" class="nav-link">
                     <i class="fas fa-coins"></i>
                     Finans & Muhasebe
                 </a>
-                <a href="#operations" class="nav-link" data-section="operations">
+                <a href="operations.html" class="nav-link">
                     <i class="fas fa-cogs"></i>
                     Operasyon
                 </a>
-                <a href="#payments" class="nav-link" data-section="payments">
+                <a href="central-payment-system.html" class="nav-link">
                     <i class="fas fa-money-bill-wave"></i>
                     Merkezi Ödeme Sistemi
                 </a>
-                <a href="#hr" class="nav-link" data-section="hr">
+                <a href="human-resources.html" class="nav-link">
                     <i class="fas fa-users-cog"></i>
                     İnsan Kaynakları
                 </a>
-                <a href="#customer-service" class="nav-link" data-section="customer-service">
+                <a href="customer-service.html" class="nav-link">
                     <i class="fas fa-headset"></i>
                     Müşteri Hizmetleri
                 </a>
-                <a href="#marketing" class="nav-link" data-section="marketing">
+                <a href="marketing-advertising.html" class="nav-link">
                     <i class="fas fa-bullhorn"></i>
                     Pazarlama & Reklam
                 </a>
-                <a href="#rd" class="nav-link" data-section="rd">
+                <a href="rd-software.html" class="nav-link">
                     <i class="fas fa-flask"></i>
                     Ar-Ge & Yazılım
                 </a>
-                <a href="#security" class="nav-link" data-section="security">
+                <a href="security.html" class="nav-link">
                     <i class="fas fa-shield-alt"></i>
                     Güvenlik
                 </a>
-                <a href="#reports" class="nav-link" data-section="reports">
+                <a href="reports.html" class="nav-link">
                     <i class="fas fa-chart-line"></i>
                     CEO Raporları
                 </a>
-                <a href="#settings" class="nav-link" data-section="settings">
-                    <i class="fas fa-crown"></i>
+                <a href="system-settings.html" class="nav-link">
+                    <i class="fas fa-cog"></i>
                     Sistem Ayarları
                 </a>
             </div>
@@ -93,31 +93,43 @@
             <div class="section-header">
                 <h1><i class="fas fa-crown"></i> CEO Dashboard</h1>
                 <p>VideoSat'in genel durumunu ve tüm departmanları takip edin</p>
+                <div class="dashboard-actions">
+                    <button class="btn btn-primary btn-sm" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i> Yenile
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="window.location.href='reports.html'">
+                        <i class="fas fa-file-alt"></i> Detaylı Rapor
+                    </button>
+                </div>
             </div>
 
             <!-- CEO Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card ceo-card">
+            <div class="stats-grid ceo-dashboard-grid">
+                <div class="stat-card ceo-card revenue-card">
                     <div class="stat-icon">
                         <i class="fas fa-coins"></i>
                     </div>
                     <div class="stat-content">
                         <h3 id="totalRevenue">₺0</h3>
                         <p>Toplam Gelir</p>
-                        <small>Bu ay</small>
+                        <small class="trend-indicator positive">
+                            <i class="fas fa-arrow-up"></i> +12.5% bu ay
+                        </small>
                     </div>
                 </div>
-                <div class="stat-card ceo-card">
+                <div class="stat-card ceo-card users-card">
                     <div class="stat-icon">
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-content">
                         <h3 id="totalUsers">0</h3>
                         <p>Aktif Kullanıcı</p>
-                        <small>Tüm paneller</small>
+                        <small class="trend-indicator positive">
+                            <i class="fas fa-arrow-up"></i> +8.3% bu ay
+                        </small>
                     </div>
                 </div>
-                <div class="stat-card ceo-card">
+                <div class="stat-card ceo-card departments-card">
                     <div class="stat-icon">
                         <i class="fas fa-building"></i>
                     </div>
@@ -127,7 +139,7 @@
                         <small>Çalışan departmanlar</small>
                     </div>
                 </div>
-                <div class="stat-card ceo-card">
+                <div class="stat-card ceo-card streams-card">
                     <div class="stat-icon">
                         <i class="fas fa-broadcast-tower"></i>
                     </div>
@@ -137,13 +149,91 @@
                         <small>Canlı yayınlar</small>
                     </div>
                 </div>
+                <div class="stat-card ceo-card profit-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="netProfit">₺0</h3>
+                        <p>Net Kâr</p>
+                        <small class="trend-indicator positive">
+                            <i class="fas fa-arrow-up"></i> +15.2% bu ay
+                        </small>
+                    </div>
+                </div>
+                <div class="stat-card ceo-card orders-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalOrders">0</h3>
+                        <p>Toplam Sipariş</p>
+                        <small class="trend-indicator positive">
+                            <i class="fas fa-arrow-up"></i> +22.1% bu ay
+                        </small>
+                    </div>
+                </div>
+                <div class="stat-card ceo-card security-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="securityScore">85%</h3>
+                        <p>Güvenlik Skoru</p>
+                        <small class="trend-indicator positive">
+                            <i class="fas fa-arrow-up"></i> +5% bu ay
+                        </small>
+                    </div>
+                </div>
+                <div class="stat-card ceo-card performance-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="systemPerformance">92%</h3>
+                        <p>Sistem Performansı</p>
+                        <small>Son 24 saat</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="dashboard-charts">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Gelir Trendi</h3>
+                        <div class="chart-actions">
+                            <select id="revenueChartPeriod" class="chart-period-select" onchange="updateRevenueChart()">
+                                <option value="7">Son 7 Gün</option>
+                                <option value="30" selected>Son 30 Gün</option>
+                                <option value="90">Son 90 Gün</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Departman Dağılımı</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-outline btn-xs" onclick="refreshDepartmentChart()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- Department Status -->
             <div class="department-status">
                 <h2><i class="fas fa-building"></i> Departman Durumları</h2>
                 <div class="departments-grid">
-                    <div class="department-card" onclick="showSectionDirect('finance')">
+                    <a href="finance-accounting.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-coins"></i>
                         </div>
@@ -156,9 +246,9 @@
                             <span class="stat-number">₺0</span>
                             <span class="stat-label">Toplam Bakiye</span>
                         </div>
-                    </div>
+                    </a>
                     
-                    <div class="department-card" onclick="showSectionDirect('hr')">
+                    <a href="human-resources.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-users-cog"></i>
                         </div>
@@ -171,9 +261,9 @@
                             <span class="stat-number">0</span>
                             <span class="stat-label">Aktif Personel</span>
                         </div>
-                    </div>
+                    </a>
                     
-                    <div class="department-card" onclick="showSectionDirect('operations')">
+                    <a href="operations.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-cogs"></i>
                         </div>
@@ -186,9 +276,9 @@
                             <span class="stat-number">0</span>
                             <span class="stat-label">Bekleyen Sipariş</span>
                         </div>
-                    </div>
+                    </a>
                     
-                    <div class="department-card" onclick="showSectionDirect('customer-service')">
+                    <a href="customer-service.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-headset"></i>
                         </div>
@@ -201,9 +291,9 @@
                             <span class="stat-number">0</span>
                             <span class="stat-label">Açık Destek</span>
                         </div>
-                    </div>
+                    </a>
                     
-                    <div class="department-card" onclick="showSectionDirect('marketing')">
+                    <a href="marketing-advertising.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-bullhorn"></i>
                         </div>
@@ -216,9 +306,9 @@
                             <span class="stat-number">0</span>
                             <span class="stat-label">Aktif Kampanya</span>
                         </div>
-                    </div>
+                    </a>
                     
-                    <div class="department-card" onclick="showSectionDirect('rd')">
+                    <a href="rd-software.html" class="department-card">
                         <div class="dept-icon">
                             <i class="fas fa-flask"></i>
                         </div>
@@ -231,7 +321,7 @@
                             <span class="stat-number">0</span>
                             <span class="stat-label">Devam Eden Proje</span>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
 
@@ -239,26 +329,85 @@
             <div class="ceo-quick-actions">
                 <h2><i class="fas fa-bolt"></i> CEO Hızlı İşlemler</h2>
                 <div class="actions-grid">
-                    <button class="action-card ceo-action" onclick="showSectionDirect('payments')">
+                    <a href="central-payment-system.html" class="action-card ceo-action">
                         <i class="fas fa-money-bill-wave"></i>
                         <h3>Toplu Ödeme</h3>
                         <p>Tüm departmanlara ödeme yap</p>
-                    </button>
-                    <button class="action-card ceo-action" onclick="showSectionDirect('departments')">
+                    </a>
+                    <a href="department-management.html" class="action-card ceo-action">
                         <i class="fas fa-building"></i>
                         <h3>Departman Yönetimi</h3>
                         <p>Departmanları yönet ve izle</p>
-                    </button>
-                    <button class="action-card ceo-action" onclick="showSectionDirect('finance')">
+                    </a>
+                    <a href="finance-accounting.html" class="action-card ceo-action">
                         <i class="fas fa-chart-pie"></i>
                         <h3>Finansal Analiz</h3>
                         <p>Gelir-gider analizi yap</p>
-                    </button>
-                    <button class="action-card ceo-action" onclick="showSectionDirect('reports')">
+                    </a>
+                    <a href="reports.html" class="action-card ceo-action">
                         <i class="fas fa-file-alt"></i>
                         <h3>CEO Raporu</h3>
                         <p>Detaylı sistem raporu</p>
-                    </button>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activities & Notifications -->
+            <div class="dashboard-bottom-row">
+                <div class="activities-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> Son Aktiviteler</h3>
+                        <button class="btn btn-outline btn-xs" onclick="viewAllActivities()">
+                            Tümünü Gör
+                        </button>
+                    </div>
+                    <div class="activities-list" id="recentActivitiesList">
+                        <!-- Activities will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="notifications-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bell"></i> Bildirimler</h3>
+                        <button class="btn btn-outline btn-xs" onclick="markAllAsRead()">
+                            Tümünü Okundu İşaretle
+                        </button>
+                    </div>
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Notifications will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="quick-access-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bolt"></i> Hızlı Erişim</h3>
+                    </div>
+                    <div class="quick-access-grid">
+                        <a href="finance-accounting.html" class="quick-access-item">
+                            <i class="fas fa-coins"></i>
+                            <span>Finans</span>
+                        </a>
+                        <a href="operations.html" class="quick-access-item">
+                            <i class="fas fa-cogs"></i>
+                            <span>Operasyon</span>
+                        </a>
+                        <a href="security.html" class="quick-access-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Güvenlik</span>
+                        </a>
+                        <a href="reports.html" class="quick-access-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Raporlar</span>
+                        </a>
+                        <a href="department-management.html" class="quick-access-item">
+                            <i class="fas fa-building"></i>
+                            <span>Departmanlar</span>
+                        </a>
+                        <a href="system-settings.html" class="quick-access-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -1552,18 +1701,42 @@
     <script>
         function showSectionDirect(sectionId) {
             console.log('Switching to section:', sectionId);
-            document.querySelectorAll('.panel-section').forEach(function(s) {
-                s.classList.remove('active');
-                s.style.display = 'none';
-            });
-            document.querySelectorAll('.nav-link').forEach(function(l) {
-                l.classList.remove('active');
-            });
+            
+            // Map section IDs to HTML pages
+            const sectionPageMap = {
+                'finance': 'finance-accounting.html',
+                'hr': 'human-resources.html',
+                'operations': 'operations.html',
+                'customer-service': 'customer-service.html',
+                'marketing': 'marketing-advertising.html',
+                'rd': 'rd-software.html',
+                'payments': 'central-payment-system.html',
+                'departments': 'department-management.html',
+                'reports': 'reports.html',
+                'security': 'security.html',
+                'settings': 'system-settings.html'
+            };
+            
+            // Check if section exists in current page
             var target = document.getElementById(sectionId);
+            
             if (target) {
+                // Section exists, switch to it
+                document.querySelectorAll('.panel-section').forEach(function(s) {
+                    s.classList.remove('active');
+                    s.style.display = 'none';
+                });
+                document.querySelectorAll('.nav-link').forEach(function(l) {
+                    l.classList.remove('active');
+                });
                 target.classList.add('active');
                 target.style.display = 'block';
                 console.log('✅ Section shown:', sectionId);
+            } else if (sectionPageMap[sectionId]) {
+                // Section doesn't exist, redirect to dedicated page
+                window.location.href = sectionPageMap[sectionId];
+            } else {
+                console.warn('Section not found and no page mapping:', sectionId);
             }
         }
         window.showSection = showSectionDirect;
@@ -1576,5 +1749,65 @@
         window.logout = logoutDirect;
         console.log('✅ Fallback functions loaded');
     </script>
-<script src="../services/payment-service.js"><script src="../services/order-service.js"></script>"></script></body>
+    <script src="../app.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FALLBACK FUNCTIONS - ALWAYS WORKS -->
+    <script>
+        function showSectionDirect(sectionId) {
+            console.log('Switching to section:', sectionId);
+            
+            // Map section IDs to HTML pages
+            const sectionPageMap = {
+                'finance': 'finance-accounting.html',
+                'hr': 'human-resources.html',
+                'operations': 'operations.html',
+                'customer-service': 'customer-service.html',
+                'marketing': 'marketing-advertising.html',
+                'rd': 'rd-software.html',
+                'payments': 'central-payment-system.html',
+                'departments': 'department-management.html',
+                'reports': 'reports.html',
+                'security': 'security.html',
+                'settings': 'system-settings.html'
+            };
+            
+            // Check if section exists in current page
+            const targetSection = document.getElementById(sectionId);
+            
+            if (targetSection) {
+                // Section exists, switch to it
+                document.querySelectorAll('.panel-section').forEach(function(s) {
+                    s.classList.remove('active');
+                    s.style.display = 'none';
+                });
+                document.querySelectorAll('.nav-link').forEach(function(l) {
+                    l.classList.remove('active');
+                });
+                
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+                const navLink = document.querySelector(`[data-section="${sectionId}"]`);
+                if (navLink) navLink.classList.add('active');
+            } else if (sectionPageMap[sectionId]) {
+                // Section doesn't exist, redirect to dedicated page
+                window.location.href = sectionPageMap[sectionId];
+            } else {
+                console.warn('Section not found and no page mapping:', sectionId);
+            }
+        }
+        
+        function logoutDirect() {
+            localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('currentUser');
+            window.location.href = '../index.html';
+        }
+        window.logout = logoutDirect;
+        console.log('✅ Fallback functions loaded');
+    </script>
+</body>
 </html>

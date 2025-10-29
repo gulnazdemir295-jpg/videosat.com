@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Güvenlik - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="security.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="finance-accounting.html" class="nav-link">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="operations.html" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="central-payment-system.html" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="human-resources.html" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="customer-service.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="marketing-advertising.html" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="rd-software.html" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & Yazılım
+                </a>
+                <a href="security.html" class="nav-link active">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik
+                </a>
+                <a href="#settings" class="nav-link" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    Ayarlar
+                </a>
+                <a href="#" class="nav-link logout-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main-content">
+        <header class="panel-header">
+            <h1><i class="fas fa-shield-alt"></i> Güvenlik Yönetimi</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showAddSecurityPolicyModal()">
+                    <i class="fas fa-plus"></i> Güvenlik Politikası
+                </button>
+                <button class="btn btn-outline" onclick="showAddIncidentModal()">
+                    <i class="fas fa-exclamation-triangle"></i> Olay Bildir
+                </button>
+                <button class="btn btn-outline" onclick="exportSecurityData()">
+                    <i class="fas fa-download"></i> Veri Dışa Aktar
+                </button>
+            </div>
+        </header>
+
+        <!-- Security Overview -->
+        <section class="security-overview">
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="securityScore">0</h3>
+                    <p>Güvenlik Skoru</p>
+                    <span class="card-change positive">+5% bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="activeThreats">0</h3>
+                    <p>Aktif Tehdit</p>
+                    <span class="card-change negative">+2 bu hafta</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="protectedUsers">0</h3>
+                    <p>Korunan Kullanıcı</p>
+                    <span class="card-change positive">+12 bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="encryptedData">0</h3>
+                    <p>Şifrelenmiş Veri</p>
+                    <span class="card-change positive">+8% bu ay</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="securityEvents">0</h3>
+                    <p>Güvenlik Olayı</p>
+                    <span class="card-change negative">+3 bu hafta</span>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3 id="complianceScore">0%</h3>
+                    <p>Uyumluluk Skoru</p>
+                    <span class="card-change positive">+2% bu ay</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security Tabs -->
+        <div class="security-tabs">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('threats')">
+                    <i class="fas fa-exclamation-triangle"></i> Tehditler
+                </button>
+                <button class="tab-btn" onclick="showTab('incidents')">
+                    <i class="fas fa-bug"></i> Olaylar
+                </button>
+                <button class="tab-btn" onclick="showTab('users')">
+                    <i class="fas fa-users"></i> Kullanıcılar
+                </button>
+                <button class="tab-btn" onclick="showTab('policies')">
+                    <i class="fas fa-file-contract"></i> Politikalar
+                </button>
+                <button class="tab-btn" onclick="showTab('compliance')">
+                    <i class="fas fa-clipboard-check"></i> Uyumluluk
+                </button>
+                <button class="tab-btn" onclick="showTab('analytics')">
+                    <i class="fas fa-chart-bar"></i> Analitikler
+                </button>
+            </div>
+
+            <!-- Threats Tab -->
+            <div id="threats-tab" class="tab-content active">
+                <div class="threats-header">
+                    <h2>Güvenlik Tehditleri</h2>
+                    <div class="threat-filters">
+                        <input type="text" id="threatSearch" placeholder="Tehdit ara..." class="form-control">
+                        <select id="threatSeverityFilter" class="form-control">
+                            <option value="">Tüm Şiddetler</option>
+                            <option value="low">Düşük</option>
+                            <option value="medium">Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                        <select id="threatStatusFilter" class="form-control">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="mitigated">Azaltıldı</option>
+                            <option value="resolved">Çözüldü</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="threats-grid">
+                    <div class="threat-card critical">
+                        <div class="threat-header">
+                            <h3>SQL Injection Saldırısı</h3>
+                            <span class="severity-badge critical">Kritik</span>
+                        </div>
+                        <div class="threat-meta">
+                            <p><strong>Tür:</strong> Web Güvenliği</p>
+                            <p><strong>Tespit:</strong> 2024-10-29 14:30</p>
+                            <p><strong>Kaynak IP:</strong> 192.168.1.100</p>
+                            <p><strong>Hedef:</strong> Veritabanı</p>
+                        </div>
+                        <div class="threat-description">
+                            <p>Veritabanına yönelik SQL injection saldırısı tespit edildi. Acil müdahale gerekiyor.</p>
+                        </div>
+                        <div class="threat-impact">
+                            <h4>Etki:</h4>
+                            <ul>
+                                <li>Veri sızıntısı riski</li>
+                                <li>Sistem erişimi tehlikesi</li>
+                                <li>Müşteri bilgileri riski</li>
+                            </ul>
+                        </div>
+                        <div class="threat-actions">
+                            <button class="btn btn-danger btn-xs" onclick="mitigateThreat('1')">
+                                <i class="fas fa-shield-alt"></i> Azalt
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="viewThreatDetails('1')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="blockSource('1')">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="threat-card high">
+                        <div class="threat-header">
+                            <h3>Brute Force Saldırısı</h3>
+                            <span class="severity-badge high">Yüksek</span>
+                        </div>
+                        <div class="threat-meta">
+                            <p><strong>Tür:</strong> Kimlik Doğrulama</p>
+                            <p><strong>Tespit:</strong> 2024-10-29 13:15</p>
+                            <p><strong>Kaynak IP:</strong> 10.0.0.50</p>
+                            <p><strong>Hedef:</strong> Admin Paneli</p>
+                        </div>
+                        <div class="threat-description">
+                            <p>Admin paneline yönelik brute force saldırısı tespit edildi.</p>
+                        </div>
+                        <div class="threat-impact">
+                            <h4>Etki:</h4>
+                            <ul>
+                                <li>Yetkisiz erişim riski</li>
+                                <li>Hesap güvenliği tehlikesi</li>
+                            </ul>
+                        </div>
+                        <div class="threat-actions">
+                            <button class="btn btn-warning btn-xs" onclick="mitigateThreat('2')">
+                                <i class="fas fa-shield-alt"></i> Azalt
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="viewThreatDetails('2')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="blockSource('2')">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="threat-card medium">
+                        <div class="threat-header">
+                            <h3>Phishing E-postası</h3>
+                            <span class="severity-badge medium">Orta</span>
+                        </div>
+                        <div class="threat-meta">
+                            <p><strong>Tür:</strong> Sosyal Mühendislik</p>
+                            <p><strong>Tespit:</strong> 2024-10-29 12:45</p>
+                            <p><strong>Kaynak:</strong> Bilinmeyen</p>
+                            <p><strong>Hedef:</strong> Çalışanlar</p>
+                        </div>
+                        <div class="threat-description">
+                            <p>Çalışanlara yönelik phishing e-postası tespit edildi.</p>
+                        </div>
+                        <div class="threat-impact">
+                            <h4>Etki:</h4>
+                            <ul>
+                                <li>Kimlik bilgisi çalma riski</li>
+                                <li>Veri sızıntısı tehlikesi</li>
+                            </ul>
+                        </div>
+                        <div class="threat-actions">
+                            <button class="btn btn-info btn-xs" onclick="mitigateThreat('3')">
+                                <i class="fas fa-shield-alt"></i> Azalt
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="viewThreatDetails('3')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="blockSource('3')">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incidents Tab -->
+            <div id="incidents-tab" class="tab-content">
+                <div class="incidents-header">
+                    <h2>Güvenlik Olayları</h2>
+                    <div class="incident-filters">
+                        <input type="text" id="incidentSearch" placeholder="Olay ara..." class="form-control">
+                        <select id="incidentStatusFilter" class="form-control">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="open">Açık</option>
+                            <option value="investigating">İnceleniyor</option>
+                            <option value="resolved">Çözüldü</option>
+                            <option value="closed">Kapalı</option>
+                        </select>
+                        <select id="incidentPriorityFilter" class="form-control">
+                            <option value="">Tüm Öncelikler</option>
+                            <option value="low">Düşük</option>
+                            <option value="medium">Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="incidents-table-container">
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Olay ID</th>
+                                <th>Açıklama</th>
+                                <th>Tür</th>
+                                <th>Öncelik</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>Sorumlu</th>
+                                <th>Eylemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidentsTableBody">
+                            <!-- Incident data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content">
+                <div class="users-header">
+                    <h2>Kullanıcı Güvenliği</h2>
+                    <div class="user-filters">
+                        <input type="text" id="userSearch" placeholder="Kullanıcı ara..." class="form-control">
+                        <select id="userRoleFilter" class="form-control">
+                            <option value="">Tüm Roller</option>
+                            <option value="admin">Admin</option>
+                            <option value="manager">Yönetici</option>
+                            <option value="employee">Çalışan</option>
+                            <option value="customer">Müşteri</option>
+                        </select>
+                        <select id="userStatusFilter" class="form-control">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="suspended">Askıya Alındı</option>
+                            <option value="locked">Kilitli</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="users-grid">
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <h3>Ahmet Yılmaz</h3>
+                                <p>admin@videosat.com</p>
+                                <span class="role-badge admin">Admin</span>
+                            </div>
+                            <span class="status-badge active">Aktif</span>
+                        </div>
+                        <div class="user-security">
+                            <div class="security-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>2FA Aktif</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-key"></i>
+                                <span>Güçlü Şifre</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Son Giriş: 2 saat önce</span>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewUserSecurity('1')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="resetUserPassword('1')">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <button class="btn btn-warning btn-xs" onclick="suspendUser('1')">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <h3>Ayşe Demir</h3>
+                                <p>ayse@videosat.com</p>
+                                <span class="role-badge manager">Yönetici</span>
+                            </div>
+                            <span class="status-badge active">Aktif</span>
+                        </div>
+                        <div class="user-security">
+                            <div class="security-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>2FA Aktif</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-key"></i>
+                                <span>Güçlü Şifre</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Son Giriş: 1 saat önce</span>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewUserSecurity('2')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="resetUserPassword('2')">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <button class="btn btn-warning btn-xs" onclick="suspendUser('2')">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policies Tab -->
+            <div id="policies-tab" class="tab-content">
+                <div class="policies-header">
+                    <h2>Güvenlik Politikaları</h2>
+                    <button class="btn btn-primary" onclick="showAddSecurityPolicyModal()">
+                        <i class="fas fa-plus"></i> Yeni Politika
+                    </button>
+                </div>
+
+                <div class="policies-grid">
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <h3>Şifre Politikası</h3>
+                            <span class="status-badge active">Aktif</span>
+                        </div>
+                        <div class="policy-meta">
+                            <p><strong>Versiyon:</strong> 2.1</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-15</p>
+                            <p><strong>Geçerlilik:</strong> Tüm Kullanıcılar</p>
+                        </div>
+                        <div class="policy-description">
+                            <p>Güçlü şifre oluşturma ve yönetimi için standartlar.</p>
+                        </div>
+                        <div class="policy-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>En az 8 karakter</li>
+                                <li>Büyük ve küçük harf</li>
+                                <li>Sayı ve özel karakter</li>
+                                <li>90 günde bir değişim</li>
+                            </ul>
+                        </div>
+                        <div class="policy-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewPolicyDetails('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="editPolicy('password')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="deployPolicy('password')">
+                                <i class="fas fa-rocket"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <h3>Veri Şifreleme Politikası</h3>
+                            <span class="status-badge active">Aktif</span>
+                        </div>
+                        <div class="policy-meta">
+                            <p><strong>Versiyon:</strong> 1.8</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-20</p>
+                            <p><strong>Geçerlilik:</strong> Hassas Veriler</p>
+                        </div>
+                        <div class="policy-description">
+                            <p>Hassas verilerin şifrelenmesi ve korunması için standartlar.</p>
+                        </div>
+                        <div class="policy-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>AES-256 şifreleme</li>
+                                <li>SSL/TLS bağlantıları</li>
+                                <li>Veri yedekleme şifreleme</li>
+                                <li>Anahtar yönetimi</li>
+                            </ul>
+                        </div>
+                        <div class="policy-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewPolicyDetails('encryption')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="editPolicy('encryption')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="deployPolicy('encryption')">
+                                <i class="fas fa-rocket"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="policy-card">
+                        <div class="policy-header">
+                            <h3>Erişim Kontrol Politikası</h3>
+                            <span class="status-badge active">Aktif</span>
+                        </div>
+                        <div class="policy-meta">
+                            <p><strong>Versiyon:</strong> 3.2</p>
+                            <p><strong>Son Güncelleme:</strong> 2024-10-25</p>
+                            <p><strong>Geçerlilik:</strong> Sistem Erişimi</p>
+                        </div>
+                        <div class="policy-description">
+                            <p>Sistem erişimi ve yetkilendirme için standartlar.</p>
+                        </div>
+                        <div class="policy-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>Rol tabanlı erişim</li>
+                                <li>En az ayrıcalık prensibi</li>
+                                <li>Düzenli erişim gözden geçirme</li>
+                                <li>Çok faktörlü kimlik doğrulama</li>
+                            </ul>
+                        </div>
+                        <div class="policy-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewPolicyDetails('access')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline btn-xs" onclick="editPolicy('access')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="deployPolicy('access')">
+                                <i class="fas fa-rocket"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Tab -->
+            <div id="compliance-tab" class="tab-content">
+                <div class="compliance-header">
+                    <h2>Uyumluluk Yönetimi</h2>
+                    <div class="compliance-stats">
+                        <div class="stat-card">
+                            <h4>GDPR Uyumluluğu</h4>
+                            <div class="stat-value" id="gdprCompliance">95%</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>ISO 27001</h4>
+                            <div class="stat-value" id="isoCompliance">88%</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>KVKK Uyumluluğu</h4>
+                            <div class="stat-value" id="kvkkCompliance">92%</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>PCI DSS</h4>
+                            <div class="stat-value" id="pciCompliance">90%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-grid">
+                    <div class="compliance-card">
+                        <div class="compliance-header">
+                            <h3>GDPR</h3>
+                            <span class="compliance-score high">95%</span>
+                        </div>
+                        <div class="compliance-description">
+                            <p>Genel Veri Koruma Yönetmeliği uyumluluğu.</p>
+                        </div>
+                        <div class="compliance-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>Veri işleme kayıtları</li>
+                                <li>Kullanıcı onayları</li>
+                                <li>Veri silme hakları</li>
+                                <li>Gizlilik politikaları</li>
+                            </ul>
+                        </div>
+                        <div class="compliance-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewComplianceDetails('gdpr')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="generateComplianceReport('gdpr')">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="compliance-card">
+                        <div class="compliance-header">
+                            <h3>ISO 27001</h3>
+                            <span class="compliance-score medium">88%</span>
+                        </div>
+                        <div class="compliance-description">
+                            <p>Bilgi Güvenliği Yönetim Sistemi standardı.</p>
+                        </div>
+                        <div class="compliance-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>Güvenlik politikaları</li>
+                                <li>Risk değerlendirmesi</li>
+                                <li>Eğitim programları</li>
+                                <li>İç denetimler</li>
+                            </ul>
+                        </div>
+                        <div class="compliance-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewComplianceDetails('iso')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="generateComplianceReport('iso')">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="compliance-card">
+                        <div class="compliance-header">
+                            <h3>KVKK</h3>
+                            <span class="compliance-score high">92%</span>
+                        </div>
+                        <div class="compliance-description">
+                            <p>Kişisel Verilerin Korunması Kanunu uyumluluğu.</p>
+                        </div>
+                        <div class="compliance-requirements">
+                            <h4>Gereksinimler:</h4>
+                            <ul>
+                                <li>Veri envanteri</li>
+                                <li>Açık rıza</li>
+                                <li>Veri sahibi hakları</li>
+                                <li>Güvenlik önlemleri</li>
+                            </ul>
+                        </div>
+                        <div class="compliance-actions">
+                            <button class="btn btn-outline btn-xs" onclick="viewComplianceDetails('kvkk')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-primary btn-xs" onclick="generateComplianceReport('kvkk')">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="analytics-header">
+                    <h2>Güvenlik Analitikleri</h2>
+                    <div class="analytics-filters">
+                        <input type="date" id="analyticsStartDate" class="form-control">
+                        <input type="date" id="analyticsEndDate" class="form-control">
+                        <select id="analyticsPeriod" class="form-control">
+                            <option value="7">Son 7 Gün</option>
+                            <option value="30" selected>Son 30 Gün</option>
+                            <option value="90">Son 90 Gün</option>
+                            <option value="365">Son 1 Yıl</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Tehdit Trendi</h3>
+                            <button class="btn btn-outline btn-xs" onclick="downloadAnalytics('threats')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="threatTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Güvenlik Olayları</h3>
+                            <button class="btn btn-outline btn-xs" onclick="downloadAnalytics('incidents')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="incidentsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Uyumluluk Skorları</h3>
+                            <button class="btn btn-outline btn-xs" onclick="downloadAnalytics('compliance')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="complianceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h3>Kullanıcı Güvenliği</h3>
+                            <button class="btn btn-outline btn-xs" onclick="downloadAnalytics('users')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="userSecurityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="addSecurityPolicyModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Yeni Güvenlik Politikası</h2>
+                    <span class="close" onclick="closeModal('addSecurityPolicyModal')">&times;</span>
+                </div>
+                <form id="addSecurityPolicyForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="policyName">Politika Adı</label>
+                        <input type="text" id="policyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="policyType">Politika Türü</label>
+                        <select id="policyType" required>
+                            <option value="password">Şifre Politikası</option>
+                            <option value="access">Erişim Kontrolü</option>
+                            <option value="encryption">Şifreleme</option>
+                            <option value="data">Veri Koruma</option>
+                            <option value="network">Ağ Güvenliği</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="policyScope">Kapsam</label>
+                        <select id="policyScope" required>
+                            <option value="all">Tüm Sistem</option>
+                            <option value="admin">Admin Kullanıcılar</option>
+                            <option value="employee">Çalışanlar</option>
+                            <option value="customer">Müşteriler</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="policyDescription">Açıklama</label>
+                        <textarea id="policyDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="policyRequirements">Gereksinimler</label>
+                        <textarea id="policyRequirements" rows="4" placeholder="Politika gereksinimlerini listeleyin..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Politika Oluştur</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="addIncidentModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Yeni Güvenlik Olayı</h2>
+                    <span class="close" onclick="closeModal('addIncidentModal')">&times;</span>
+                </div>
+                <form id="addIncidentForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="incidentTitle">Olay Başlığı</label>
+                        <input type="text" id="incidentTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="incidentType">Olay Türü</label>
+                        <select id="incidentType" required>
+                            <option value="malware">Malware</option>
+                            <option value="phishing">Phishing</option>
+                            <option value="data-breach">Veri İhlali</option>
+                            <option value="unauthorized-access">Yetkisiz Erişim</option>
+                            <option value="ddos">DDoS Saldırısı</option>
+                            <option value="other">Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="incidentPriority">Öncelik</label>
+                        <select id="incidentPriority" required>
+                            <option value="low">Düşük</option>
+                            <option value="medium">Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="incidentDescription">Açıklama</label>
+                        <textarea id="incidentDescription" rows="4" placeholder="Olay detaylarını açıklayın..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="incidentImpact">Etki</label>
+                        <textarea id="incidentImpact" rows="3" placeholder="Olayın etkisini açıklayın..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Olay Bildir</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <script src="../app.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

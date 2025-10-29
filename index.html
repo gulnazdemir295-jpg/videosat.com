@@ -378,14 +378,17 @@
                 </div>
                 <div class="form-group">
                     <label>Şifre</label>
-                    <input type="password" id="loginPassword" required>
+                    <input type="password" id="loginPassword" required style="padding-right:32px;">
+                    <span class="toggle-password-eye" style="position:absolute;right:10px;top:38px;cursor:pointer;z-index:2;" onclick="togglePasswordVisibility('loginPassword','loginEye')">
+                      <i id="loginEye" class="fas fa-eye toggle-password"></i>
+                    </span>
                 </div>
                 <div class="form-options">
                     <label class="checkbox-label">
-                        <input type="checkbox">
+                        <input type="checkbox" id="rememberMe">
                         <span>Beni hatırla</span>
                     </label>
-                    <a href="#" class="forgot-password">Şifremi unuttum</a>
+                    <a href="#" class="forgot-password" onclick="showForgotPasswordModal()">Şifremi unuttum</a>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Giriş Yap</button>
                 <div class="auth-switch">
@@ -428,11 +431,17 @@
                 </div>
                 <div class="form-group">
                     <label>Şifre</label>
-                    <input type="password" id="registerPassword" required>
+                    <input type="password" id="registerPassword" required style="padding-right:32px;">
+                    <span class="toggle-password-eye" style="position:absolute;right:10px;top:38px;cursor:pointer;z-index:2;" onclick="togglePasswordVisibility('registerPassword','registerEye')">
+                      <i id="registerEye" class="fas fa-eye toggle-password"></i>
+                    </span>
                 </div>
                 <div class="form-group">
                     <label>Şifre Tekrar</label>
-                    <input type="password" id="confirmPassword" required>
+                    <input type="password" id="confirmPassword" required style="padding-right:32px;">
+                    <span class="toggle-password-eye" style="position:absolute;right:10px;top:38px;cursor:pointer;z-index:2;" onclick="togglePasswordVisibility('confirmPassword','confirmEye')">
+                      <i id="confirmEye" class="fas fa-eye toggle-password"></i>
+                    </span>
                 </div>
                 <div class="form-group">
                     <label class="checkbox-label">
@@ -462,7 +471,10 @@
                 </div>
                 <div class="form-group">
                     <label>Admin Şifresi</label>
-                    <input type="password" id="adminPassword" placeholder="Şifrenizi girin" required>
+                    <input type="password" id="adminPassword" placeholder="Şifrenizi girin" required style="padding-right:32px;">
+                    <span class="toggle-password-eye" style="position:absolute;right:10px;top:38px;cursor:pointer;z-index:2;" onclick="togglePasswordVisibility('adminPassword','adminEye')">
+                      <i id="adminEye" class="fas fa-eye toggle-password"></i>
+                    </span>
                 </div>
                 <div class="form-group">
                     <label class="checkbox-label">
@@ -483,6 +495,9 @@
 
     <!-- Alert Container -->
     <div id="alertContainer"></div>
+    
+    <!-- Şifremi Unuttum Modal -->
+    <div id="forgotPasswordModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Şifremi Unuttum</h2><span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span></div><form id="forgotPasswordForm" class="auth-form"><div class="form-group"><label>Kayıtlı e-posta</label><input id="forgotEmail" type="email" required></div><button type="submit" class="btn btn-primary btn-block">Şifre Sıfırlama Talebi Gönder</button></form></div></div>
     
     <script src="app.js"></script>
     <script src="services/payment-service.js"></script>

@@ -108,6 +108,13 @@ function switchToLogin() {
     showLoginModal();
 }
 
+// SHA-256 hash fonksiyonu ekle
+async function sha256(str) {
+  const utf8 = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // Handle Login
 async function handleLogin(e) {
     e.preventDefault();
@@ -127,48 +134,31 @@ async function handleLogin(e) {
     submitBtn.disabled = true;
     
     try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Generate member number
-        const generateMemberNumber = () => {
-            const timestamp = Date.now().toString(36).toUpperCase();
-            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-            return `${timestamp}-${random}`;
-        };
-        
-        // Mock user data based on email
-        const mockUser = {
-            id: Date.now(),
-            email: email,
-            role: getUserRoleFromEmail(email),
-            companyName: getCompanyNameFromEmail(email),
-            phone: '+90 555 123 4567',
-            memberNumber: generateMemberNumber(),
-            createdAt: new Date().toISOString()
-        };
-        
-        // Save user data
-        currentUser = mockUser;
-        isLoggedIn = true;
-        userRole = mockUser.role;
-        localStorage.setItem('currentUser', JSON.stringify(mockUser));
-        
-        // Close modal and redirect to dashboard
-        closeModal('loginModal');
-        showAlert('Başarıyla giriş yaptınız!', 'success');
-        
-        // Redirect to appropriate dashboard
-        setTimeout(() => {
-            redirectToDashboard();
-        }, 1000);
-        
-    } catch (error) {
-        showAlert('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+      // Şifreyi hash'le
+      const passwordHash = await sha256(password);
+      // User veritabanını al
+      let users = JSON.parse(localStorage.getItem('users')||'[]');
+      const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
+      if (!user) { showAlert('E-posta ya da şifre hatalı!','error'); return; }
+      // currentUser olarak ayarla
+      currentUser = user;
+      isLoggedIn = true;
+      userRole = user.role;
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Close modal and redirect to dashboard
+      closeModal('loginModal');
+      showAlert('Başarıyla giriş yaptınız!', 'success');
+      
+      // Redirect to appropriate dashboard
+      setTimeout(() => {
+          redirectToDashboard();
+      }, 1000);
+      
+    } catch(err) {
+      showAlert('Giriş sırasında bir hata oluştu.','error');
     } finally {
-        // Reset button state
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
     }
 }
 
@@ -189,6 +179,9 @@ async function handleRegister(e) {
         const random = Math.random().toString(36).substring(2, 5).toUpperCase();
         return `${timestamp}-${random}`;
     };
+    
+    // Şifreyi hash'le
+    const passwordHash = await sha256(password);
     
     // Validation
     if (!role || !companyName || !email || !phone || !password || !confirmPassword) {
@@ -225,8 +218,14 @@ async function handleRegister(e) {
             phone: phone,
             memberNumber: generateMemberNumber(),
             createdAt: new Date().toISOString(),
-            isActive: true
+            isActive: true,
+            passwordHash // Sadece hash kaydet
         };
+        
+        // Ayrıca tüm kullanıcıları 'users' altında tutarak sonraki girişte hash kontrolü yapabilmek için:
+        let users = JSON.parse(localStorage.getItem('users')||'[]');
+        users = users.filter(u => u.email !== newUser.email).concat([newUser]);
+        localStorage.setItem('users', JSON.stringify(users));
         
         // Save user data
         currentUser = newUser;
@@ -687,3 +686,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('VideoSat Platform JavaScript Loaded Successfully');
+
+// Şifreyi göster/gizle fonksiyonu
+function togglePasswordVisibility(inputId,iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) icon.className = 'fas fa-eye-slash toggle-password';
+  } else {
+    input.type = 'password';
+    if (icon) icon.className = 'fas fa-eye toggle-password';
+  }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
+
+// Şifremi unuttum ve beni hatırla fonksiyon template'i (sonra doldurabilmek için boş bırak)
+async function handleForgotPassword(email) {}
+async function handleRememberMe(email, shouldRemember) {}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Müşteri Hizmetleri - VideoSat</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <link rel="stylesheet" href="../modern-ui-enhancements.css">
+    <link rel="stylesheet" href="customer-service.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="panel-body">
+    <!-- Panel Navigation -->
+    <nav class="panel-nav">
+        <div class="panel-nav-container">
+            <div class="panel-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+                <span class="role-badge admin">CEO</span>
+            </div>
+            <div class="panel-nav-menu">
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    CEO Dashboard
+                </a>
+                <a href="department-management.html" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    Departman Yönetimi
+                </a>
+                <a href="finance-accounting.html" class="nav-link">
+                    <i class="fas fa-coins"></i>
+                    Finans & Muhasebe
+                </a>
+                <a href="operations.html" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Operasyon
+                </a>
+                <a href="central-payment-system.html" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Merkezi Ödeme Sistemi
+                </a>
+                <a href="human-resources.html" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    İnsan Kaynakları
+                </a>
+                <a href="customer-service.html" class="nav-link active">
+                    <i class="fas fa-headset"></i>
+                    Müşteri Hizmetleri
+                </a>
+                <a href="admin.html#marketing" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    Pazarlama & Reklam
+                </a>
+                <a href="admin.html#rd" class="nav-link">
+                    <i class="fas fa-flask"></i>
+                    Ar-Ge & İnovasyon
+                </a>
+                <a href="admin.html#security" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Güvenlik & Uyumluluk
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="panel-main">
+        <div class="panel-container">
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-headset"></i> Müşteri Hizmetleri</h1>
+                    <p>Müşteri destek süreçlerini yönetin, şikayetleri takip edin ve müşteri memnuniyetini artırın</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddTicketModal()">
+                        <i class="fas fa-plus"></i>
+                        Yeni Ticket
+                    </button>
+                    <button class="btn btn-outline" onclick="exportCustomerServiceData()">
+                        <i class="fas fa-download"></i>
+                        Rapor İndir
+                    </button>
+                    <button class="btn btn-secondary" onclick="showLiveChatModal()">
+                        <i class="fas fa-comments"></i>
+                        Canlı Destek
+                    </button>
+                </div>
+            </div>
+
+            <!-- Customer Service Overview Cards -->
+            <div class="customer-service-overview">
+                <div class="overview-card total-tickets">
+                    <div class="card-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="totalTickets">1,247</h3>
+                        <p>Toplam Ticket</p>
+                        <span class="card-change positive">+12% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card resolved-tickets">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="resolvedTickets">1,189</h3>
+                        <p>Çözülen Ticket</p>
+                        <span class="card-change positive">+8% bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card avg-response-time">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="avgResponseTime">2.3s</h3>
+                        <p>Ortalama Yanıt Süresi</p>
+                        <span class="card-change negative">+0.2s bu ay</span>
+                    </div>
+                </div>
+                <div class="overview-card customer-satisfaction">
+                    <div class="card-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="customerSatisfaction">94.7%</h3>
+                        <p>Müşteri Memnuniyeti</p>
+                        <span class="card-change positive">+1.2% bu ay</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Service Management Tabs -->
+            <div class="customer-service-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showTab('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </button>
+                    <button class="tab-btn" onclick="showTab('tickets')">
+                        <i class="fas fa-ticket-alt"></i>
+                        Ticket'lar
+                    </button>
+                    <button class="tab-btn" onclick="showTab('live-chat')">
+                        <i class="fas fa-comments"></i>
+                        Canlı Destek
+                    </button>
+                    <button class="tab-btn" onclick="showTab('feedback')">
+                        <i class="fas fa-star"></i>
+                        Geri Bildirim
+                    </button>
+                    <button class="tab-btn" onclick="showTab('analytics')">
+                        <i class="fas fa-chart-bar"></i>
+                        Analitik
+                    </button>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <!-- Ticket Status Chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Ticket Durumu</h3>
+                                <div class="chart-controls">
+                                    <select id="ticketPeriod">
+                                        <option value="daily">Günlük</option>
+                                        <option value="weekly">Haftalık</option>
+                                        <option value="monthly">Aylık</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="ticketStatusChart"></canvas>
+                        </div>
+
+                        <!-- Customer Satisfaction Trend -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Müşteri Memnuniyeti Trendi</h3>
+                                <div class="chart-controls">
+                                    <select id="satisfactionPeriod">
+                                        <option value="weekly">Haftalık</option>
+                                        <option value="monthly">Aylık</option>
+                                        <option value="quarterly">Çeyreklik</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="satisfactionTrendChart"></canvas>
+                        </div>
+
+                        <!-- Recent Tickets -->
+                        <div class="recent-tickets">
+                            <h3>Son Ticket'lar</h3>
+                            <div class="tickets-list" id="recentTicketsList">
+                                <!-- Recent tickets will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Support Alerts -->
+                        <div class="support-alerts">
+                            <h3>Destek Uyarıları</h3>
+                            <div class="alerts-list" id="supportAlertsList">
+                                <!-- Support alerts will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tickets Tab -->
+                <div id="tickets-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Destek Ticket'ları</h2>
+                        <div class="search-filter">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="ticketSearch" placeholder="Ticket ara...">
+                            </div>
+                            <select id="ticketFilter">
+                                <option value="">Tüm Ticket'lar</option>
+                                <option value="open">Açık</option>
+                                <option value="in-progress">İşlemde</option>
+                                <option value="resolved">Çözüldü</option>
+                                <option value="closed">Kapalı</option>
+                            </select>
+                            <select id="priorityFilter">
+                                <option value="">Tüm Öncelikler</option>
+                                <option value="low">Düşük</option>
+                                <option value="medium">Orta</option>
+                                <option value="high">Yüksek</option>
+                                <option value="urgent">Acil</option>
+                            </select>
+                            <select id="categoryFilter">
+                                <option value="">Tüm Kategoriler</option>
+                                <option value="technical">Teknik</option>
+                                <option value="billing">Faturalama</option>
+                                <option value="general">Genel</option>
+                                <option value="complaint">Şikayet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tickets-table-container">
+                        <table class="tickets-table" id="ticketsTable">
+                            <thead>
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Müşteri</th>
+                                    <th>Konu</th>
+                                    <th>Kategori</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>Oluşturma</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody">
+                                <!-- Ticket rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Live Chat Tab -->
+                <div id="live-chat-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Canlı Destek Yönetimi</h2>
+                        <div class="chat-actions">
+                            <button class="btn btn-primary" onclick="showLiveChatModal()">
+                                <i class="fas fa-plus"></i>
+                                Yeni Chat
+                            </button>
+                            <button class="btn btn-outline" onclick="startLiveChat()">
+                                <i class="fas fa-play"></i>
+                                Canlı Destek Başlat
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-dashboard">
+                        <div class="chat-stats">
+                            <div class="stat-card">
+                                <h4>Aktif Chat'ler</h4>
+                                <div class="stat-value" id="activeChats">12</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Bekleyen Chat'ler</h4>
+                                <div class="stat-value" id="waitingChats">3</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Ortalama Yanıt Süresi</h4>
+                                <div class="stat-value" id="avgChatResponse">1.8s</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Memnuniyet Oranı</h4>
+                                <div class="stat-value" id="chatSatisfaction">96.2%</div>
+                            </div>
+                        </div>
+
+                        <div class="chat-sessions">
+                            <h3>Aktif Chat Oturumları</h3>
+                            <div class="chat-list" id="activeChatList">
+                                <!-- Active chat sessions will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Tab -->
+                <div id="feedback-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Müşteri Geri Bildirimleri</h2>
+                        <div class="feedback-controls">
+                            <input type="date" id="feedbackStartDate">
+                            <span>ile</span>
+                            <input type="date" id="feedbackEndDate">
+                            <button class="btn btn-primary" onclick="generateFeedbackReport()">Rapor Oluştur</button>
+                        </div>
+                    </div>
+
+                    <div class="feedback-summary">
+                        <div class="summary-card">
+                            <h4>Toplam Değerlendirme</h4>
+                            <div class="summary-value" id="totalRatings">2,847</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Ortalama Puan</h4>
+                            <div class="summary-value" id="avgRating">4.7/5</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Pozitif Yorum</h4>
+                            <div class="summary-value" id="positiveComments">89.3%</div>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Yanıt Oranı</h4>
+                            <div class="summary-value" id="responseRate">94.7%</div>
+                        </div>
+                    </div>
+
+                    <div class="feedback-list">
+                        <h3>Son Geri Bildirimler</h3>
+                        <div class="feedback-items" id="feedbackItems">
+                            <!-- Feedback items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics-tab" class="tab-content">
+                    <div class="content-header">
+                        <h2>Müşteri Hizmetleri Analitikleri</h2>
+                        <div class="analytics-controls">
+                            <input type="date" id="analyticsStartDate">
+                            <span>ile</span>
+                            <input type="date" id="analyticsEndDate">
+                            <button class="btn btn-primary" onclick="generateAnalyticsReport()">Rapor Oluştur</button>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="analytics-header">
+                                <h3>Ticket Analizi</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadAnalytics('ticket-analysis')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="analytics-content">
+                                <canvas id="ticketAnalysisChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-header">
+                                <h3>Müşteri Memnuniyeti</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadAnalytics('satisfaction-analysis')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="analytics-content">
+                                <canvas id="satisfactionAnalysisChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-header">
+                                <h3>Destek Performansı</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadAnalytics('support-performance')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="analytics-content">
+                                <canvas id="supportPerformanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-header">
+                                <h3>Müşteri Segmentasyonu</h3>
+                                <button class="btn btn-outline btn-sm" onclick="downloadAnalytics('customer-segmentation')">
+                                    <i class="fas fa-download"></i>
+                                    İndir
+                                </button>
+                            </div>
+                            <div class="analytics-content">
+                                <canvas id="customerSegmentationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Ticket Modal -->
+    <div id="addTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Destek Ticket'ı</h2>
+                <span class="close" onclick="closeModal('addTicketModal')">&times;</span>
+            </div>
+            <form id="addTicketForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Müşteri</label>
+                        <input type="text" id="ticketCustomer" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" id="ticketEmail" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Konu</label>
+                    <input type="text" id="ticketSubject" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="ticketCategory" required>
+                            <option value="">Seçin</option>
+                            <option value="technical">Teknik</option>
+                            <option value="billing">Faturalama</option>
+                            <option value="general">Genel</option>
+                            <option value="complaint">Şikayet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Öncelik</label>
+                        <select id="ticketPriority" required>
+                            <option value="low">Düşük</option>
+                            <option value="medium">Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="urgent">Acil</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="ticketDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addTicketModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Ticket Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div id="liveChatModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Canlı Destek Başlat</h2>
+                <span class="close" onclick="closeModal('liveChatModal')">&times;</span>
+            </div>
+            <form id="liveChatForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Müşteri Adı</label>
+                        <input type="text" id="chatCustomerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" id="chatEmail" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Destek Konusu</label>
+                    <select id="chatTopic" required>
+                        <option value="">Seçin</option>
+                        <option value="technical">Teknik Destek</option>
+                        <option value="billing">Faturalama</option>
+                        <option value="general">Genel Soru</option>
+                        <option value="complaint">Şikayet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Öncelik</label>
+                    <select id="chatPriority" required>
+                        <option value="medium">Orta</option>
+                        <option value="high">Yüksek</option>
+                        <option value="urgent">Acil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>İlk Mesaj</label>
+                    <textarea id="chatInitialMessage" rows="3" placeholder="Müşteriye gönderilecek ilk mesaj..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('liveChatModal')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Chat Başlat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Scripts -->
+    <script src="../app.js"></script>
+    <script src="../services/payment-service.js"></script>
+    <script src="../services/order-service.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="customer-service.js"></script>
+</body>
+</html>
