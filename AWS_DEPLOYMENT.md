@@ -25,8 +25,8 @@
 ```bash
 # Configure AWS CLI
 aws configure
-# Access Key: [YOUR_AWS_ACCESS_KEY]
-# Secret Key: [YOUR_AWS_SECRET_KEY]
+# Access Key: YOUR_AWS_ACCESS_KEY_HERE
+# Secret Key: YOUR_AWS_SECRET_KEY_HERE
 # Region: us-east-1
 # Output format: json
 ```
@@ -140,7 +140,7 @@ AWS_REGION=us-east-1
 S3_BUCKET=dunyanin-en-acayip-sitesi-328185871955
 
 # GitHub Configuration
-GITHUB_TOKEN=[YOUR_GITHUB_TOKEN]
+GITHUB_TOKEN=YOUR_GITHUB_TOKEN_HERE
 ```
 
 ## Security Configuration
