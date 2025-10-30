@@ -178,6 +178,15 @@
         <div class="admin-dashboard">
             <div class="admin-sidebar">
                 <h3><i class="fas fa-cogs"></i> Modül Yönetimi</h3>
+                <a href="/panels/ceo-admin.html#dashboard" class="module-card" style="text-decoration:none;display:block;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <h4 style="color:#fff;"><i class="fas fa-broadcast-tower"></i> Canlı Yayın İşlemleri</h4>
+                            <p style="color:#999;font-size:12px;margin:5px 0;">Tüm canlı yayın ayarlarına git</p>
+                        </div>
+                        <span class="module-status status-active">Aç</span>
+                    </div>
+                </a>
                 <div class="real-time-stats">
                     <div class="stat-card">
                         <div class="stat-value" id="activeUsers">0</div>
@@ -341,6 +350,7 @@
                         </div>
                         <div class="btn-row">
                             <button type="button" class="btn primary" onclick="createAndAssignBroadcast()"><i class="fas fa-plus"></i> Oluştur & Ata</button>
+                            <button type="button" class="btn" onclick="oneClickPrepare()"><i class="fas fa-magic"></i> Tek Tıkla Yayın Hazırla</button>
                         </div>
                         <div class="section-title"><i class="fas fa-wrench"></i> IVS Yardımcıları</div>
                         <div class="form-grid">
@@ -618,6 +628,11 @@
                 // ensure quick toolbar visible
                 document.getElementById('liveQuickToolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+            // Prefill admin token from localStorage if present
+            try {
+                const t = localStorage.getItem('adminToken');
+                if (t && document.getElementById('adminToken')) document.getElementById('adminToken').value = t;
+            } catch(_) {}
             updateRealTimeStats();
             setInterval(updateRealTimeStats, 5000);
             loadModuleConfigurations();
@@ -681,7 +696,10 @@
             window.location.href = '../index.html';
         }
         function getAdminToken() {
-            return (document.getElementById('adminToken')?.value || '').trim();
+            const val = (document.getElementById('adminToken')?.value || '').trim();
+            if (val) { try { localStorage.setItem('adminToken', val); } catch(_) {} }
+            if (val) return val;
+            try { return (localStorage.getItem('adminToken') || '').trim(); } catch(_) { return ''; }
         }
         function apiHeaders() {
             const h = { 'Content-Type': 'application/json' };
@@ -693,19 +711,32 @@
             const el = document.getElementById('ivsResult');
             if (el) el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
         }
+        async function parseResponse(resp) {
+            const ct = (resp.headers.get('content-type') || '').toLowerCase();
+            if (ct.includes('application/json')) {
+                return await resp.json();
+            }
+            const text = await resp.text();
+            return { nonJson: true, status: resp.status, url: resp.url, bodyPreview: text.slice(0, 500) };
+        }
         async function setAwsCreds() {
             try {
                 const accessKeyId = document.getElementById('awsAccessKeyId').value.trim();
                 const secretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
                 const region = document.getElementById('awsRegion').value;
+                if (!accessKeyId || !secretAccessKey) {
+                    const v0 = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
+                    const v0j = await parseResponse(v0);
+                    if (v0.ok) { setResult({ message: 'Sunucu kimlik bilgileri ile doğrulandı', verify: v0j }); return; }
+                }
                 const resp = await fetch('/api/admin/aws/creds', {
                     method: 'POST', headers: apiHeaders(), body: JSON.stringify({ accessKeyId, secretAccessKey, region })
                 });
-                const credsRes = await resp.json();
+                const credsRes = await parseResponse(resp);
                 if (!resp.ok) { setResult(credsRes); return; }
                 // immediately verify connectivity
                 const v = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
-                const vj = await v.json();
+                const vj = await parseResponse(v);
                 if (v.ok) {
                     setResult({ message: 'AWS bağlantısı başarılı', verify: vj, creds: credsRes });
                 } else {
@@ -745,6 +776,32 @@
                 });
                 const data = await resp.json();
                 setResult(data);
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function oneClickPrepare() {
+            try {
+                let email = document.getElementById('streamerEmail').value.trim();
+                if (!email) email = prompt('Yayıncı e‑posta:');
+                if (!email) return;
+                document.getElementById('streamerEmail').value = email;
+
+                // dakika ekle (120)
+                await fetch('/api/admin/streamers/add', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ email, minutes: 120 })
+                });
+
+                const bid = 'yayin-' + Math.random().toString(36).slice(2, 7);
+                document.getElementById('broadcastId').value = bid;
+
+                const resp = await fetch('/api/admin/broadcasts/create', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ streamerEmail: email, broadcastId: bid })
+                });
+                const data = await parseResponse(resp);
+                if (resp.ok) {
+                    setResult({ message: 'Yayın hazır', next: { streamerLink: `/live-stream.html?broadcast=${bid}` }, details: data });
+                } else {
+                    setResult(data);
+                }
             } catch (e) { setResult('Hata: ' + e.message); }
         }
         async function parsePlaybackUrl() {
