@@ -701,7 +701,16 @@
                 const resp = await fetch('/api/admin/aws/creds', {
                     method: 'POST', headers: apiHeaders(), body: JSON.stringify({ accessKeyId, secretAccessKey, region })
                 });
-                setResult(await resp.json());
+                const credsRes = await resp.json();
+                if (!resp.ok) { setResult(credsRes); return; }
+                // immediately verify connectivity
+                const v = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
+                const vj = await v.json();
+                if (v.ok) {
+                    setResult({ message: 'AWS bağlantısı başarılı', verify: vj, creds: credsRes });
+                } else {
+                    setResult({ message: 'AWS bağlantısı doğrulanamadı', error: vj });
+                }
             } catch (e) { setResult('Hata: ' + e.message); }
         }
         async function addStreamerMinutes() {

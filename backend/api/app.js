@@ -14,6 +14,7 @@ const {
   DeleteStreamKeyCommand,
   StopStreamCommand
 } = require('@aws-sdk/client-ivs');
+const { STSClient, GetCallerIdentityCommand } = require('@aws-sdk/client-sts');
 
 // In-memory stores (POC). Replace with DB in production.
 const users = new Map(); // key: email, value: { email, hasTime }
@@ -28,6 +29,7 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 let CURRENT_REGION = process.env.IVS_REGION || process.env.AWS_REGION || 'eu-central-1';
 let CURRENT_CREDS = null; // { accessKeyId, secretAccessKey }
 let ivsClient = new IVSClient({ region: CURRENT_REGION });
+let stsClient = new STSClient({ region: CURRENT_REGION });
 
 // Seed: sample user with payment time
 users.set('hammaddeci.videosat.com', { email: 'hammaddeci.videosat.com', hasTime: true });
@@ -72,7 +74,24 @@ app.post('/api/admin/aws/creds', requireAdmin, (req, res) => {
   CURRENT_CREDS = { accessKeyId, secretAccessKey };
   if (region) CURRENT_REGION = region;
   ivsClient = new IVSClient({ region: CURRENT_REGION, credentials: CURRENT_CREDS });
+  stsClient = new STSClient({ region: CURRENT_REGION, credentials: CURRENT_CREDS });
   return res.json({ ok: true, region: CURRENT_REGION });
+});
+
+// Admin: verify AWS connectivity (STS + simple IVS call)
+app.get('/api/admin/aws/verify', requireAdmin, async (req, res) => {
+  try {
+    const sts = await stsClient.send(new GetCallerIdentityCommand({}));
+    let ivsOk = true;
+    try {
+      await ivsClient.send(new ListChannelsCommand({ maxResults: 1 }));
+    } catch (e) {
+      ivsOk = false;
+    }
+    return res.json({ ok: true, account: sts.Account, userId: sts.UserId, arn: sts.Arn, region: CURRENT_REGION, ivsOk });
+  } catch (err) {
+    return res.status(401).json({ ok: false, error: 'verify_failed', detail: String(err && err.message || err) });
+  }
 });
 
 // Admin: add/update streamer minutes
