@@ -358,13 +358,32 @@ function loadSectionData(sectionId) {
             loadDashboardData();
             break;
         case 'products':
-            loadProducts();
+            if (userRole === 'musteri') {
+                loadCustomerProducts();
+            } else {
+                loadProducts();
+            }
             break;
         case 'producers':
             loadProducers();
             break;
         case 'sellers':
             loadSellers(); // For customer panel - load sellers
+            break;
+        case 'favorites':
+            if (userRole === 'musteri') {
+                loadFavorites();
+            }
+            break;
+        case 'cart':
+            if (userRole === 'musteri') {
+                loadCart();
+            }
+            break;
+        case 'notifications':
+            if (userRole === 'satici') {
+                loadSellerNotifications();
+            }
             break;
         case 'suppliers':
             loadSuppliersGrid();
@@ -4099,6 +4118,512 @@ function buyNow(productId) {
 function followSeller(sellerId) {
     console.log('Satıcı takip edildi:', sellerId);
     alert('Satıcı takip edildi!');
+}
+
+// Müşteri ürünlerini yükle
+function loadCustomerProducts() {
+    const tbody = document.getElementById('productsTableBody');
+    if (!tbody) return;
+
+    // Tüm satıcı ürünlerini al
+    const allProducts = getAllSellerProducts();
+    
+    if (allProducts.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fas fa-box" style="font-size: 48px; margin-bottom: 20px; opacity: 0.3;"></i>
+                    <p>Henüz ürün yok</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = allProducts.map(product => `
+        <tr>
+            <td>${product.name}</td>
+            <td>${product.seller}</td>
+            <td>${getCategoryName(product.category)}</td>
+            <td>${getUnitName(product.unit)}</td>
+            <td>${product.stock}</td>
+            <td>₺${product.price.toLocaleString()}</td>
+            <td><span class="status-badge ${product.status}">${getStatusName(product.status)}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="action-btn add-cart" onclick="addToCart(${product.id})" title="Sepete Ekle">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                    <button class="action-btn favorite" onclick="toggleFavorite(${product.id})" title="Favorilere Ekle">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button class="action-btn notify" onclick="requestLiveStreamNotification(${product.id})" title="Canlı Yayın Bildirimi">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Favorileri yükle
+function loadFavorites() {
+    const content = document.getElementById('favoritesContent');
+    if (!content) return;
+
+    const favorites = JSON.parse(localStorage.getItem('customerFavorites') || '[]');
+    const allProducts = getAllSellerProducts();
+    const favoriteProducts = allProducts.filter(p => favorites.includes(p.id));
+
+    if (favoriteProducts.length === 0) {
+        content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-heart" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz favori ürününüz yok</p>
+                <p style="font-size: 14px; margin-top: 10px;">Ürünler sayfasından favori ürünlerinizi ekleyebilirsiniz</p>
+            </div>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="favorites-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            ${favoriteProducts.map(product => `
+                <div class="favorite-card" style="background: #1a1a1a; border: 1px solid #404040; border-radius: 15px; padding: 20px;">
+                    <div class="product-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <h3 style="color: #ffffff; margin: 0; font-size: 18px;">${product.name}</h3>
+                        <button onclick="toggleFavorite(${product.id})" style="background: none; border: none; color: #dc2626; font-size: 20px; cursor: pointer;" title="Favorilerden Çıkar">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-details" style="margin-bottom: 15px;">
+                        <p style="color: #999; margin: 5px 0; font-size: 14px;"><strong>Satıcı:</strong> ${product.seller}</p>
+                        <p style="color: #999; margin: 5px 0; font-size: 14px;"><strong>Kategori:</strong> ${getCategoryName(product.category)}</p>
+                        <p style="color: #999; margin: 5px 0; font-size: 14px;"><strong>Açıklama:</strong> ${product.description}</p>
+                    </div>
+                    <div class="product-price" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="color: #dc2626; font-weight: bold; font-size: 20px;">₺${product.price.toLocaleString()}</span>
+                        <span style="color: #999; font-size: 14px;">Stok: ${product.stock}</span>
+                    </div>
+                    <div class="product-actions" style="display: flex; gap: 10px;">
+                        <button onclick="addToCart(${product.id})" style="flex: 1; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-cart-plus"></i> Sepete Ekle
+                        </button>
+                        <button onclick="requestLiveStreamNotification(${product.id})" style="flex: 1; background: #28a745; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-bell"></i> Yayın Bildirimi
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Sepete ekle
+function addToCart(productId) {
+    console.log('Ürün sepete ekleniyor:', productId);
+    
+    const allProducts = getAllSellerProducts();
+    const product = allProducts.find(p => p.id === productId);
+    
+    if (!product) {
+        alert('Ürün bulunamadı!');
+        return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    
+    // Ürün zaten sepette var mı kontrol et
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            seller: product.seller,
+            sellerEmail: product.sellerEmail,
+            quantity: 1,
+            addedAt: new Date().toISOString()
+        });
+    }
+    
+    localStorage.setItem('customerCart', JSON.stringify(cart));
+    
+    // Sepet badge'ini güncelle
+    updateCartBadge();
+    
+    alert(`${product.name} sepete eklendi!`);
+    console.log('Sepet güncellendi:', cart);
+}
+
+// Favorilere ekle/çıkar
+function toggleFavorite(productId) {
+    console.log('Favori durumu değiştiriliyor:', productId);
+    
+    let favorites = JSON.parse(localStorage.getItem('customerFavorites') || '[]');
+    
+    const index = favorites.indexOf(productId);
+    
+    if (index > -1) {
+        // Favorilerden çıkar
+        favorites.splice(index, 1);
+        alert('Ürün favorilerden çıkarıldı!');
+    } else {
+        // Favorilere ekle
+        favorites.push(productId);
+        alert('Ürün favorilere eklendi!');
+    }
+    
+    localStorage.setItem('customerFavorites', JSON.stringify(favorites));
+    
+    // Eğer favoriler sayfasındaysak yenile
+    if (currentUser && currentUser.role === 'musteri' && document.getElementById('favoritesContent')) {
+        loadFavorites();
+    }
+    
+    console.log('Favoriler güncellendi:', favorites);
+}
+
+// Canlı yayın bildirimi iste
+function requestLiveStreamNotification(productId) {
+    console.log('Canlı yayın bildirimi isteniyor:', productId);
+    
+    const allProducts = getAllSellerProducts();
+    const product = allProducts.find(p => p.id === productId);
+    
+    if (!product) {
+        alert('Ürün bulunamadı!');
+        return;
+    }
+
+    // Bildirim isteğini kaydet
+    let notifications = JSON.parse(localStorage.getItem('customerLiveStreamNotifications') || '[]');
+    
+    const existingNotification = notifications.find(n => n.productId === productId);
+    
+    if (existingNotification) {
+        alert('Bu ürün için zaten canlı yayın bildirimi aktif!');
+        return;
+    }
+    
+    notifications.push({
+        productId: product.id,
+        productName: product.name,
+        seller: product.seller,
+        sellerEmail: product.sellerEmail,
+        requestedAt: new Date().toISOString(),
+        status: 'pending'
+    });
+    
+    localStorage.setItem('customerLiveStreamNotifications', JSON.stringify(notifications));
+    
+    // Satıcıya bildirim gönder (simülasyon)
+    sendNotificationToSeller(product.sellerEmail, product.name);
+    
+    alert(`${product.name} için canlı yayın bildirimi aktif edildi! Satıcı yayına girdiğinde size haber vereceğiz.`);
+    console.log('Canlı yayın bildirimi eklendi:', notifications);
+}
+
+// Satıcıya bildirim gönder (simülasyon)
+function sendNotificationToSeller(sellerEmail, productName) {
+    console.log(`Satıcıya bildirim gönderiliyor: ${sellerEmail} - ${productName}`);
+    
+    // Satıcı panelinde bildirim göster (simülasyon)
+    const sellerNotification = {
+        id: Date.now(),
+        type: 'live_stream_request',
+        message: `Müşteri ${productName} ürünü için canlı yayın bildirimi istedi`,
+        productName: productName,
+        timestamp: new Date().toISOString(),
+        status: 'unread'
+    };
+    
+    let sellerNotifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
+    sellerNotifications.push(sellerNotification);
+    localStorage.setItem(`sellerNotifications_${sellerEmail}`, JSON.stringify(sellerNotifications));
+    
+    console.log('Satıcı bildirimi kaydedildi:', sellerNotification);
+}
+
+// Sepet badge'ini güncelle
+function updateCartBadge() {
+    const cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    const badge = document.getElementById('navCartBadge');
+    if (badge) {
+        if (totalItems > 0) {
+            badge.textContent = totalItems;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Sepeti yükle
+function loadCart() {
+    const content = document.getElementById('cartContent');
+    if (!content) return;
+
+    const cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    
+    if (cart.length === 0) {
+        content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-shopping-cart" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Sepetiniz boş</p>
+                <p style="font-size: 14px; margin-top: 10px;">Ürünler sayfasından ürün ekleyebilirsiniz</p>
+            </div>
+        `;
+        return;
+    }
+
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    content.innerHTML = `
+        <div class="cart-items">
+            ${cart.map(item => `
+                <div class="cart-item" style="background: #1a1a1a; border: 1px solid #404040; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="item-info">
+                        <h4 style="color: #ffffff; margin: 0 0 5px 0;">${item.name}</h4>
+                        <p style="color: #999; margin: 0; font-size: 14px;">Satıcı: ${item.seller}</p>
+                        <p style="color: #999; margin: 0; font-size: 14px;">Birim Fiyat: ₺${item.price.toLocaleString()}</p>
+                    </div>
+                    <div class="item-controls" style="display: flex; align-items: center; gap: 15px;">
+                        <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="updateCartQuantity(${item.id}, ${item.quantity - 1})" style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">-</button>
+                            <span style="color: #ffffff; font-weight: bold; min-width: 30px; text-align: center;">${item.quantity}</span>
+                            <button onclick="updateCartQuantity(${item.id}, ${item.quantity + 1})" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">+</button>
+                        </div>
+                        <div class="item-price" style="color: #dc2626; font-weight: bold; font-size: 18px;">
+                            ₺${(item.price * item.quantity).toLocaleString()}
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;" title="Sepetten Çıkar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="cart-summary" style="background: #2a2a2a; border: 1px solid #404040; border-radius: 10px; padding: 20px; margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #ffffff; margin: 0;">Toplam Tutar</h3>
+                <span style="color: #dc2626; font-weight: bold; font-size: 24px;">₺${totalPrice.toLocaleString()}</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="clearCart()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-trash"></i> Sepeti Temizle
+                </button>
+                <button onclick="checkout()" style="flex: 2; background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-credit-card"></i> Sipariş Ver
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Sepet miktarını güncelle
+function updateCartQuantity(productId, newQuantity) {
+    if (newQuantity < 1) {
+        removeFromCart(productId);
+        return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    const item = cart.find(item => item.id === productId);
+    
+    if (item) {
+        item.quantity = newQuantity;
+        localStorage.setItem('customerCart', JSON.stringify(cart));
+        loadCart();
+        updateCartBadge();
+    }
+}
+
+// Sepetten çıkar
+function removeFromCart(productId) {
+    let cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    cart = cart.filter(item => item.id !== productId);
+    localStorage.setItem('customerCart', JSON.stringify(cart));
+    loadCart();
+    updateCartBadge();
+    alert('Ürün sepetten çıkarıldı!');
+}
+
+// Sepeti temizle
+function clearCart() {
+    if (confirm('Sepeti tamamen temizlemek istediğinize emin misiniz?')) {
+        localStorage.removeItem('customerCart');
+        loadCart();
+        updateCartBadge();
+        alert('Sepet temizlendi!');
+    }
+}
+
+// Sipariş ver
+function checkout() {
+    const cart = JSON.parse(localStorage.getItem('customerCart') || '[]');
+    
+    if (cart.length === 0) {
+        alert('Sepetiniz boş!');
+        return;
+    }
+
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    if (confirm(`Toplam ${cart.length} ürün için ${totalPrice.toLocaleString()} TL ödeme yapmak istediğinize emin misiniz?`)) {
+        // Sipariş oluştur
+        const order = {
+            id: 'ORD-' + Date.now(),
+            items: cart,
+            totalPrice: totalPrice,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            customer: currentUser
+        };
+        
+        // Siparişi kaydet
+        let orders = JSON.parse(localStorage.getItem('customerOrders') || '[]');
+        orders.push(order);
+        localStorage.setItem('customerOrders', JSON.stringify(orders));
+        
+        // Sepeti temizle
+        localStorage.removeItem('customerCart');
+        loadCart();
+        updateCartBadge();
+        
+        alert('Siparişiniz alındı! Sipariş numaranız: ' + order.id);
+        console.log('Sipariş oluşturuldu:', order);
+    }
+}
+
+// Satıcı bildirimlerini yükle
+function loadSellerNotifications() {
+    const content = document.getElementById('notificationsContent');
+    if (!content) return;
+
+    const sellerEmail = currentUser?.email;
+    if (!sellerEmail) return;
+
+    const notifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
+    
+    if (notifications.length === 0) {
+        content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-bell" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz bildiriminiz yok</p>
+                <p style="font-size: 14px; margin-top: 10px;">Müşteriler ürünleriniz için canlı yayın bildirimi istediğinde burada görünecek</p>
+            </div>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="notifications-list">
+            ${notifications.map(notification => `
+                <div class="notification-card" style="background: #1a1a1a; border: 1px solid #404040; border-radius: 15px; padding: 20px; margin-bottom: 15px; ${notification.status === 'unread' ? 'border-left: 4px solid #dc2626;' : ''}">
+                    <div class="notification-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div class="notification-info">
+                            <h4 style="color: #ffffff; margin: 0; font-size: 16px;">
+                                <i class="fas fa-bell" style="color: #dc2626; margin-right: 8px;"></i>
+                                Canlı Yayın Bildirimi İsteği
+                            </h4>
+                            <p style="color: #999; margin: 5px 0; font-size: 14px;">
+                                ${new Date(notification.timestamp).toLocaleString('tr-TR')}
+                            </p>
+                        </div>
+                        <div class="notification-actions">
+                            ${notification.status === 'unread' ? `
+                                <button onclick="markNotificationAsRead('${notification.id}')" style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                    <i class="fas fa-check"></i> Okundu
+                                </button>
+                            ` : `
+                                <span style="color: #28a745; font-size: 12px;">
+                                    <i class="fas fa-check-circle"></i> Okundu
+                                </span>
+                            `}
+                        </div>
+                    </div>
+                    <div class="notification-content">
+                        <p style="color: #ccc; margin: 0 0 10px 0; font-size: 14px;">
+                            <strong>Ürün:</strong> ${notification.productName}
+                        </p>
+                        <p style="color: #ccc; margin: 0; font-size: 14px;">
+                            ${notification.message}
+                        </p>
+                    </div>
+                    <div class="notification-footer" style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="startLiveStreamForProduct('${notification.productName}')" style="background: #dc2626; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-broadcast-tower"></i> Canlı Yayın Başlat
+                        </button>
+                        <button onclick="dismissNotification('${notification.id}')" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-times"></i> Kapat
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Bildirim badge'ini güncelle
+    updateNotificationBadge();
+}
+
+// Bildirimi okundu olarak işaretle
+function markNotificationAsRead(notificationId) {
+    const sellerEmail = currentUser?.email;
+    if (!sellerEmail) return;
+
+    let notifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
+    const notification = notifications.find(n => n.id == notificationId);
+    
+    if (notification) {
+        notification.status = 'read';
+        localStorage.setItem(`sellerNotifications_${sellerEmail}`, JSON.stringify(notifications));
+        loadSellerNotifications();
+    }
+}
+
+// Bildirimi kapat
+function dismissNotification(notificationId) {
+    const sellerEmail = currentUser?.email;
+    if (!sellerEmail) return;
+
+    let notifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
+    notifications = notifications.filter(n => n.id != notificationId);
+    localStorage.setItem(`sellerNotifications_${sellerEmail}`, JSON.stringify(notifications));
+    loadSellerNotifications();
+}
+
+// Ürün için canlı yayın başlat
+function startLiveStreamForProduct(productName) {
+    console.log('Canlı yayın başlatılıyor:', productName);
+    
+    // Canlı yayın sayfasına yönlendir
+    window.location.href = '../live-stream.html?product=' + encodeURIComponent(productName);
+}
+
+// Bildirim badge'ini güncelle
+function updateNotificationBadge() {
+    const sellerEmail = currentUser?.email;
+    if (!sellerEmail) return;
+
+    const notifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
+    const unreadCount = notifications.filter(n => n.status === 'unread').length;
+    
+    const badge = document.getElementById('navNotificationBadge');
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
 }
                 ` : `
                     <button class="btn btn-primary btn-small" onclick="followSeller('${seller.id}')">

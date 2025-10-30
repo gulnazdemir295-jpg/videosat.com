@@ -45,6 +45,10 @@
                     <i class="fas fa-broadcast-tower"></i>
                     Canlı Yayınlar
                 </a>
+                <a href="#favorites" class="nav-link" data-section="favorites">
+                    <i class="fas fa-heart"></i>
+                    Favorilerim
+                </a>
                 <a href="#following" class="nav-link" data-section="following">
                     <i class="fas fa-star"></i>
                     Takip Ettiğim Firmalar
@@ -200,13 +204,13 @@
                     <thead>
                         <tr>
                             <th>Ürün Adı</th>
+                            <th>Satıcı</th>
                             <th>Kategori</th>
                             <th>Birim</th>
                             <th>Stok</th>
                             <th>Birim Fiyat</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
-                            <th>Sepet</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
@@ -366,6 +370,18 @@
                     <p>Henüz canlı yayın bulunmuyor</p>
                     <p style="font-size: 14px;">Firmalardan biri canlı yayın başlattığında burada görünecek</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- Favorites Section -->
+        <section id="favorites" class="panel-section">
+            <div class="section-header">
+                <h1><i class="fas fa-heart"></i> Favorilerim</h1>
+                <p>Beğendiğiniz ürünleri takip edin</p>
+            </div>
+
+            <div id="favoritesContent">
+                <!-- Favorites will be populated by JavaScript -->
             </div>
         </section>
 
