@@ -13,6 +13,11 @@ let selectedProducts = [];
 let streamId = null;
 let currentUser = null;
 
+// IVS publish context
+let currentBroadcastId = null; // URL'den alınır (?broadcast=yayin-001)
+let currentBroadcastConfig = null; // { ingest, playbackUrl }
+let currentStreamKey = null; // claim-key sonucu
+
 // Viewer interactions
 let likeCount = 0;
 let isLiked = false;
@@ -34,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
         loadUserData();
+        parseBroadcastIdFromQuery();
         checkInvitationContext();
         loadProducts();
         loadStreamBalance();
@@ -83,12 +89,67 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Yayın başlat butonu aktif edildi (JS)');
         }
         
+        // Auto-setup IVS playback for viewers
+        (async () => {
+            try {
+                if (!isStreamer && currentBroadcastId) {
+                    await fetchIvsConfigIfNeeded();
+                    const playbackUrl = currentBroadcastConfig?.playbackUrl;
+                    const rv = document.getElementById('remoteVideo');
+                    if (playbackUrl && rv) {
+                        if (window.IVSPlayer && window.IVSPlayer.isPlayerSupported) {
+                            const player = window.IVSPlayer.create();
+                            player.attachHTMLVideoElement(rv);
+                            player.load(playbackUrl);
+                            player.play();
+                        } else {
+                            rv.src = playbackUrl;
+                        }
+                        updateStatus('AWS IVS yayını izleniyor...');
+                    }
+                }
+            } catch (e) {
+                console.warn('Otomatik IVS playback kurulamadı:', e);
+            }
+        })();
+        
         console.log('✅ Live Stream JS başlatıldı');
         
     } catch (error) {
         console.error('❌ Live Stream JS başlatma hatası:', error);
     }
 });
+
+function parseBroadcastIdFromQuery() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const bid = urlParams.get('broadcast');
+    if (bid) {
+        currentBroadcastId = bid;
+        console.log('ℹ️ Broadcast ID:', currentBroadcastId);
+    }
+}
+
+async function fetchIvsConfigIfNeeded() {
+    if (!currentBroadcastId) return null;
+    if (currentBroadcastConfig) return currentBroadcastConfig;
+    const resp = await fetch(`/api/ivs/broadcast/${encodeURIComponent(currentBroadcastId)}/config`);
+    if (!resp.ok) throw new Error('Config alınamadı');
+    currentBroadcastConfig = await resp.json();
+    console.log('IVS config:', currentBroadcastConfig);
+    return currentBroadcastConfig;
+}
+
+async function claimIvsKey() {
+    if (!currentBroadcastId) return null;
+    const resp = await fetch(`/api/ivs/broadcast/${encodeURIComponent(currentBroadcastId)}/claim-key`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+    });
+    if (!resp.ok) throw new Error('Stream key alınamadı');
+    const data = await resp.json();
+    currentStreamKey = data.streamKey;
+    console.log('IVS streamKey alındı (ttlSec=' + (data.ttlSec || '-') + ')');
+    return currentStreamKey;
+}
 
 // Load User Data
 function loadUserData() {
@@ -495,6 +556,26 @@ async function startStream() {
     }
     
     try {
+        // 1) Yayıncı ise IVS config + stream key al
+        if (isStreamer && currentBroadcastId) {
+            await fetchIvsConfigIfNeeded();
+            await claimIvsKey();
+            // Encoder/SDK için bilgileri göster
+            console.log('IVS ingest:', currentBroadcastConfig?.ingest);
+            console.log('IVS playback:', currentBroadcastConfig?.playbackUrl);
+            console.log('IVS streamKey:', currentStreamKey);
+            const infoBox = document.getElementById('userIvsInfo');
+            const ep = document.getElementById('ivsEndpoint');
+            const sk = document.getElementById('ivsStreamKey');
+            const pu = document.getElementById('ivsPlaybackUrl');
+            if (infoBox && ep && sk && pu) {
+                infoBox.style.display = 'block';
+                ep.textContent = currentBroadcastConfig?.ingest || '-';
+                sk.textContent = currentStreamKey || '-';
+                pu.textContent = currentBroadcastConfig?.playbackUrl || '-';
+            }
+        }
+        
         console.log('📺 Yayın başlatılıyor...');
         updateStatus('Yayın başlatılıyor...');
         
@@ -504,22 +585,17 @@ async function startStream() {
         const waitingMessage = document.getElementById('waitingMessage');
         
         if (isStreamer) {
-            // Streamer: local video sağ alt, remote video ana ekran (başka bir yayından gelirse)
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
-            console.log('📹 Yayıncı video gösterildi');
         } else {
-            // Viewer: local video sağ alt, remote video ana ekran (streamer'dan)
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
-            console.log('👀 İzleyici video gösterildi');
         }
         
         if (waitingMessage) {
             waitingMessage.style.display = 'none';
         }
         
-        // Set remote video background
         if (remoteVideo) {
             remoteVideo.style.background = '#000000';
         }
@@ -530,7 +606,6 @@ async function startStream() {
         
         // Generate stream ID
         streamId = `STREAM-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        console.log('🆔 Stream ID:', streamId);
         
         // Save active stream
         const streamData = {
@@ -541,46 +616,27 @@ async function startStream() {
             selectedProducts: selectedProducts
         };
         localStorage.setItem('activeLivestream', JSON.stringify(streamData));
-        console.log('💾 Stream verisi kaydedildi');
         
         // Enable/disable buttons
         const startBtn = document.getElementById('startStreamBtn');
         const stopBtn = document.getElementById('stopBtn');
-        
-        if (startBtn) {
-            startBtn.disabled = true;
-            startBtn.style.opacity = '0.5';
-            console.log('⏸️ Başlat butonu devre dışı bırakıldı');
-        }
-        if (stopBtn) {
-            stopBtn.disabled = false;
-            stopBtn.style.opacity = '1';
-            stopBtn.style.cursor = 'pointer';
-            console.log('⏹️ Durdur butonu aktif edildi');
-        }
+        if (startBtn) { startBtn.disabled = true; startBtn.style.opacity = '0.5'; }
+        if (stopBtn) { stopBtn.disabled = false; stopBtn.style.opacity = '1'; stopBtn.style.cursor = 'pointer'; }
         
         // Update live badge
         const liveBadge = document.getElementById('liveBadge');
         const liveStatus = document.getElementById('liveStatus');
-        if (liveBadge) {
-            liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>';
-        }
-        if (liveStatus) {
-            liveStatus.textContent = 'CANLI';
-        }
-        console.log('🔴 Canlı durumu güncellendi');
+        if (liveBadge) { liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>CANLI</span>'; }
+        if (liveStatus) { liveStatus.textContent = 'CANLI'; }
         
         // Start timer
         startTimer();
-        console.log('⏰ Timer başlatıldı');
         
         // Add participant
         addParticipant(isStreamer ? 'Siz (Yayıncı)' : 'Siz (Katılımcı)', true);
-        console.log('👤 Katılımcı eklendi');
         
         // Start WebRTC connection (simplified)
         startWebRTC();
-        console.log('🌐 WebRTC bağlantısı başlatıldı');
         
         // Notify viewers
         if (window.websocketService) {
@@ -588,50 +644,46 @@ async function startStream() {
                 streamId: streamId,
                 streamer: currentUser?.companyName || 'Yayıncı'
             });
-            console.log('📡 WebSocket bildirimi gönderildi');
         }
 
-        // Notification Service ile bildirim gönder
-        if (window.notificationService) {
-            const streamData = {
-                id: streamId,
-                seller: currentUser?.companyName || 'Yayıncı',
-                sellerEmail: currentUser?.email || 'unknown@example.com',
-                startedAt: new Date().toISOString(),
-                status: 'live',
-                selectedProducts: selectedProducts
-            };
-            
-            window.notificationService.notifyLiveStreamStarted(streamData);
-            console.log('🔔 Bildirim servisi ile canlı yayın bildirimi gönderildi');
+        // AWS IVS Player (viewer) setup if not streamer
+        if (!isStreamer && currentBroadcastId) {
+            await fetchIvsConfigIfNeeded();
+            const playbackUrl = currentBroadcastConfig?.playbackUrl;
+            if (playbackUrl) {
+                const rv = document.getElementById('remoteVideo');
+                try {
+                    if (window.IVSPlayer && window.IVSPlayer.isPlayerSupported && rv) {
+                        const player = window.IVSPlayer.create();
+                        player.attachHTMLVideoElement(rv);
+                        player.load(playbackUrl);
+                        player.play();
+                    } else if (rv) {
+                        rv.src = playbackUrl;
+                    }
+                    updateStatus('AWS IVS yayını izleniyor...');
+                } catch (e) {
+                    console.warn('IVS player kurulamadı:', e);
+                }
+            }
         }
         
-        // Show success message
         if (typeof showAlert === 'function') {
             showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
-        } else {
-            alert('🎉 Yayın başarıyla başlatıldı!');
         }
         
-        console.log('✅ Yayın başarıyla başlatıldı');
-        
-        // AWS IVS Service entegrasyonu, sadece yayıncıysa
-        let ivsResult;
+        // AWS IVS Service entegrasyonu (opsiyonel, varsa)
         if (isStreamer && window.awsIVSService && typeof window.awsIVSService.startIVSBrowserPublish === 'function') {
             const localVideo = document.getElementById('localVideo');
-            ivsResult = await window.awsIVSService.startIVSBrowserPublish(localVideo);
+            await window.awsIVSService.startIVSBrowserPublish(localVideo);
             updateStatus('✅ AWS IVS yayını başlatıldı!');
-            showAlert('🎉 AWS IVS yayını başlatıldı!', 'success');
         }
         
     } catch (error) {
         console.error('❌ Yayın başlatma hatası:', error);
         updateStatus('❌ Yayın başlatılamadı: ' + error.message);
-        
         if (typeof showAlert === 'function') {
             showAlert('Yayın başlatılamadı: ' + error.message, 'error');
-        } else {
-            alert('Yayın başlatılamadı: ' + error.message);
         }
     }
 }

@@ -131,11 +131,33 @@
             color: #999;
             font-size: 14px;
         }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .form-grid input, .form-grid select {
+            padding: 8px;
+            background: #0a0a0a;
+            color: #fff;
+            border: 1px solid #404040;
+            border-radius: 6px;
+        }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #404040; background: #2a2a2a; color:#fff; cursor:pointer; }
+        .btn.primary { background:#dc2626; border-color:#dc2626; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color:#ddd; }
+        .result-box { background:#0a0a0a; border:1px solid #404040; border-radius:10px; padding:10px; margin-top:10px; white-space:pre-wrap; }
+        .section-divider { margin: 16px 0; height: 1px; background: #333; border: 0; }
+        .section-title { color:#dc2626; margin: 14px 0 8px 0; font-weight: 600; }
+        /* NEW: quick toolbar */
+        .quick-toolbar { display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:#0f0f0f; border:1px solid #333; border-radius:10px; margin:12px 0 18px 0; }
+        .quick-toolbar .qt-label { color:#bbb; margin-right:8px; display:flex; align-items:center; gap:8px; }
     </style>
 </head>
 <body>
     <div class="panel-container">
-        <!-- Header -->
         <header class="panel-header">
             <div class="header-left">
                 <h1><i class="fas fa-crown"></i> CEO Admin Panel</h1>
@@ -153,13 +175,9 @@
             </div>
         </header>
 
-        <!-- Admin Dashboard -->
         <div class="admin-dashboard">
-            <!-- Sidebar -->
             <div class="admin-sidebar">
                 <h3><i class="fas fa-cogs"></i> Modül Yönetimi</h3>
-                
-                <!-- Real-time Stats -->
                 <div class="real-time-stats">
                     <div class="stat-card">
                         <div class="stat-value" id="activeUsers">0</div>
@@ -179,7 +197,6 @@
                     </div>
                 </div>
 
-                <!-- Module List -->
                 <div class="module-list">
                     <div class="module-card" data-module="email">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -190,7 +207,6 @@
                             <span class="module-status status-active" id="email-status">Aktif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="payment">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -200,7 +216,6 @@
                             <span class="module-status status-inactive" id="payment-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="livestream">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -210,7 +225,6 @@
                             <span class="module-status status-inactive" id="livestream-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="cargo">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -220,7 +234,6 @@
                             <span class="module-status status-inactive" id="cargo-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="inventory">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -230,7 +243,6 @@
                             <span class="module-status status-inactive" id="inventory-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="notifications">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -240,7 +252,6 @@
                             <span class="module-status status-inactive" id="notifications-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="database">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -250,7 +261,6 @@
                             <span class="module-status status-inactive" id="database-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="reports">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -260,7 +270,6 @@
                             <span class="module-status status-inactive" id="reports-status">Pasif</span>
                         </div>
                     </div>
-
                     <div class="module-card" data-module="contracts">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -273,11 +282,97 @@
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="admin-main">
+                <!-- NEW: Quick toolbar for Live Stream orchestration -->
+                <div class="quick-toolbar" id="liveQuickToolbar">
+                    <span class="qt-label"><i class="fas fa-broadcast-tower"></i> Canlı Yayın Hızlı İşlemler:</span>
+                    <button class="btn" onclick="scrollToLive(); document.getElementById('awsAccessKeyId')?.focus()"><i class="fas fa-link"></i> AWS'e Bağlan</button>
+                    <button class="btn" onclick="scrollToLive(); document.getElementById('streamerEmail')?.focus()"><i class="fas fa-user-plus"></i> Dakika Ekle</button>
+                    <button class="btn primary" onclick="scrollToLive(); document.getElementById('broadcastId')?.focus()"><i class="fas fa-plus"></i> Yayın Oluştur & Ata</button>
+                    <button class="btn" onclick="listStreamers(); scrollToLive();"><i class="fas fa-users"></i> Yayıncıları Listele</button>
+                    <button class="btn" onclick="listPayments(); scrollToLive();"><i class="fas fa-receipt"></i> Ödemeleri Göster</button>
+                </div>
+
                 <div id="moduleSettings">
                     <h2><i class="fas fa-cog"></i> Modül Ayarları</h2>
                     <p>Sol taraftan bir modül seçin</p>
+                </div>
+
+                <!-- Live Stream Settings -->
+                <div class="settings-form" id="livestream-settings">
+                    <h3><i class="fas fa-broadcast-tower"></i> Canlı Yayın Ayarları</h3>
+                    <form id="livestreamConfigForm">
+                        <div class="form-group">
+                            <label>AWS IVS Region:</label>
+                            <select id="awsRegion">
+                                <option value="us-east-1">US East (N. Virginia)</option>
+                                <option value="us-west-2">US West (Oregon)</option>
+                                <option value="eu-west-1">Europe (Ireland)</option>
+                                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Admin Token (x-admin-token):</label>
+                            <input type="text" id="adminToken" placeholder="ADMIN_TOKEN">
+                        </div>
+                        <hr class="section-divider">
+                        <div class="section-title"><i class="fas fa-screwdriver-wrench"></i> IVS Orchestrator</div>
+                        <div class="form-grid">
+                            <input type="text" id="awsAccessKeyId" placeholder="AWS Access Key ID">
+                            <input type="password" id="awsSecretAccessKey" placeholder="AWS Secret Access Key">
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" onclick="setAwsCreds()"><i class="fas fa-link"></i> AWS'e Bağlan</button>
+                        </div>
+                        <div class="section-title"><i class="fas fa-user-clock"></i> Yayıncı Dakika Yönetimi</div>
+                        <div class="form-grid">
+                            <input type="email" id="streamerEmail" placeholder="publisher@basvideo.com">
+                            <input type="number" id="minutesToAdd" placeholder="Dakika (örn: 120)">
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" onclick="addStreamerMinutes()"><i class="fas fa-plus"></i> Dakika Ekle</button>
+                            <button type="button" class="btn" onclick="listStreamers()"><i class="fas fa-users"></i> Yayıncıları Listele</button>
+                            <button type="button" class="btn" onclick="listPayments()"><i class="fas fa-receipt"></i> Ödemeleri Göster</button>
+                        </div>
+                        <div class="section-title"><i class="fas fa-bolt"></i> Yayın Oluştur ve Ata</div>
+                        <div class="form-grid">
+                            <input type="text" id="broadcastId" placeholder="yayin-001">
+                            <input type="text" id="ivsName" placeholder="Kanal adı (opsiyonel)">
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn primary" onclick="createAndAssignBroadcast()"><i class="fas fa-plus"></i> Oluştur & Ata</button>
+                        </div>
+                        <div class="section-title"><i class="fas fa-wrench"></i> IVS Yardımcıları</div>
+                        <div class="form-grid">
+                            <select id="ivsType">
+                                <option value="BASIC">BASIC</option>
+                                <option value="STANDARD">STANDARD</option>
+                            </select>
+                            <select id="ivsLatency">
+                                <option value="LOW">LOW</option>
+                                <option value="NORMAL">NORMAL</option>
+                            </select>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" onclick="listIvsChannels()"><i class="fas fa-list"></i> Kanalları Listele</button>
+                            <button type="button" class="btn" onclick="deleteIvsChannel()"><i class="fas fa-trash"></i> Kanalı Sil</button>
+                        </div>
+                        <div class="form-group" style="margin-top:10px;">
+                            <label>Playback URL:</label>
+                            <input type="text" id="playbackUrl" placeholder="https://...playback.live-video.net/...channel.XYZ.m3u8">
+                            <div class="btn-row">
+                                <button type="button" class="btn" onclick="parsePlaybackUrl()"><i class="fas fa-search"></i> Channel ID Çıkar</button>
+                                <button type="button" class="btn" onclick="getChannelById()"><i class="fas fa-info-circle"></i> Channel ID ile Getir</button>
+                                <button type="button" class="btn" onclick="listStreamKeys()"><i class="fas fa-key"></i> Anahtarları Listele</button>
+                            </div>
+                        </div>
+                        <div class="result-box mono" id="ivsResult">Sonuçlar burada görünecek…</div>
+                        <div class="form-actions" style="margin-top: 12px;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
                 <!-- Email Service Settings -->
@@ -334,42 +429,6 @@
                         <div class="form-actions">
                             <button type="button" onclick="testPaymentSystem()" class="btn btn-secondary">
                                 <i class="fas fa-credit-card"></i> Test Ödeme
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Kaydet
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Live Stream Settings -->
-                <div class="settings-form" id="livestream-settings">
-                    <h3><i class="fas fa-broadcast-tower"></i> Canlı Yayın Ayarları</h3>
-                    <form id="livestreamConfigForm">
-                        <div class="form-group">
-                            <label>AWS IVS Region:</label>
-                            <select id="awsRegion">
-                                <option value="us-east-1">US East (N. Virginia)</option>
-                                <option value="us-west-2">US West (Oregon)</option>
-                                <option value="eu-west-1">Europe (Ireland)</option>
-                                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>AWS Access Key ID:</label>
-                            <input type="text" id="awsAccessKey" placeholder="AKIAIOSFODNN7EXAMPLE">
-                        </div>
-                        <div class="form-group">
-                            <label>AWS Secret Key:</label>
-                            <input type="password" id="awsSecretKey" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
-                        </div>
-                        <div class="form-group">
-                            <label>Maksimum Yayın Süresi (dakika):</label>
-                            <input type="number" id="maxStreamDuration" value="120" min="30" max="480">
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" onclick="testLiveStream()" class="btn btn-secondary">
-                                <i class="fas fa-play"></i> Test Yayın
                             </button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Kaydet
@@ -533,160 +592,200 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="../app.js"></script>
     <script src="panel-app.js"></script>
     <script src="../services/ceo-admin-service.js"></script>
-    
     <script>
-        // CEO Admin Panel JavaScript
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('👑 CEO Admin Panel yükleniyor...');
-            
-            // Module selection
             const moduleCards = document.querySelectorAll('.module-card');
             const settingsForms = document.querySelectorAll('.settings-form');
-            
             moduleCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    // Remove active class from all cards
                     moduleCards.forEach(c => c.classList.remove('active'));
-                    // Add active class to clicked card
                     this.classList.add('active');
-                    
-                    // Hide all settings forms
                     settingsForms.forEach(form => form.classList.remove('active'));
-                    
-                    // Show selected module settings
                     const moduleType = this.dataset.module;
                     const settingsForm = document.getElementById(moduleType + '-settings');
-                    if (settingsForm) {
-                        settingsForm.classList.add('active');
-                    }
+                    if (settingsForm) settingsForm.classList.add('active');
                 });
             });
-            
-            // Load real-time stats
+            // NEW: Auto-select Live Stream module by default
+            const liveCard = document.querySelector('.module-card[data-module="livestream"]');
+            const liveForm = document.getElementById('livestream-settings');
+            if (liveCard && liveForm) {
+                liveCard.classList.add('active');
+                liveForm.classList.add('active');
+                // ensure quick toolbar visible
+                document.getElementById('liveQuickToolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
             updateRealTimeStats();
             setInterval(updateRealTimeStats, 5000);
-            
-            // Load saved configurations
             loadModuleConfigurations();
         });
-        
+        function scrollToLive() {
+            const el = document.getElementById('livestream-settings');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function updateRealTimeStats() {
-            // Simulate real-time data
             document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 100) + 50;
             document.getElementById('liveStreams').textContent = Math.floor(Math.random() * 10) + 2;
             document.getElementById('totalOrders').textContent = Math.floor(Math.random() * 1000) + 500;
             document.getElementById('systemHealth').textContent = '98%';
         }
-        
         function loadModuleConfigurations() {
-            // Load saved configurations from localStorage
             const configs = JSON.parse(localStorage.getItem('moduleConfigurations') || '{}');
-            
-            // Apply configurations to forms
             Object.keys(configs).forEach(module => {
                 const config = configs[module];
                 Object.keys(config).forEach(key => {
                     const input = document.getElementById(key);
-                    if (input) {
-                        input.value = config[key];
-                    }
+                    if (input) input.value = config[key];
                 });
             });
         }
-        
         function saveModuleConfiguration(module) {
             const form = document.getElementById(module + 'ConfigForm');
             const formData = new FormData(form);
             const config = {};
-            
-            for (let [key, value] of formData.entries()) {
-                config[key] = value;
-            }
-            
+            for (let [key, value] of formData.entries()) config[key] = value;
             const configs = JSON.parse(localStorage.getItem('moduleConfigurations') || '{}');
             configs[module] = config;
             localStorage.setItem('moduleConfigurations', JSON.stringify(configs));
-            
             alert(`${module} modülü ayarları kaydedildi!`);
         }
-        
-        // Form submissions
-        document.getElementById('emailConfigForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveModuleConfiguration('email');
-        });
-        
-        document.getElementById('paymentConfigForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveModuleConfiguration('payment');
-        });
-        
         document.getElementById('livestreamConfigForm').addEventListener('submit', function(e) {
             e.preventDefault();
             saveModuleConfiguration('livestream');
         });
-        
+        document.getElementById('emailConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('email');
+        });
+        document.getElementById('paymentConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('payment');
+        });
         document.getElementById('cargoConfigForm').addEventListener('submit', function(e) {
             e.preventDefault();
             saveModuleConfiguration('cargo');
         });
-        
         document.getElementById('notificationsConfigForm').addEventListener('submit', function(e) {
             e.preventDefault();
             saveModuleConfiguration('notifications');
         });
-        
         document.getElementById('databaseConfigForm').addEventListener('submit', function(e) {
             e.preventDefault();
             saveModuleConfiguration('database');
         });
-        
-        // Test functions
-        function testEmailService() {
-            alert('E-posta servisi test ediliyor...');
-            // Implement real email test
-        }
-        
-        function testPaymentSystem() {
-            alert('Ödeme sistemi test ediliyor...');
-            // Implement real payment test
-        }
-        
-        function testLiveStream() {
-            alert('Canlı yayın sistemi test ediliyor...');
-            // Implement real livestream test
-        }
-        
-        function testCargoTracking() {
-            alert('Kargo takip sistemi test ediliyor...');
-            // Implement real cargo test
-        }
-        
-        function testNotifications() {
-            alert('Bildirim sistemi test ediliyor...');
-            // Implement real notification test
-        }
-        
-        function testDatabase() {
-            alert('Veritabanı bağlantısı test ediliyor...');
-            // Implement real database test
-        }
-        
-        function savePermissions() {
-            alert('Kullanıcı yetkileri kaydedildi!');
-            // Implement permission saving
-        }
-        
         function logout() {
             localStorage.removeItem('currentUser');
             window.location.href = '../index.html';
         }
+        function getAdminToken() {
+            return (document.getElementById('adminToken')?.value || '').trim();
+        }
+        function apiHeaders() {
+            const h = { 'Content-Type': 'application/json' };
+            const t = getAdminToken();
+            if (t) h['x-admin-token'] = t;
+            return h;
+        }
+        function setResult(obj) {
+            const el = document.getElementById('ivsResult');
+            if (el) el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+        }
+        async function setAwsCreds() {
+            try {
+                const accessKeyId = document.getElementById('awsAccessKeyId').value.trim();
+                const secretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
+                const region = document.getElementById('awsRegion').value;
+                const resp = await fetch('/api/admin/aws/creds', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ accessKeyId, secretAccessKey, region })
+                });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function addStreamerMinutes() {
+            try {
+                const email = document.getElementById('streamerEmail').value.trim();
+                const minutes = parseInt(document.getElementById('minutesToAdd').value || '0', 10);
+                const resp = await fetch('/api/admin/streamers/add', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ email, minutes })
+                });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function listStreamers() {
+            try {
+                const resp = await fetch('/api/admin/streamers', { headers: apiHeaders() });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function listPayments() {
+            try {
+                const resp = await fetch('/api/admin/payments', { headers: apiHeaders() });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function createAndAssignBroadcast() {
+            try {
+                const streamerEmail = document.getElementById('streamerEmail').value.trim();
+                const broadcastId = document.getElementById('broadcastId').value.trim();
+                const name = document.getElementById('ivsName').value.trim() || undefined;
+                const resp = await fetch('/api/admin/broadcasts/create', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ streamerEmail, broadcastId, name })
+                });
+                const data = await resp.json();
+                setResult(data);
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function parsePlaybackUrl() {
+            try {
+                const playbackUrl = document.getElementById('playbackUrl').value.trim();
+                const resp = await fetch('/api/admin/ivs/parse-playback', {
+                    method: 'POST', headers: apiHeaders(), body: JSON.stringify({ playbackUrl })
+                });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function listIvsChannels() {
+            try {
+                const resp = await fetch('/api/admin/ivs/channels', { headers: apiHeaders() });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function deleteIvsChannel() {
+            try {
+                const bid = document.getElementById('broadcastId').value.trim();
+                const resp = await fetch('/api/admin/ivs/channel', {
+                    method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ broadcastId: bid })
+                });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function getChannelById() {
+            try {
+                const playbackUrl = document.getElementById('playbackUrl').value.trim();
+                let channelId = playbackUrl.match(/\.channel\.([^.]+)\.m3u8$/)?.[1];
+                if (!channelId) channelId = prompt('Channel ID girin:');
+                if (!channelId) return;
+                const resp = await fetch(`/api/admin/ivs/channel-by-id/${channelId}`, { headers: apiHeaders() });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function listStreamKeys() {
+            try {
+                const dataText = document.getElementById('ivsResult').textContent;
+                const parsed = (() => { try { return JSON.parse(dataText); } catch(_) { return {}; }})();
+                const channelArn = parsed?.channel?.arn || parsed?.channelArn || prompt('channelArn:');
+                if (!channelArn) return setResult('channelArn gerekli');
+                const resp = await fetch(`/api/admin/ivs/stream-keys?channelArn=${encodeURIComponent(channelArn)}`, { headers: apiHeaders() });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
     </script>
 </body>
 </html>
+
+
 
 

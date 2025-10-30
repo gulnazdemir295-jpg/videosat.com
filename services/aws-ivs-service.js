@@ -1,19 +1,54 @@
-// AWS IVS Service - Tarayıcıdan Canlı Yayın (env güvenlik için!)
-// LÜTFEN KESİNLİKLE AWS Anahtarlarınızı kodda plaintext bırakmayın!
-// Anahtarlarınızı .env dosyasına ekleyin ve repo/production'a .env eklemeyin
-// .env.example aşağıdaki gibi olmalı:
-//
-//   IVS_STREAM_KEY=sk_us-east-1_eAWtBjlj56zE_yYXjvk2F9Ji7AgmLSqXI0R1ZOnOFSw
-//   IVS_PLAYBACK_URL=https://390d27dc4a33.us-east-1.playback.live-video.net/api/video/v1/us-east-1.328185871955.channel.gnI3jUnKmV1K.m3u8
-//   IVS_CHANNEL_ID=gnI3jUnKmV1K
+// AWS IVS Browser Service
+// WARNING: Do NOT embed AWS credentials or stream keys in client code in production.
+// Keys/tokens must be delivered via secure backend endpoints.
 
-const IVS_CONFIG = {
-  streamKey: process.env.IVS_STREAM_KEY || '',
-  playbackUrl: process.env.IVS_PLAYBACK_URL || '',
-  channelId: process.env.IVS_CHANNEL_ID || ''
-};
-// Gerçek kodda burada IVS yayın başlatma/publish fonksiyonunu ivsConfig ile çalıştıracaksın!
-// Bu dosya github'da push edilmeli, ama .env ve plaintext key asla commit edilmemeli!
+(function() {
+  if (typeof window === 'undefined') return;
 
-module.exports = IVS_CONFIG;
+  // Internal cache (can be set by pages after fetching backend config)
+  window.__ivsPlaybackUrl = window.__ivsPlaybackUrl || '';
+
+  function isIVSPlayerSupported() {
+    return !!(window.IVSPlayer && window.IVSPlayer.isPlayerSupported);
+  }
+
+  async function setupIVSPlayer(videoEl, playbackUrl) {
+    if (!videoEl || !playbackUrl) return false;
+    try {
+      if (isIVSPlayerSupported()) {
+        const player = window.IVSPlayer.create();
+        player.attachHTMLVideoElement(videoEl);
+        player.load(playbackUrl);
+        await player.play();
+        return true;
+      } else {
+        videoEl.src = playbackUrl;
+        await videoEl.play().catch(() => {});
+        return true;
+      }
+    } catch (e) {
+      console.warn('IVS player setup failed:', e);
+      return false;
+    }
+  }
+
+  async function startIVSBrowserPublish(videoEl) {
+    // Placeholder: Real publishing should be done via encoder or Web Broadcast SDK
+    // using a secure, short-lived auth flow from backend.
+    console.log('startIVSBrowserPublish(): placeholder called');
+    return { ok: true };
+  }
+
+  function stopIVSPublish() {
+    console.log('stopIVSPublish(): placeholder called');
+  }
+
+  window.awsIVSService = {
+    getPlaybackUrl: () => window.__ivsPlaybackUrl || '',
+    setPlaybackUrl: (url) => { window.__ivsPlaybackUrl = url || ''; },
+    setupIVSPlayer,
+    startIVSBrowserPublish,
+    stopIVSPublish,
+  };
+})();
 
