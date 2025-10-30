@@ -92,6 +92,84 @@ class AWSIVSService {
     getStreamKey() {
         return this.streamKey;
     }
+
+    // 1. AWS IVS Web Broadcast SDK'yı yükle (Yayıncı için)
+    // Not: public cdn veya npm kurulumu şarttır!
+    // https://web-broadcast.live-video.net/1.8.0/amazon-ivs-web-broadcast.js
+    // veya npm: @amazon-ivs/web-broadcast
+
+    // Tarayıcıda global yüklemek için:
+    // <script src="https://web-broadcast.live-video.net/1.8.0/amazon-ivs-web-broadcast.js"></script>
+
+    // 2. Playback için Player SDK (izleyici):
+    // <script src="https://player.live-video.net/1.19.0/amazon-ivs-player.min.js"></script>
+
+    // IVS Broadcast (Gerçek yayın) - Tarayıcıdan direkt AWS'ye video aktar
+    async startIVSBrowserPublish(localVideoElement, opts = {}) {
+        // NOT: Environment/config'dan endpoint ve streamKey alınmalı
+        const endpoint = opts.endpoint || this.streamingEndpoint;
+        const streamKey = opts.streamKey || this.streamKey;
+        try {
+            // Broadcast SDK'nın yüklenmiş olması gerekir
+            if (typeof window.IVSBroadcastClient === 'undefined') {
+                throw new Error('AWS IVS Web Broadcast SDK yüklenmedi!');
+            }
+            // Publish için broadcast client oluştur
+            const client = window.IVSBroadcastClient.create({ ingestEndpoint: endpoint });
+
+            // Kamera ve mikrofonu ekle
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            client.addVideoInputDevice(stream);
+            client.addAudioInputDevice(stream);
+            // Yayını başlat
+            client.startBroadcast(streamKey);
+            // Video önizleme göster
+            if(localVideoElement) {
+                localVideoElement.srcObject = stream;
+                localVideoElement.muted = true;
+                localVideoElement.play();
+            }
+            this.currentStream = stream;
+            this.isStreaming = true;
+            this._ivsClient = client;
+            return stream;
+        } catch (err) {
+            console.error('IVS yayın/publish hatası:', err);
+            throw err;
+        }
+    }
+
+    // Yayını durdur
+    stopIVSPublish() {
+        try {
+            if(this._ivsClient) {
+                this._ivsClient.stopBroadcast();
+                this._ivsClient = null;
+            }
+            if(this.currentStream) {
+                this.currentStream.getTracks().forEach(track => track.stop());
+                this.currentStream = null;
+            }
+            this.isStreaming = false;
+            console.log('IVS publish durduruldu');
+        } catch (e) {
+            console.error('[IVS] Yayın durdurma hatası:', e);
+        }
+    }
+
+    // Playback için kolaylaştırıcı fonksiyon örneği
+    static setupIVSPlayer(videoElement, playbackUrl) {
+        // IVS player js yüklü olmalı
+        if(window.IVSPlayer && window.IVSPlayer.isPlayerSupported) {
+            const player = window.IVSPlayer.create();
+            player.attachHTMLVideoElement(videoElement);
+            player.load(playbackUrl);
+            player.play();
+            return player;
+        } else {
+            videoElement.src = playbackUrl;
+        }
+    }
 }
 
 // Export

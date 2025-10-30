@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSat Platform - CEO Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="panel-styles.css">
+    <style>
+        .admin-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin: 20px;
+        }
+        
+        .admin-sidebar {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .admin-main {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .module-card {
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .module-card:hover {
+            border-color: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        .module-card.active {
+            border-color: #dc2626;
+            background: #2d1a1a;
+        }
+        
+        .module-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-inactive {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-maintenance {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .settings-form {
+            display: none;
+        }
+        
+        .settings-form.active {
+            display: block;
+        }
+        
+        .permission-matrix {
+            display: grid;
+            grid-template-columns: 200px repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .permission-header {
+            background: #404040;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        
+        .permission-cell {
+            background: #2a2a2a;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .permission-checkbox {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .real-time-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel-container">
+        <!-- Header -->
+        <header class="panel-header">
+            <div class="header-left">
+                <h1><i class="fas fa-crown"></i> CEO Admin Panel</h1>
+                <p>Platform Yönetimi ve Modül Kontrolü</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="welcome-label">Hoşgeldiniz</span>
+                    <span class="user-name" id="userName">CEO Admin</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış
+                </button>
+            </div>
+        </header>
+
+        <!-- Admin Dashboard -->
+        <div class="admin-dashboard">
+            <!-- Sidebar -->
+            <div class="admin-sidebar">
+                <h3><i class="fas fa-cogs"></i> Modül Yönetimi</h3>
+                
+                <!-- Real-time Stats -->
+                <div class="real-time-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeUsers">0</div>
+                        <div class="stat-label">Aktif Kullanıcılar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="liveStreams">0</div>
+                        <div class="stat-label">Canlı Yayınlar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-label">Toplam Siparişler</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="systemHealth">100%</div>
+                        <div class="stat-label">Sistem Sağlığı</div>
+                    </div>
+                </div>
+
+                <!-- Module List -->
+                <div class="module-list">
+                    <div class="module-card" data-module="email">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-envelope"></i> E-posta Servisi</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">EmailJS entegrasyonu</p>
+                            </div>
+                            <span class="module-status status-active" id="email-status">Aktif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="payment">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-credit-card"></i> Ödeme Sistemi</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Stripe/PayPal entegrasyonu</p>
+                            </div>
+                            <span class="module-status status-inactive" id="payment-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="livestream">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-broadcast-tower"></i> Canlı Yayın</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">WebRTC/AWS IVS</p>
+                            </div>
+                            <span class="module-status status-inactive" id="livestream-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="cargo">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-truck"></i> Kargo Takip</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Aras Kargo API</p>
+                            </div>
+                            <span class="module-status status-inactive" id="cargo-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="inventory">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-boxes"></i> Stok Yönetimi</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Gerçek zamanlı stok</p>
+                            </div>
+                            <span class="module-status status-inactive" id="inventory-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="notifications">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-bell"></i> Bildirimler</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Firebase Cloud Messaging</p>
+                            </div>
+                            <span class="module-status status-inactive" id="notifications-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="database">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-database"></i> Veritabanı</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Firebase/Supabase</p>
+                            </div>
+                            <span class="module-status status-inactive" id="database-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="reports">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-chart-bar"></i> Raporlar</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Gerçek analitik</p>
+                            </div>
+                            <span class="module-status status-inactive" id="reports-status">Pasif</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card" data-module="contracts">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4><i class="fas fa-file-contract"></i> Sözleşmeler</h4>
+                                <p style="color: #999; font-size: 12px; margin: 5px 0;">Dijital imza sistemi</p>
+                            </div>
+                            <span class="module-status status-inactive" id="contracts-status">Pasif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="admin-main">
+                <div id="moduleSettings">
+                    <h2><i class="fas fa-cog"></i> Modül Ayarları</h2>
+                    <p>Sol taraftan bir modül seçin</p>
+                </div>
+
+                <!-- Email Service Settings -->
+                <div class="settings-form" id="email-settings">
+                    <h3><i class="fas fa-envelope"></i> E-posta Servisi Ayarları</h3>
+                    <form id="emailConfigForm">
+                        <div class="form-group">
+                            <label>EmailJS Service ID:</label>
+                            <input type="text" id="emailjsServiceId" placeholder="service_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>EmailJS Template ID:</label>
+                            <input type="text" id="emailjsTemplateId" placeholder="template_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>EmailJS Public Key:</label>
+                            <input type="text" id="emailjsPublicKey" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Test E-posta:</label>
+                            <input type="email" id="testEmail" placeholder="test@example.com">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testEmailService()" class="btn btn-secondary">
+                                <i class="fas fa-paper-plane"></i> Test Gönder
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment System Settings -->
+                <div class="settings-form" id="payment-settings">
+                    <h3><i class="fas fa-credit-card"></i> Ödeme Sistemi Ayarları</h3>
+                    <form id="paymentConfigForm">
+                        <div class="form-group">
+                            <label>Stripe Public Key:</label>
+                            <input type="text" id="stripePublicKey" placeholder="pk_test_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Stripe Secret Key:</label>
+                            <input type="password" id="stripeSecretKey" placeholder="sk_test_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>PayPal Client ID:</label>
+                            <input type="text" id="paypalClientId" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Test Modu:</label>
+                            <input type="checkbox" id="testMode" checked>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testPaymentSystem()" class="btn btn-secondary">
+                                <i class="fas fa-credit-card"></i> Test Ödeme
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live Stream Settings -->
+                <div class="settings-form" id="livestream-settings">
+                    <h3><i class="fas fa-broadcast-tower"></i> Canlı Yayın Ayarları</h3>
+                    <form id="livestreamConfigForm">
+                        <div class="form-group">
+                            <label>AWS IVS Region:</label>
+                            <select id="awsRegion">
+                                <option value="us-east-1">US East (N. Virginia)</option>
+                                <option value="us-west-2">US West (Oregon)</option>
+                                <option value="eu-west-1">Europe (Ireland)</option>
+                                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>AWS Access Key ID:</label>
+                            <input type="text" id="awsAccessKey" placeholder="AKIAIOSFODNN7EXAMPLE">
+                        </div>
+                        <div class="form-group">
+                            <label>AWS Secret Key:</label>
+                            <input type="password" id="awsSecretKey" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
+                        </div>
+                        <div class="form-group">
+                            <label>Maksimum Yayın Süresi (dakika):</label>
+                            <input type="number" id="maxStreamDuration" value="120" min="30" max="480">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testLiveStream()" class="btn btn-secondary">
+                                <i class="fas fa-play"></i> Test Yayın
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Cargo Tracking Settings -->
+                <div class="settings-form" id="cargo-settings">
+                    <h3><i class="fas fa-truck"></i> Kargo Takip Ayarları</h3>
+                    <form id="cargoConfigForm">
+                        <div class="form-group">
+                            <label>Aras Kargo API Key:</label>
+                            <input type="text" id="arasApiKey" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Aras Kargo Secret:</label>
+                            <input type="password" id="arasSecret" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>MNG Kargo API Key:</label>
+                            <input type="text" id="mngApiKey" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Yurtiçi Kargo API Key:</label>
+                            <input type="text" id="yurticiApiKey" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testCargoTracking()" class="btn btn-secondary">
+                                <i class="fas fa-truck"></i> Test Takip
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Notifications Settings -->
+                <div class="settings-form" id="notifications-settings">
+                    <h3><i class="fas fa-bell"></i> Bildirim Sistemi Ayarları</h3>
+                    <form id="notificationsConfigForm">
+                        <div class="form-group">
+                            <label>Firebase Config:</label>
+                            <textarea id="firebaseConfig" rows="10" placeholder='{
+  "apiKey": "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "authDomain": "your-project.firebaseapp.com",
+  "projectId": "your-project-id",
+  "storageBucket": "your-project.appspot.com",
+  "messagingSenderId": "123456789012",
+  "appId": "1:123456789012:web:abcdef1234567890"
+}'></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>VAPID Key:</label>
+                            <input type="text" id="vapidKey" placeholder="BEl62iUYgUivxIkv69yViEuiBIa40HI...">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testNotifications()" class="btn btn-secondary">
+                                <i class="fas fa-bell"></i> Test Bildirim
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Database Settings -->
+                <div class="settings-form" id="database-settings">
+                    <h3><i class="fas fa-database"></i> Veritabanı Ayarları</h3>
+                    <form id="databaseConfigForm">
+                        <div class="form-group">
+                            <label>Veritabanı Türü:</label>
+                            <select id="databaseType">
+                                <option value="firebase">Firebase Firestore</option>
+                                <option value="supabase">Supabase PostgreSQL</option>
+                                <option value="mongodb">MongoDB Atlas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Connection String:</label>
+                            <input type="text" id="databaseUrl" placeholder="mongodb+srv://user:pass@cluster.mongodb.net/db">
+                        </div>
+                        <div class="form-group">
+                            <label>API Key:</label>
+                            <input type="text" id="databaseApiKey" placeholder="xxxxxxxxxxxxxxx">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="testDatabase()" class="btn btn-secondary">
+                                <i class="fas fa-database"></i> Test Bağlantı
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- User Permissions -->
+                <div class="settings-form" id="permissions-settings">
+                    <h3><i class="fas fa-users-cog"></i> Kullanıcı Yetkilendirme</h3>
+                    <div class="permission-matrix">
+                        <div class="permission-header">Modül</div>
+                        <div class="permission-header">CEO</div>
+                        <div class="permission-header">Admin</div>
+                        <div class="permission-header">Moderatör</div>
+                        <div class="permission-header">Satıcı</div>
+                        <div class="permission-header">Müşteri</div>
+
+                        <div class="permission-cell">E-posta Servisi</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+
+                        <div class="permission-cell">Ödeme Sistemi</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+
+                        <div class="permission-cell">Canlı Yayın</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+
+                        <div class="permission-cell">Kargo Takip</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+
+                        <div class="permission-cell">Stok Yönetimi</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox"></div>
+
+                        <div class="permission-cell">Bildirimler</div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked disabled></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                        <div class="permission-cell"><input type="checkbox" class="permission-checkbox" checked></div>
+                    </div>
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button type="button" onclick="savePermissions()" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Yetkileri Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../app.js"></script>
+    <script src="panel-app.js"></script>
+    <script src="../services/ceo-admin-service.js"></script>
+    
+    <script>
+        // CEO Admin Panel JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('👑 CEO Admin Panel yükleniyor...');
+            
+            // Module selection
+            const moduleCards = document.querySelectorAll('.module-card');
+            const settingsForms = document.querySelectorAll('.settings-form');
+            
+            moduleCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove active class from all cards
+                    moduleCards.forEach(c => c.classList.remove('active'));
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Hide all settings forms
+                    settingsForms.forEach(form => form.classList.remove('active'));
+                    
+                    // Show selected module settings
+                    const moduleType = this.dataset.module;
+                    const settingsForm = document.getElementById(moduleType + '-settings');
+                    if (settingsForm) {
+                        settingsForm.classList.add('active');
+                    }
+                });
+            });
+            
+            // Load real-time stats
+            updateRealTimeStats();
+            setInterval(updateRealTimeStats, 5000);
+            
+            // Load saved configurations
+            loadModuleConfigurations();
+        });
+        
+        function updateRealTimeStats() {
+            // Simulate real-time data
+            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 100) + 50;
+            document.getElementById('liveStreams').textContent = Math.floor(Math.random() * 10) + 2;
+            document.getElementById('totalOrders').textContent = Math.floor(Math.random() * 1000) + 500;
+            document.getElementById('systemHealth').textContent = '98%';
+        }
+        
+        function loadModuleConfigurations() {
+            // Load saved configurations from localStorage
+            const configs = JSON.parse(localStorage.getItem('moduleConfigurations') || '{}');
+            
+            // Apply configurations to forms
+            Object.keys(configs).forEach(module => {
+                const config = configs[module];
+                Object.keys(config).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = config[key];
+                    }
+                });
+            });
+        }
+        
+        function saveModuleConfiguration(module) {
+            const form = document.getElementById(module + 'ConfigForm');
+            const formData = new FormData(form);
+            const config = {};
+            
+            for (let [key, value] of formData.entries()) {
+                config[key] = value;
+            }
+            
+            const configs = JSON.parse(localStorage.getItem('moduleConfigurations') || '{}');
+            configs[module] = config;
+            localStorage.setItem('moduleConfigurations', JSON.stringify(configs));
+            
+            alert(`${module} modülü ayarları kaydedildi!`);
+        }
+        
+        // Form submissions
+        document.getElementById('emailConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('email');
+        });
+        
+        document.getElementById('paymentConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('payment');
+        });
+        
+        document.getElementById('livestreamConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('livestream');
+        });
+        
+        document.getElementById('cargoConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('cargo');
+        });
+        
+        document.getElementById('notificationsConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('notifications');
+        });
+        
+        document.getElementById('databaseConfigForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveModuleConfiguration('database');
+        });
+        
+        // Test functions
+        function testEmailService() {
+            alert('E-posta servisi test ediliyor...');
+            // Implement real email test
+        }
+        
+        function testPaymentSystem() {
+            alert('Ödeme sistemi test ediliyor...');
+            // Implement real payment test
+        }
+        
+        function testLiveStream() {
+            alert('Canlı yayın sistemi test ediliyor...');
+            // Implement real livestream test
+        }
+        
+        function testCargoTracking() {
+            alert('Kargo takip sistemi test ediliyor...');
+            // Implement real cargo test
+        }
+        
+        function testNotifications() {
+            alert('Bildirim sistemi test ediliyor...');
+            // Implement real notification test
+        }
+        
+        function testDatabase() {
+            alert('Veritabanı bağlantısı test ediliyor...');
+            // Implement real database test
+        }
+        
+        function savePermissions() {
+            alert('Kullanıcı yetkileri kaydedildi!');
+            // Implement permission saving
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>
+
+

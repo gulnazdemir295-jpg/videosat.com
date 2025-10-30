@@ -462,9 +462,10 @@ function showBuyStreamTimeModal() {
     }
 }
 
-// Start stream
+// === PATCH: AWS IVS Entegrasyonu === //
+// startStream fonksiyonuna güncelleme:
 async function startStream() {
-    console.log('🎬 Yayın başlatılıyor...');
+    console.log('🎬 Yayın başlatılıyor (IVS Patch)...');
     
     if (!checkWebRTCSupport()) {
         console.error('❌ WebRTC desteklenmiyor');
@@ -614,6 +615,15 @@ async function startStream() {
         
         console.log('✅ Yayın başarıyla başlatıldı');
         
+        // AWS IVS Service entegrasyonu, sadece yayıncıysa
+        let ivsResult;
+        if (isStreamer && window.awsIVSService && typeof window.awsIVSService.startIVSBrowserPublish === 'function') {
+            const localVideo = document.getElementById('localVideo');
+            ivsResult = await window.awsIVSService.startIVSBrowserPublish(localVideo);
+            updateStatus('✅ AWS IVS yayını başlatıldı!');
+            showAlert('🎉 AWS IVS yayını başlatıldı!', 'success');
+        }
+        
     } catch (error) {
         console.error('❌ Yayın başlatma hatası:', error);
         updateStatus('❌ Yayın başlatılamadı: ' + error.message);
@@ -626,7 +636,7 @@ async function startStream() {
     }
 }
 
-// Stop stream
+// stopStream fonksiyonuna patch:
 function stopStream() {
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
@@ -650,6 +660,15 @@ function stopStream() {
     
     // Update live badge
     document.getElementById('liveBadge').innerHTML = '<i class="fas fa-circle"></i> <span>DURAKLATILDI</span>';
+
+    try {
+        if (window.awsIVSService && typeof window.awsIVSService.stopIVSPublish === 'function') {
+            window.awsIVSService.stopIVSPublish();
+            updateStatus('AWS IVS yayını durduruldu.');
+        }
+    } catch (e) {
+        updateStatus('AWS IVS yayın durdurma hatası: '+e.message);
+    }
 }
 
 // End stream
@@ -1428,5 +1447,33 @@ window.closeInviteModal = closeInviteModal;
 window.sendInvitation = sendInvitation;
 window.sendMessage = sendMessage;
 window.handleMessageKeyPress = handleMessageKeyPress;
+
+// İzleyici için IVS player başlat
+function setupIVSPlaybackIfNeeded() {
+    if (!isStreamer) {
+        // playbackUrl i config veya endpointten al
+        let playbackUrl;
+        if (window.awsIVSService && typeof window.awsIVSService.getPlaybackUrl === 'function') {
+            playbackUrl = window.awsIVSService.getPlaybackUrl();
+        } else {
+            playbackUrl = 'playback_url_buraya'; // configden doldur
+        }
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (window.AWSIVSService && typeof window.AWSIVSService.setupIVSPlayer === 'function') {
+            window.AWSIVSService.setupIVSPlayer(remoteVideo, playbackUrl);
+        } else if (window.IVSPlayer && window.IVSPlayer.isPlayerSupported) {
+            const player = window.IVSPlayer.create();
+            player.attachHTMLVideoElement(remoteVideo);
+            player.load(playbackUrl);
+            player.play();
+        } else {
+            remoteVideo.src = playbackUrl;
+        }
+        updateStatus('AWS IVS yayını izleniyor...');
+    }
+}
+
+// document.addEventListener/DOMContentLoaded içinden veya viewer mode setup içinde çağırmalısın:
+// if (!isStreamer) setupIVSPlaybackIfNeeded();
 
 console.log('✅ Enhanced Live Stream System Loaded v2');
