@@ -15,17 +15,17 @@ async function createTestUser() {
         // Test kullanıcısı verisi
         const testUser = {
             id: Date.now(),
-            email: 'hammaddeci@videosat.com',
+            email: 'musteri@videosat.com',
             password: 'test123',
             passwordHash: await sha256('test123'),
-            companyName: 'Test Hammaddeci Firması',
-            role: 'hammaddeci',
+            companyName: 'Test Müşteri',
+            role: 'musteri',
             firstName: 'Test',
-            lastName: 'Hammaddeci',
+            lastName: 'Müşteri',
             phone: '+90 555 123 4567',
             address: 'Test Adresi, İstanbul',
             city: 'istanbul',
-            sector: 'hammadde',
+            sector: 'musteri',
             status: 'active',
             createdAt: new Date().toISOString(),
             lastLogin: null
@@ -154,6 +154,30 @@ async function createAllTestUsers() {
             role: 'musteri',
             firstName: 'Test',
             lastName: 'Müşteri'
+        },
+        {
+            email: 'satici1@videosat.com',
+            password: 'test123',
+            companyName: 'Elektronik Satıcısı',
+            role: 'satici',
+            firstName: 'Ahmet',
+            lastName: 'Yılmaz'
+        },
+        {
+            email: 'satici2@videosat.com',
+            password: 'test123',
+            companyName: 'Giyim Satıcısı',
+            role: 'satici',
+            firstName: 'Ayşe',
+            lastName: 'Demir'
+        },
+        {
+            email: 'satici3@videosat.com',
+            password: 'test123',
+            companyName: 'Ev Eşyası Satıcısı',
+            role: 'satici',
+            firstName: 'Mehmet',
+            lastName: 'Kaya'
         }
     ];
     

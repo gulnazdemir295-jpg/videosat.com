@@ -489,39 +489,262 @@ function loadRecentActivity() {
 
 // Products Management
 function loadProducts() {
-    // Mock products data
-    products = [
-        {
-            id: 1,
-            name: 'Demir Çelik',
-            category: 'metal',
-            unit: 'kg',
-            stock: 1000,
-            price: 15.50,
-            status: 'active',
-            description: 'Yüksek kaliteli demir çelik'
-        },
-        {
-            id: 2,
-            name: 'Alüminyum Levha',
-            category: 'metal',
-            unit: 'm2',
-            stock: 500,
-            price: 25.00,
-            status: 'active',
-            description: 'Standart alüminyum levha'
-        },
-        {
-            id: 3,
-            name: 'PVC Granül',
-            category: 'plastik',
-            unit: 'kg',
-            stock: 2000,
-            price: 8.75,
-            status: 'active',
-            description: 'Kaliteli PVC granül'
-        }
-    ];
+    // Mock products data - Kullanıcı rolüne göre farklı ürünler
+    if (currentUser && currentUser.role === 'satici') {
+        // Satıcı ürünleri
+        products = [
+            {
+                id: 1,
+                name: 'Samsung Galaxy S24',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 50,
+                price: 25000.00,
+                status: 'active',
+                description: 'Yeni nesil akıllı telefon',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 2,
+                name: 'iPhone 15 Pro',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 30,
+                price: 35000.00,
+                status: 'active',
+                description: 'Apple\'ın en yeni telefonu',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 3,
+                name: 'MacBook Air M2',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 20,
+                price: 45000.00,
+                status: 'active',
+                description: 'Güçlü ve hafif laptop',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 4,
+                name: 'Nike Air Max 270',
+                category: 'giyim',
+                unit: 'adet',
+                stock: 100,
+                price: 1200.00,
+                status: 'active',
+                description: 'Rahat spor ayakkabı',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 5,
+                name: 'Adidas Ultraboost 22',
+                category: 'giyim',
+                unit: 'adet',
+                stock: 80,
+                price: 1500.00,
+                status: 'active',
+                description: 'Yüksek performanslı koşu ayakkabısı',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 6,
+                name: 'Samsung 55" 4K TV',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 25,
+                price: 18000.00,
+                status: 'active',
+                description: '4K Ultra HD Smart TV',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 7,
+                name: 'Dyson V15 Detect',
+                category: 'ev',
+                unit: 'adet',
+                stock: 40,
+                price: 8500.00,
+                status: 'active',
+                description: 'Güçlü elektrikli süpürge',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            },
+            {
+                id: 8,
+                name: 'KitchenAid Stand Mixer',
+                category: 'ev',
+                unit: 'adet',
+                stock: 15,
+                price: 12000.00,
+                status: 'active',
+                description: 'Profesyonel mutfak mikseri',
+                seller: currentUser.companyName,
+                sellerEmail: currentUser.email
+            }
+        ];
+    } else if (currentUser && currentUser.role === 'satici1@videosat.com') {
+        // Elektronik Satıcısı ürünleri
+        products = [
+            {
+                id: 11,
+                name: 'Sony WH-1000XM5',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 60,
+                price: 8500.00,
+                status: 'active',
+                description: 'Gürültü önleyici kablosuz kulaklık',
+                seller: 'Elektronik Satıcısı',
+                sellerEmail: 'satici1@videosat.com'
+            },
+            {
+                id: 12,
+                name: 'Canon EOS R6 Mark II',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 35,
+                price: 65000.00,
+                status: 'active',
+                description: 'Profesyonel fotoğraf makinesi',
+                seller: 'Elektronik Satıcısı',
+                sellerEmail: 'satici1@videosat.com'
+            },
+            {
+                id: 13,
+                name: 'iPad Pro 12.9"',
+                category: 'elektronik',
+                unit: 'adet',
+                stock: 45,
+                price: 28000.00,
+                status: 'active',
+                description: 'Güçlü tablet bilgisayar',
+                seller: 'Elektronik Satıcısı',
+                sellerEmail: 'satici1@videosat.com'
+            }
+        ];
+    } else if (currentUser && currentUser.role === 'satici2@videosat.com') {
+        // Giyim Satıcısı ürünleri
+        products = [
+            {
+                id: 21,
+                name: 'Zara Kış Montu',
+                category: 'giyim',
+                unit: 'adet',
+                stock: 120,
+                price: 800.00,
+                status: 'active',
+                description: 'Şık kış montu',
+                seller: 'Giyim Satıcısı',
+                sellerEmail: 'satici2@videosat.com'
+            },
+            {
+                id: 22,
+                name: 'H&M Gömlek',
+                category: 'giyim',
+                unit: 'adet',
+                stock: 200,
+                price: 150.00,
+                status: 'active',
+                description: 'Klasik erkek gömleği',
+                seller: 'Giyim Satıcısı',
+                sellerEmail: 'satici2@videosat.com'
+            },
+            {
+                id: 23,
+                name: 'LC Waikiki Jean',
+                category: 'giyim',
+                unit: 'adet',
+                stock: 300,
+                price: 250.00,
+                status: 'active',
+                description: 'Rahat denim pantolon',
+                seller: 'Giyim Satıcısı',
+                sellerEmail: 'satici2@videosat.com'
+            }
+        ];
+    } else if (currentUser && currentUser.role === 'satici3@videosat.com') {
+        // Ev Eşyası Satıcısı ürünleri
+        products = [
+            {
+                id: 31,
+                name: 'IKEA Yatak Odası Seti',
+                category: 'ev',
+                unit: 'set',
+                stock: 20,
+                price: 15000.00,
+                status: 'active',
+                description: 'Modern yatak odası takımı',
+                seller: 'Ev Eşyası Satıcısı',
+                sellerEmail: 'satici3@videosat.com'
+            },
+            {
+                id: 32,
+                name: 'Bosch Buzdolabı',
+                category: 'ev',
+                unit: 'adet',
+                stock: 30,
+                price: 25000.00,
+                status: 'active',
+                description: 'A+++ enerji verimli buzdolabı',
+                seller: 'Ev Eşyası Satıcısı',
+                sellerEmail: 'satici3@videosat.com'
+            },
+            {
+                id: 33,
+                name: 'Siemens Çamaşır Makinesi',
+                category: 'ev',
+                unit: 'adet',
+                stock: 25,
+                price: 18000.00,
+                status: 'active',
+                description: '9 kg yıkama kapasiteli',
+                seller: 'Ev Eşyası Satıcısı',
+                sellerEmail: 'satici3@videosat.com'
+            }
+        ];
+    } else {
+        // Varsayılan ürünler (diğer roller için)
+        products = [
+            {
+                id: 1,
+                name: 'Demir Çelik',
+                category: 'metal',
+                unit: 'kg',
+                stock: 1000,
+                price: 15.50,
+                status: 'active',
+                description: 'Yüksek kaliteli demir çelik'
+            },
+            {
+                id: 2,
+                name: 'Alüminyum Levha',
+                category: 'metal',
+                unit: 'm2',
+                stock: 500,
+                price: 25.00,
+                status: 'active',
+                description: 'Standart alüminyum levha'
+            },
+            {
+                id: 3,
+                name: 'PVC Granül',
+                category: 'plastik',
+                unit: 'kg',
+                stock: 2000,
+                price: 8.75,
+                status: 'active',
+                description: 'Kaliteli PVC granül'
+            }
+        ];
+    }
     
     window.products = products; // Global erişim için güncelle
     renderProductsTable();
@@ -3536,16 +3759,48 @@ function unfollowSeller(sellerId) {
 
 // Load Sellers for Customer Panel
 function loadSellers() {
-    if (!window.followService) {
-        console.warn('Follow service not available');
-        return;
-    }
-
-    const grid = document.getElementById('producersGrid'); // Uses same grid in customer panel
+    const grid = document.getElementById('sellersGrid');
     if (!grid) return;
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const sellers = users.filter(u => u.role === 'satici');
+    // Test satıcıları
+    const sellers = [
+        {
+            id: 'satici1',
+            email: 'satici1@videosat.com',
+            companyName: 'Elektronik Satıcısı',
+            firstName: 'Ahmet',
+            lastName: 'Yılmaz',
+            phone: '+90 555 111 1111',
+            city: 'İstanbul',
+            category: 'elektronik',
+            productCount: 3,
+            description: 'Elektronik ürünlerde uzman satıcı'
+        },
+        {
+            id: 'satici2',
+            email: 'satici2@videosat.com',
+            companyName: 'Giyim Satıcısı',
+            firstName: 'Ayşe',
+            lastName: 'Demir',
+            phone: '+90 555 222 2222',
+            city: 'Ankara',
+            category: 'giyim',
+            productCount: 3,
+            description: 'Moda ve giyim ürünleri'
+        },
+        {
+            id: 'satici3',
+            email: 'satici3@videosat.com',
+            companyName: 'Ev Eşyası Satıcısı',
+            firstName: 'Mehmet',
+            lastName: 'Kaya',
+            phone: '+90 555 333 3333',
+            city: 'İzmir',
+            category: 'ev',
+            productCount: 3,
+            description: 'Ev ve yaşam ürünleri'
+        }
+    ];
     
     if (sellers.length === 0) {
         grid.innerHTML = `
@@ -3557,33 +3812,294 @@ function loadSellers() {
         return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const following = window.followService.getFollowing(currentUser.id);
-
     grid.innerHTML = sellers.map(seller => {
-        const isFollowing = following.some(f => f.id === seller.id);
-        
         return `
-        <div class="producer-card">
-            <div class="producer-header">
-                <div class="producer-avatar">
-                    ${(seller.companyName || seller.name).charAt(0)}
+        <div class="seller-card" style="background: #1a1a1a; border: 1px solid #404040; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+            <div class="seller-header" style="display: flex; align-items: center; margin-bottom: 15px;">
+                <div class="seller-avatar" style="width: 60px; height: 60px; background: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin-right: 15px;">
+                    ${seller.companyName.charAt(0)}
                 </div>
-                <div class="producer-info">
-                    <h3>${seller.companyName || seller.name}</h3>
-                    <p>Satıcı</p>
+                <div class="seller-info">
+                    <h3 style="color: #ffffff; margin: 0 0 5px 0;">${seller.companyName}</h3>
+                    <p style="color: #999; margin: 0;">${seller.firstName} ${seller.lastName}</p>
                 </div>
             </div>
-            <div class="producer-details">
-                <p><i class="fas fa-envelope"></i> ${seller.email}</p>
-                <p><i class="fas fa-phone"></i> ${seller.phone || '-'}</p>
+            <div class="seller-details" style="margin-bottom: 15px;">
+                <p style="color: #ccc; margin: 5px 0;"><i class="fas fa-envelope" style="margin-right: 8px; color: #dc2626;"></i> ${seller.email}</p>
+                <p style="color: #ccc; margin: 5px 0;"><i class="fas fa-phone" style="margin-right: 8px; color: #dc2626;"></i> ${seller.phone}</p>
+                <p style="color: #ccc; margin: 5px 0;"><i class="fas fa-map-marker-alt" style="margin-right: 8px; color: #dc2626;"></i> ${seller.city}</p>
+                <p style="color: #ccc; margin: 5px 0;"><i class="fas fa-tag" style="margin-right: 8px; color: #dc2626;"></i> ${seller.category}</p>
+                <p style="color: #ccc; margin: 5px 0;"><i class="fas fa-box" style="margin-right: 8px; color: #dc2626;"></i> ${seller.productCount} ürün</p>
             </div>
-            <div class="producer-actions">
-                ${isFollowing ? `
-                    <button class="btn btn-success btn-small" onclick="unfollowSeller('${seller.id}')">
-                        <i class="fas fa-check"></i>
-                        Takip Ediliyor
-                    </button>
+            <div class="seller-description" style="margin-bottom: 15px;">
+                <p style="color: #999; font-style: italic;">${seller.description}</p>
+            </div>
+            <div class="seller-actions" style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="viewSellerProducts('${seller.email}')" style="flex: 1;">
+                    <i class="fas fa-eye"></i> Ürünleri Gör
+                </button>
+                <button class="btn btn-outline" onclick="followSeller('${seller.id}')" style="flex: 1;">
+                    <i class="fas fa-star"></i> Takip Et
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+
+    // Filtreleme event listener'ları ekle
+    setupSellerFilters();
+}
+
+// Satıcı filtreleme
+function setupSellerFilters() {
+    const categoryFilter = document.getElementById('sellerCategoryFilter');
+    const priceFilter = document.getElementById('sellerPriceFilter');
+    const searchInput = document.getElementById('sellerSearch');
+
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterSellers);
+    }
+    if (priceFilter) {
+        priceFilter.addEventListener('change', filterSellers);
+    }
+    if (searchInput) {
+        searchInput.addEventListener('input', filterSellers);
+    }
+}
+
+// Satıcıları filtrele
+function filterSellers() {
+    // Bu fonksiyon daha sonra geliştirilecek
+    console.log('Satıcı filtreleme aktif');
+}
+
+// Satıcı ürünlerini görüntüle
+function viewSellerProducts(sellerEmail) {
+    console.log('Satıcı ürünleri görüntüleniyor:', sellerEmail);
+    
+    // Satıcı email'ine göre ürünleri yükle
+    const allProducts = getAllSellerProducts();
+    const sellerProducts = allProducts.filter(p => p.sellerEmail === sellerEmail);
+    
+    if (sellerProducts.length === 0) {
+        alert('Bu satıcının henüz ürünü yok.');
+        return;
+    }
+    
+    // Ürünleri göster
+    showSellerProductsModal(sellerProducts, sellerEmail);
+}
+
+// Tüm satıcı ürünlerini al
+function getAllSellerProducts() {
+    const allProducts = [];
+    
+    // Test satıcı ürünleri
+    const sellers = [
+        {
+            email: 'satici1@videosat.com',
+            companyName: 'Elektronik Satıcısı',
+            products: [
+                {
+                    id: 11,
+                    name: 'Sony WH-1000XM5',
+                    category: 'elektronik',
+                    unit: 'adet',
+                    stock: 60,
+                    price: 8500.00,
+                    status: 'active',
+                    description: 'Gürültü önleyici kablosuz kulaklık',
+                    seller: 'Elektronik Satıcısı',
+                    sellerEmail: 'satici1@videosat.com'
+                },
+                {
+                    id: 12,
+                    name: 'Canon EOS R6 Mark II',
+                    category: 'elektronik',
+                    unit: 'adet',
+                    stock: 35,
+                    price: 65000.00,
+                    status: 'active',
+                    description: 'Profesyonel fotoğraf makinesi',
+                    seller: 'Elektronik Satıcısı',
+                    sellerEmail: 'satici1@videosat.com'
+                },
+                {
+                    id: 13,
+                    name: 'iPad Pro 12.9"',
+                    category: 'elektronik',
+                    unit: 'adet',
+                    stock: 45,
+                    price: 28000.00,
+                    status: 'active',
+                    description: 'Güçlü tablet bilgisayar',
+                    seller: 'Elektronik Satıcısı',
+                    sellerEmail: 'satici1@videosat.com'
+                }
+            ]
+        },
+        {
+            email: 'satici2@videosat.com',
+            companyName: 'Giyim Satıcısı',
+            products: [
+                {
+                    id: 21,
+                    name: 'Zara Kış Montu',
+                    category: 'giyim',
+                    unit: 'adet',
+                    stock: 120,
+                    price: 800.00,
+                    status: 'active',
+                    description: 'Şık kış montu',
+                    seller: 'Giyim Satıcısı',
+                    sellerEmail: 'satici2@videosat.com'
+                },
+                {
+                    id: 22,
+                    name: 'H&M Gömlek',
+                    category: 'giyim',
+                    unit: 'adet',
+                    stock: 200,
+                    price: 150.00,
+                    status: 'active',
+                    description: 'Klasik erkek gömleği',
+                    seller: 'Giyim Satıcısı',
+                    sellerEmail: 'satici2@videosat.com'
+                },
+                {
+                    id: 23,
+                    name: 'LC Waikiki Jean',
+                    category: 'giyim',
+                    unit: 'adet',
+                    stock: 300,
+                    price: 250.00,
+                    status: 'active',
+                    description: 'Rahat denim pantolon',
+                    seller: 'Giyim Satıcısı',
+                    sellerEmail: 'satici2@videosat.com'
+                }
+            ]
+        },
+        {
+            email: 'satici3@videosat.com',
+            companyName: 'Ev Eşyası Satıcısı',
+            products: [
+                {
+                    id: 31,
+                    name: 'IKEA Yatak Odası Seti',
+                    category: 'ev',
+                    unit: 'set',
+                    stock: 20,
+                    price: 15000.00,
+                    status: 'active',
+                    description: 'Modern yatak odası takımı',
+                    seller: 'Ev Eşyası Satıcısı',
+                    sellerEmail: 'satici3@videosat.com'
+                },
+                {
+                    id: 32,
+                    name: 'Bosch Buzdolabı',
+                    category: 'ev',
+                    unit: 'adet',
+                    stock: 30,
+                    price: 25000.00,
+                    status: 'active',
+                    description: 'A+++ enerji verimli buzdolabı',
+                    seller: 'Ev Eşyası Satıcısı',
+                    sellerEmail: 'satici3@videosat.com'
+                },
+                {
+                    id: 33,
+                    name: 'Siemens Çamaşır Makinesi',
+                    category: 'ev',
+                    unit: 'adet',
+                    stock: 25,
+                    price: 18000.00,
+                    status: 'active',
+                    description: '9 kg yıkama kapasiteli',
+                    seller: 'Ev Eşyası Satıcısı',
+                    sellerEmail: 'satici3@videosat.com'
+                }
+            ]
+        }
+    ];
+    
+    sellers.forEach(seller => {
+        allProducts.push(...seller.products);
+    });
+    
+    return allProducts;
+}
+
+// Satıcı ürünlerini modal'da göster
+function showSellerProductsModal(products, sellerEmail) {
+    const seller = products[0]?.seller || 'Satıcı';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: #1a1a1a; border-radius: 15px; padding: 30px; max-width: 800px; width: 100%; max-height: 80vh; overflow-y: auto; border: 1px solid #404040;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #ffffff; margin: 0;">${seller} - Ürünleri</h2>
+                <button onclick="this.closest('.modal').remove()" style="background: none; border: none; color: #999; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                ${products.map(product => `
+                    <div style="background: #2a2a2a; border: 1px solid #404040; border-radius: 10px; padding: 15px;">
+                        <h3 style="color: #ffffff; margin: 0 0 10px 0; font-size: 16px;">${product.name}</h3>
+                        <p style="color: #999; margin: 0 0 10px 0; font-size: 14px;">${product.description}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="color: #dc2626; font-weight: bold; font-size: 18px;">₺${product.price.toLocaleString()}</span>
+                            <span style="color: #999; font-size: 14px;">Stok: ${product.stock}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="addToCart(${product.id})" style="flex: 1; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-cart-plus"></i> Sepete Ekle
+                            </button>
+                            <button onclick="buyNow(${product.id})" style="flex: 1; background: #28a745; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-shopping-bag"></i> Hemen Al
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+}
+
+// Sepete ekle
+function addToCart(productId) {
+    console.log('Ürün sepete eklendi:', productId);
+    alert('Ürün sepete eklendi!');
+}
+
+// Hemen al
+function buyNow(productId) {
+    console.log('Ürün satın alındı:', productId);
+    alert('Ürün satın alındı!');
+}
+
+// Satıcıyı takip et
+function followSeller(sellerId) {
+    console.log('Satıcı takip edildi:', sellerId);
+    alert('Satıcı takip edildi!');
+}
                 ` : `
                     <button class="btn btn-primary btn-small" onclick="followSeller('${seller.id}')">
                         <i class="fas fa-star"></i>

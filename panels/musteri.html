@@ -232,42 +232,41 @@
         <section id="sellers" class="panel-section">
             <div class="section-header">
                 <h1>Satıcılar</h1>
-                <p>Sitedeki satıcılarla iletişime geçin</p>
+                <p>Sitedeki satıcıları bulun ve ürünlerini inceleyin</p>
             </div>
 
-            <!-- Producer Filters -->
+            <!-- Seller Filters -->
             <div class="filters">
                 <div class="filter-group">
-                    <label>Şehir:</label>
-                    <select id="producerCityFilter">
+                    <label>Kategori:</label>
+                    <select id="sellerCategoryFilter">
                         <option value="">Tümü</option>
-                        <option value="istanbul">İstanbul</option>
-                        <option value="ankara">Ankara</option>
-                        <option value="izmir">İzmir</option>
-                        <option value="bursa">Bursa</option>
-                        <option value="antalya">Antalya</option>
+                        <option value="elektronik">Elektronik</option>
+                        <option value="giyim">Giyim</option>
+                        <option value="ev">Ev Eşyası</option>
+                        <option value="spor">Spor</option>
+                        <option value="kitap">Kitap</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Sektör:</label>
-                    <select id="producerSectorFilter">
+                    <label>Fiyat Aralığı:</label>
+                    <select id="sellerPriceFilter">
                         <option value="">Tümü</option>
-                        <option value="otomotiv">Otomotiv</option>
-                        <option value="tekstil">Tekstil</option>
-                        <option value="gida">Gıda</option>
-                        <option value="kimya">Kimya</option>
-                        <option value="metal">Metal</option>
+                        <option value="0-1000">0 - 1.000 TL</option>
+                        <option value="1000-5000">1.000 - 5.000 TL</option>
+                        <option value="5000-10000">5.000 - 10.000 TL</option>
+                        <option value="10000+">10.000+ TL</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Arama:</label>
-                    <input type="text" id="producerSearch" placeholder="Üretici ara...">
+                    <input type="text" id="sellerSearch" placeholder="Satıcı veya ürün ara...">
                 </div>
             </div>
 
-            <!-- Producers Grid -->
-            <div class="producers-grid" id="producersGrid">
-                <!-- Producers will be populated by JavaScript -->
+            <!-- Sellers Grid -->
+            <div class="sellers-grid" id="sellersGrid">
+                <!-- Sellers will be populated by JavaScript -->
             </div>
         </section>
 
