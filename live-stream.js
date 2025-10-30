@@ -589,6 +589,21 @@ async function startStream() {
             });
             console.log('📡 WebSocket bildirimi gönderildi');
         }
+
+        // Notification Service ile bildirim gönder
+        if (window.notificationService) {
+            const streamData = {
+                id: streamId,
+                seller: currentUser?.companyName || 'Yayıncı',
+                sellerEmail: currentUser?.email || 'unknown@example.com',
+                startedAt: new Date().toISOString(),
+                status: 'live',
+                selectedProducts: selectedProducts
+            };
+            
+            window.notificationService.notifyLiveStreamStarted(streamData);
+            console.log('🔔 Bildirim servisi ile canlı yayın bildirimi gönderildi');
+        }
         
         // Show success message
         if (typeof showAlert === 'function') {

@@ -383,6 +383,8 @@ function loadSectionData(sectionId) {
         case 'notifications':
             if (userRole === 'satici') {
                 loadSellerNotifications();
+            } else if (userRole === 'musteri') {
+                loadCustomerNotifications();
             }
             break;
         case 'suppliers':
@@ -4320,8 +4322,17 @@ function requestLiveStreamNotification(productId) {
     
     localStorage.setItem('customerLiveStreamNotifications', JSON.stringify(notifications));
     
-    // Satıcıya bildirim gönder (simülasyon)
-    sendNotificationToSeller(product.sellerEmail, product.name);
+    // Satıcıya bildirim gönder (gerçek bildirim servisi)
+    if (window.notificationService) {
+        window.notificationService.requestLiveStreamNotification(
+            product.id, 
+            product.sellerEmail, 
+            product.name
+        );
+    } else {
+        // Fallback: eski simülasyon sistemi
+        sendNotificationToSeller(product.sellerEmail, product.name);
+    }
     
     alert(`${product.name} için canlı yayın bildirimi aktif edildi! Satıcı yayına girdiğinde size haber vereceğiz.`);
     console.log('Canlı yayın bildirimi eklendi:', notifications);
@@ -4624,6 +4635,109 @@ function updateNotificationBadge() {
             badge.style.display = 'none';
         }
     }
+}
+
+// Müşteri bildirimlerini yükle
+function loadCustomerNotifications() {
+    const content = document.getElementById('notificationsContent');
+    if (!content) return;
+
+    const userEmail = currentUser?.email;
+    if (!userEmail) return;
+
+    const notifications = JSON.parse(localStorage.getItem(`customerNotifications_${userEmail}`) || '[]');
+    
+    if (notifications.length === 0) {
+        content.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-bell" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <p>Henüz bildiriminiz yok</p>
+                <p style="font-size: 14px; margin-top: 10px;">Satıcılar canlı yayın başlattığında burada görünecek</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Bildirimleri tarihe göre sırala (en yeni önce)
+    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    content.innerHTML = `
+        <div class="notifications-list">
+            ${notifications.map(notification => `
+                <div class="notification-card" style="background: #1a1a1a; border: 1px solid #404040; border-radius: 15px; padding: 20px; margin-bottom: 15px; ${notification.type === 'live_stream_started' ? 'border-left: 4px solid #dc2626;' : 'border-left: 4px solid #28a745;'}">
+                    <div class="notification-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div class="notification-info">
+                            <h4 style="color: #ffffff; margin: 0; font-size: 16px;">
+                                <i class="fas fa-bell" style="color: ${notification.type === 'live_stream_started' ? '#dc2626' : '#28a745'}; margin-right: 8px;"></i>
+                                ${notification.title}
+                            </h4>
+                            <p style="color: #999; margin: 5px 0; font-size: 14px;">
+                                ${new Date(notification.timestamp).toLocaleString('tr-TR')}
+                            </p>
+                        </div>
+                        <div class="notification-actions">
+                            <button onclick="dismissCustomerNotification('${notification.timestamp}')" style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                <i class="fas fa-times"></i> Kapat
+                            </button>
+                        </div>
+                    </div>
+                    <div class="notification-content">
+                        <p style="color: #ccc; margin: 0 0 10px 0; font-size: 14px;">
+                            ${notification.message}
+                        </p>
+                        ${notification.type === 'live_stream_started' ? `
+                            <div style="background: #2a2a2a; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                                <p style="color: #999; margin: 0 0 5px 0; font-size: 12px;"><strong>Satıcı:</strong> ${notification.seller}</p>
+                                <p style="color: #999; margin: 0 0 10px 0; font-size: 12px;"><strong>Ürün:</strong> ${notification.productName}</p>
+                                <button onclick="joinLiveStream('${notification.streamId}')" style="background: #dc2626; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                    <i class="fas fa-play"></i> Yayına Katıl
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Bildirim badge'ini güncelle
+    updateCustomerNotificationBadge();
+}
+
+// Müşteri bildirimini kapat
+function dismissCustomerNotification(timestamp) {
+    const userEmail = currentUser?.email;
+    if (!userEmail) return;
+
+    let notifications = JSON.parse(localStorage.getItem(`customerNotifications_${userEmail}`) || '[]');
+    notifications = notifications.filter(n => n.timestamp !== timestamp);
+    localStorage.setItem(`customerNotifications_${userEmail}`, JSON.stringify(notifications));
+    loadCustomerNotifications();
+}
+
+// Müşteri bildirim badge'ini güncelle
+function updateCustomerNotificationBadge() {
+    const userEmail = currentUser?.email;
+    if (!userEmail) return;
+
+    const notifications = JSON.parse(localStorage.getItem(`customerNotifications_${userEmail}`) || '[]');
+    const unreadCount = notifications.length; // Tüm bildirimler "unread" sayılır
+    
+    const badge = document.getElementById('navNotificationBadge');
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Canlı yayına katıl
+function joinLiveStream(streamId) {
+    console.log('🎥 Canlı yayına katılıyor:', streamId);
+    window.location.href = `../live-stream.html?join=${streamId}`;
 }
                 ` : `
                     <button class="btn btn-primary btn-small" onclick="followSeller('${seller.id}')">
