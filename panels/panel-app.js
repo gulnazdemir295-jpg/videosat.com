@@ -1792,74 +1792,105 @@ function skipPurchase() {
     showAlert('Canlı yayın satın alma adımı atlandı.', 'info');
 }
 
-// Handle Stream Setup
-function handleStreamSetup(e) {
+// Handle Stream Setup (güncellendi: gerçek AWS IVS yayını ve ödeme/IVS kontrol)
+async function handleStreamSetup(e) {
     e.preventDefault();
-    
     const selectedProducts = Array.from(document.querySelectorAll('#streamProductSelection input:checked'))
         .map(input => parseInt(input.value));
-    
     const slogans = document.getElementById('streamSlogans').value;
     const title = document.getElementById('streamTitle').value;
-    
+    const userEmail = localStorage.getItem('userEmail') || '';
+
     if (selectedProducts.length === 0) {
         showAlert('Lütfen en az bir ürün seçin!', 'error');
         return;
     }
-    
     if (!title.trim()) {
         showAlert('Lütfen yayın başlığı girin!', 'error');
         return;
     }
-    
-    if (streamBalance <= 0) {
-        showAlert('Canlı yayın bakiyeniz yetersiz!', 'error');
+
+    // 1. Ödeme Kontrolü
+    let paymentStatus;
+    try {
+        let psRes = await fetch(`http://localhost:4000/api/payments/status?userEmail=${encodeURIComponent(userEmail)}`);
+        paymentStatus = await psRes.json();
+        if (!paymentStatus.hasTime) {
+            showAlert('Canlı yayın bakiyeniz yok! Lütfen önce süre satın alın.', 'error');
+            return;
+        }
+    } catch(e) {
+        showAlert('Ödeme kontrolü yapılamadı: '+e.message, 'error');
         return;
     }
-    
-    startLiveStream(selectedProducts, slogans, title);
-}
 
-// Start Live Stream
-async function startLiveStream(selectedProducts, slogans, title) {
+    // 2. IVS Config Kontrolü
+    let ivsConfig;
     try {
-        // Initialize camera
-        const stream = await webRTCManager.initializeCamera();
-        
-        // Set up video element
+        let ivsRes = await fetch(`http://localhost:4000/api/livestream/config?userEmail=${encodeURIComponent(userEmail)}`);
+        ivsConfig = await ivsRes.json();
+        if (!ivsConfig.endpoint || !ivsConfig.playbackUrl) {
+            showAlert('Yayın bilgisi atanmadı. Lütfen admin ile temasa geçin.', 'error');
+            return;
+        }
+    } catch(e) {
+        showAlert('Yayın bilgileri alınamadı: ' + e.message, 'error');
+        return;
+    }
+
+    // 3. Kamera erişimi al
+    let cameraStream;
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         const videoElement = document.getElementById('localVideo');
-        videoElement.srcObject = stream;
-        
-        // Update stream info
+        videoElement.srcObject = cameraStream;
+    } catch(e) {
+        showAlert('Kamera/mikrofon izni alınamadı: '+e.message, 'error');
+        return;
+    }
+
+    // 4. IVS Key al ve yayın başlat
+    let streamKey;
+    try {
+        let keyRes = await fetch('http://localhost:4000/api/livestream/claim-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userEmail })
+        });
+        let keyResObj = await keyRes.json();
+        if (!keyResObj.streamKey) throw new Error('Stream key yok!');
+        streamKey = keyResObj.streamKey;
+    } catch(e) {
+        showAlert('Yayın anahtarı alınamadı: ' + e.message, 'error');
+        return;
+    }
+
+    // 5. Gerçek AWS IVS yayına çık (publish)
+    try {
+        if (!window.awsIVSService) throw new Error('AWS IVS Service eksik!');
+        await window.awsIVSService.startIVSBrowserPublish(ivsConfig.endpoint, streamKey, 'localVideo');
+        showAlert('Gerçek AWS IVS yayını başladı!', 'success');
+        // UI güncellemeleri
+        document.getElementById('activeStream').classList.remove('hidden');
+        isStreaming = true;
+        // Yayına başlık/slogan gibi info ekle
         document.getElementById('currentStreamTitle').textContent = title;
         document.getElementById('currentStreamSlogan').textContent = slogans.split('\n')[0] || 'Slogan yok';
-        
-        // Show active stream
-        document.getElementById('activeStream').classList.remove('hidden');
-        
-        // Update stream products
+        // Ürünler UI
         const streamProductsList = document.getElementById('streamProductsList');
-        streamProductsList.innerHTML = selectedProducts.map(productId => {
-            const product = products.find(p => p.id === productId);
-            return `<div class="stream-product">${product.name}</div>`;
-        }).join('');
-        
-        // Start streaming
-        isStreaming = true;
-        streamBalance -= 1; // Deduct 1 hour
-        document.getElementById('streamBalanceHours').textContent = streamBalance;
-        
-        showAlert('Canlı yayın başlatıldı!', 'success');
-        
-    } catch (error) {
-        showAlert('Canlı yayın başlatılamadı: ' + error.message, 'error');
+        streamProductsList.innerHTML = selectedProducts.map(pid => `<div class="stream-product">${products.find(p=>p.id===pid)?.name||'-'}</div>`).join('');
+        // İzleyicilere IVS Player ile oynatmayı öner
+        window.lastIvsPlaybackUrl = ivsConfig.playbackUrl;
+    } catch(e) {
+        showAlert('AWS IVS yayını başlatılamadı: '+e.message, 'error');
+        return;
     }
 }
 
 // Stop Stream
 function stopStream() {
     if (isStreaming) {
-        webRTCManager.stopStreaming();
+        if (window.awsIVSService) window.awsIVSService.stopStream();
         document.getElementById('activeStream').classList.add('hidden');
         isStreaming = false;
         showAlert('Canlı yayın durduruldu!', 'success');
