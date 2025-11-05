@@ -270,13 +270,13 @@ async function startStream() {
         console.log('✅ Channel oluşturuldu:', currentChannelId);
         console.log('📦 Provider:', data.provider);
         
-        // Agora veya AWS IVS'ye göre yayın başlat
+        // Agora ile yayın başlat (AWS IVS artık kullanılmıyor)
         if (data.provider === 'AGORA') {
             console.log('📡 Agora yayını başlatılıyor...');
             await startAgoraStream(data);
         } else {
-            console.log('📡 AWS IVS yayını başlatılıyor...');
-            await startAWSIVSStream(data);
+            // Provider AGORA değilse hata ver
+            throw new Error(`Beklenmeyen provider: ${data.provider}. Backend AGORA kullanmalı. STREAM_PROVIDER=AGORA kontrol edin.`);
         }
         
         isStreaming = true;
@@ -369,15 +369,11 @@ async function startAgoraStream(channelData) {
     }
 }
 
-// Start AWS IVS Stream (fallback)
+// AWS IVS kaldırıldı - Artık sadece Agora.io kullanılıyor
+// Bu fonksiyon kullanılmıyor, geriye dönük uyumluluk için tutuluyor
 async function startAWSIVSStream(channelData) {
-    console.log('📡 AWS IVS yayını başlatılıyor...');
-    updateStatus('AWS IVS yayını için OBS veya benzeri yazılım kullanın. Stream Key konsolda görünecek.');
-    
-    // AWS IVS için stream key'i göster (güvenlik için sadece konsolda)
-    console.log('🔑 AWS IVS Stream Key:', channelData.streamKey);
-    console.log('🔗 AWS IVS Ingest URL:', channelData.ingest);
-    console.log('📺 AWS IVS Playback URL:', channelData.playbackUrl);
+    console.warn('⚠️ AWS IVS artık kullanılmıyor. Agora.io kullanılıyor.');
+    throw new Error('AWS IVS artık desteklenmiyor. Backend AGORA provider kullanmalı.');
 }
 
 // Stop Stream

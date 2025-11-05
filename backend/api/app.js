@@ -503,6 +503,18 @@ app.post('/api/rooms/:roomId/join', async (req, res) => {
       });
     }
     
+    // AWS IVS artık kullanılmıyor - Agora.io kullanılıyor
+    // Eğer buraya gelindi demek ki Agora service yüklenemedi veya STREAM_PROVIDER yanlış ayarlı
+    console.error('❌ Agora service yüklenemedi veya STREAM_PROVIDER yanlış ayarlı!');
+    console.error('   STREAM_PROVIDER:', STREAM_PROVIDER);
+    console.error('   agoraService:', !!agoraService);
+    return res.status(500).json({ 
+      error: 'agora_service_required', 
+      detail: 'Agora.io service gerekli. STREAM_PROVIDER=AGORA ve AGORA_APP_ID, AGORA_APP_CERTIFICATE environment variable\'larını kontrol edin. AWS IVS artık kullanılmıyor.' 
+    });
+    
+    // ⚠️ Aşağıdaki AWS IVS kodu artık çalışmıyor - yorum satırına alındı
+    /*
     // AWS IVS kullan (default)
     // Yeni channel oluştur (her telefon/bilgisayar = ayrı channel)
     // AWS IVS channel name sadece alphanumeric, dash ve underscore kabul eder
@@ -653,6 +665,7 @@ app.post('/api/rooms/:roomId/join', async (req, res) => {
       channelArn,
       streamKeyArn
     });
+    */
   } catch (err) {
     return res.status(500).json({ error: 'join_room_failed', detail: String(err && err.message || err) });
   }
@@ -669,15 +682,23 @@ app.get('/api/rooms/:roomId/channels', async (req, res) => {
     }
     
     // Sadece public bilgileri döndür (stream key hariç)
+    // Provider bilgisini de ekle (Agora için ek bilgiler)
     const channelsList = Array.from(room.channels.values()).map(ch => ({
       channelId: ch.channelId,
       streamerName: ch.streamerName,
       streamerEmail: ch.streamerEmail, // Opsiyonel: gizlenebilir
       deviceInfo: ch.deviceInfo,
-      playbackUrl: ch.playbackUrl,
+      playbackUrl: ch.playbackUrl || ch.hlsUrl, // Agora için hlsUrl, AWS IVS için playbackUrl
       status: ch.status,
       createdAt: ch.createdAt,
-      lastActiveAt: ch.lastActiveAt
+      lastActiveAt: ch.lastActiveAt,
+      provider: ch.provider || 'AGORA', // Provider bilgisi
+      // Agora için ek bilgiler
+      channelName: ch.channelName,
+      appId: ch.appId,
+      subscriberToken: ch.subscriberToken,
+      hlsUrl: ch.hlsUrl,
+      rtmpUrl: ch.rtmpUrl
     }));
     
     return res.json({
@@ -707,13 +728,27 @@ app.get('/api/rooms/:roomId/channels/:channelId/playback', async (req, res) => {
       return res.status(404).json({ error: 'Channel not found' });
     }
     
-    // Playback URL'i döndür (stream key yok)
+    // Playback URL'i döndür (provider'a göre)
+    let playbackUrl = null;
+    if (channel.provider === 'AGORA') {
+      playbackUrl = channel.hlsUrl || channel.rtmpUrl;
+    } else {
+      playbackUrl = channel.playbackUrl;
+    }
+    
     return res.json({
       ok: true,
       channelId,
       streamerName: channel.streamerName,
-      playbackUrl: channel.playbackUrl,
-      status: channel.status
+      playbackUrl: playbackUrl,
+      status: channel.status,
+      provider: channel.provider || 'AGORA',
+      // Agora için ek bilgiler
+      channelName: channel.channelName,
+      appId: channel.appId,
+      subscriberToken: channel.subscriberToken,
+      hlsUrl: channel.hlsUrl,
+      rtmpUrl: channel.rtmpUrl
     });
   } catch (err) {
     return res.status(500).json({ error: 'get_playback_failed', detail: String(err && err.message || err) });

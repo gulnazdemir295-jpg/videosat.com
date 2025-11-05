@@ -1,4 +1,5 @@
 // AWS IVS Browser Service
+// ⚠️ DEPRECATED: Bu servis artık kullanılmıyor. Agora.io kullanılıyor.
 // WARNING: Do NOT embed AWS credentials or stream keys in client code in production.
 // Keys/tokens must be delivered via secure backend endpoints.
 
