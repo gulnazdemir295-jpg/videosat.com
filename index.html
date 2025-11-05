@@ -505,7 +505,7 @@
     <!-- Şifremi Unuttum Modal -->
     <div id="forgotPasswordModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Şifremi Unuttum</h2><span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span></div><form id="forgotPasswordForm" class="auth-form"><div class="form-group"><label>Kayıtlı e-posta</label><input id="forgotEmail" type="email" required></div><button type="submit" class="btn btn-primary btn-block">Şifre Sıfırlama Talebi Gönder</button></form></div></div>
     
-    <script src="script-loader.js"></script>
+    <script src="script-loader.min.js"></script>
     <script>
         // Güvenilir script yükleme
         document.addEventListener('DOMContentLoaded', async function() {
@@ -514,14 +514,14 @@
             try {
                 // Script'leri sırayla yükle
                 await window.scriptLoader.loadScripts([
-                    'modules/module-loader.js',
+                    'modules/module-loader.min.js',
                     'create-test-user.js',
-                    'login-logger.js',
+                    'login-logger.min.js',
                     'setup-test-users.js',
-                    'app.js',
-                    'services/payment-service.js',
-                    'services/order-service.js',
-                    'cookie-consent.js'
+                    'app.min.js',
+                    'services/payment-service.min.js',
+                    'services/order-service.min.js',
+                    'cookie-consent.min.js'
                 ], {
                     timeout: 10000,
                     continueOnError: true

@@ -7,7 +7,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node backend/api/app.js"
+    "start": "node backend/api/app.js",
+    "obfuscate": "node obfuscate.js",
+    "build": "npm run obfuscate"
   },
   "dependencies": {
     "@aws-sdk/client-ivs": "^3.920.0",
@@ -17,5 +19,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "terser": "^5.44.1"
   }
 }

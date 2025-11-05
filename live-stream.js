@@ -129,7 +129,7 @@ async function requestCameraAccess() {
         }
         
         // getUserMedia çağrısı - tarayıcı izin pop-up'ını açacak
-        console.log('🔔 Tarayıcı izin pop-up'ı açılacak...');
+        console.log('🔔 Tarayıcı izin pop-up açılacak...');
         localStream = await navigator.mediaDevices.getUserMedia({
             video: { 
                 width: { ideal: 1280 },
