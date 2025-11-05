@@ -191,8 +191,12 @@ nano .env
 ### Q: AWS hesabı gerekli mi?
 **A**: Hayır! Agora.io AWS'den bağımsız bir platform.
 
-### Q: Ücretli mi?
-**A**: Ücretsiz tier var. 10,000 dakika/ay ücretsiz.
+### Q: Ücretli mi? Kredi kartı gerekli mi?
+**A**: 
+- **Ücretsiz tier**: 10,000 dakika/ay ücretsiz
+- **Kredi kartı**: Free tier için gerekmez
+- **Ücretlendirme**: Sadece limit aşılırsa başlar
+- **Geliştirme**: Ücretsiz plan yeterli
 
 ### Q: App Certificate'ı unuttum?
 **A**: Agora Console'dan tekrar görebilirsiniz (Show butonu).
