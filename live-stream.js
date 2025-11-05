@@ -37,6 +37,28 @@ const products = [
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎬 Live Stream JS başlatılıyor...');
     
+    // ✅ EN ÖNCELİK: Pre-stream setup'ı hemen gizle ve ana içeriği göster
+    console.log('✅ Pre-stream setup gizleniyor...');
+    const preStreamSetup = document.getElementById('preStreamSetup');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (preStreamSetup) {
+        preStreamSetup.style.display = 'none';
+        preStreamSetup.classList.remove('active');
+        preStreamSetup.style.visibility = 'hidden';
+        preStreamSetup.style.opacity = '0';
+        preStreamSetup.style.height = '0';
+        preStreamSetup.style.overflow = 'hidden';
+        console.log('✅ Pre-stream setup gizlendi');
+    }
+    
+    if (mainContent) {
+        mainContent.style.display = 'grid';
+        mainContent.style.visibility = 'visible';
+        mainContent.style.opacity = '1';
+        console.log('✅ Ana içerik gösterildi');
+    }
+    
     try {
         loadUserData();
         parseBroadcastIdFromQuery();
@@ -470,10 +492,21 @@ function loadStreamBalance() {
     // Pre-stream setup'ı her zaman gizle (ana içerik gösterilsin)
     hidePreStreamSetup();
     
-    // Ana içeriği göster
+    // Ana içeriği göster (ekstra güvence)
     const mainContent = document.getElementById('mainContent');
+    const preStreamSetup = document.getElementById('preStreamSetup');
+    
     if (mainContent) {
         mainContent.style.display = 'grid';
+        mainContent.style.visibility = 'visible';
+        mainContent.style.opacity = '1';
+    }
+    
+    if (preStreamSetup) {
+        preStreamSetup.style.display = 'none';
+        preStreamSetup.style.visibility = 'hidden';
+        preStreamSetup.style.height = '0';
+        preStreamSetup.style.overflow = 'hidden';
     }
 }
 
