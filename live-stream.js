@@ -86,12 +86,30 @@ async function requestCameraAccess() {
     console.log('📹 Kamera erişimi isteniyor...');
     
     try {
-        updateStatus('Kamera ve mikrofon erişimi isteniyor...');
+        updateStatus('Kamera ve mikrofon erişimi isteniyor... Tarayıcıdan izin verin!');
+        
+        // Butonu devre dışı bırak
+        const cameraBtn = document.getElementById('cameraAccessBtn');
+        if (cameraBtn) {
+            cameraBtn.disabled = true;
+            cameraBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> İzin bekleniyor...';
+        }
         
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             throw new Error('WebRTC desteklenmiyor. Modern bir tarayıcı kullanın.');
         }
         
+        // HTTPS kontrolü
+        const isSecure = window.location.protocol === 'https:' || 
+                         window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
+        
+        if (!isSecure) {
+            throw new Error('Kamera erişimi için HTTPS gereklidir. Lütfen HTTPS kullanın.');
+        }
+        
+        // getUserMedia çağrısı - tarayıcı izin pop-up'ını açacak
+        console.log('🔔 Tarayıcı izin pop-up'ı açılacak...');
         localStream = await navigator.mediaDevices.getUserMedia({
             video: { 
                 width: { ideal: 1280 },
@@ -105,47 +123,118 @@ async function requestCameraAccess() {
         });
         
         console.log('✅ Kamera erişimi başarılı');
+        console.log('📹 Video tracks:', localStream.getVideoTracks().length);
+        console.log('🎤 Audio tracks:', localStream.getAudioTracks().length);
         
         // Local video'yu göster
         const localVideo = document.getElementById('localVideo');
         if (localVideo) {
             localVideo.srcObject = localStream;
             localVideo.style.display = 'block';
+            localVideo.play().catch(err => {
+                console.warn('Video play hatası:', err);
+            });
         }
         
-        updateStatus('Kamera erişimi başarılı! Yayını başlatabilirsiniz.');
+        // Track'leri kontrol et
+        const videoTracks = localStream.getVideoTracks();
+        const audioTracks = localStream.getAudioTracks();
+        
+        if (videoTracks.length > 0) {
+            console.log('✅ Video track aktif:', videoTracks[0].label);
+            updateStatus('✅ Kamera erişimi başarılı! Video: ' + videoTracks[0].label + ' - Yayını başlatabilirsiniz.');
+        } else {
+            console.warn('⚠️ Video track bulunamadı');
+            updateStatus('⚠️ Kamera erişimi başarılı ama video track yok');
+        }
+        
+        if (audioTracks.length > 0) {
+            console.log('✅ Audio track aktif:', audioTracks[0].label);
+        } else {
+            console.warn('⚠️ Audio track bulunamadı');
+        }
         
         // Kamera butonunu gizle, yayın butonunu göster
-        const cameraBtn = document.getElementById('cameraAccessBtn');
+        if (cameraBtn) {
+            cameraBtn.style.display = 'none';
+        }
         const startBtn = document.getElementById('startStreamBtn');
-        if (cameraBtn) cameraBtn.style.display = 'none';
-        if (startBtn) startBtn.style.display = 'block';
+        if (startBtn) {
+            startBtn.style.display = 'block';
+            startBtn.disabled = false;
+        }
         
     } catch (error) {
         console.error('❌ Kamera erişimi hatası:', error);
-        updateStatus('Kamera erişimi hatası: ' + error.message);
-        alert('Kamera erişimi için izin verin: ' + error.message);
+        console.error('Hata detayı:', error.name, error.message);
+        
+        let errorMessage = 'Kamera erişimi hatası: ';
+        
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = 'Kamera erişimi reddedildi. Lütfen tarayıcı ayarlarından kamera ve mikrofon izinlerini verin.';
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage = 'Kamera bulunamadı. Lütfen bir kamera bağlı olduğundan emin olun.';
+        } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+            errorMessage = 'Kamera kullanımda. Lütfen başka bir uygulama kamerayı kullanıyorsa kapatın.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        updateStatus(errorMessage);
+        
+        // Butonu tekrar aktif et
+        const cameraBtn = document.getElementById('cameraAccessBtn');
+        if (cameraBtn) {
+            cameraBtn.disabled = false;
+            cameraBtn.innerHTML = '<i class="fas fa-camera"></i> Kamera Erişimi İste';
+        }
+        
+        alert(errorMessage);
     }
 }
 
 // Start Stream
 async function startStream() {
+    // Kamera kontrolü
     if (!localStream) {
-        alert('Önce kamera erişimi isteyin!');
+        const confirmResult = confirm('Kamera erişimi yok. Önce kamera erişimi isteyiniz!\n\nKamera erişimi iste butonuna tıklayın.');
+        if (confirmResult) {
+            await requestCameraAccess();
+        }
+        return;
+    }
+    
+    // Stream track'lerini kontrol et
+    const videoTracks = localStream.getVideoTracks();
+    const audioTracks = localStream.getAudioTracks();
+    
+    if (videoTracks.length === 0) {
+        alert('Video track bulunamadı. Lütfen kamera erişimini tekrar deneyin.');
+        await requestCameraAccess();
         return;
     }
     
     if (isStreaming) {
         console.warn('Yayın zaten aktif');
+        updateStatus('Yayın zaten aktif!');
         return;
     }
     
     console.log('🎬 Yayın başlatılıyor...');
     updateStatus('Yayın başlatılıyor...');
     
+    // Butonu devre dışı bırak
+    const startBtn = document.getElementById('startStreamBtn');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Başlatılıyor...';
+    }
+    
     try {
         // Backend'den channel bilgisi al
         const roomId = 'main-room';
+        console.log('📡 Backend\'e istek gönderiliyor:', `${getAPIBaseURL()}/rooms/${roomId}/join`);
+        
         const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/join`, {
             method: 'POST',
             headers: {
@@ -158,43 +247,71 @@ async function startStream() {
             })
         });
         
+        console.log('📡 Backend yanıtı:', response.status, response.statusText);
+        
         if (!response.ok) {
-            throw new Error('Backend yanıt vermedi');
+            const errorText = await response.text();
+            console.error('❌ Backend hatası:', errorText);
+            throw new Error(`Backend yanıt vermedi (${response.status}): ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('✅ Backend yanıtı:', data);
         
         if (!data.ok) {
             throw new Error(data.error || 'Channel oluşturulamadı');
         }
         
+        if (!data.channelId) {
+            throw new Error('Channel ID alınamadı');
+        }
+        
         currentChannelId = data.channelId;
         console.log('✅ Channel oluşturuldu:', currentChannelId);
+        console.log('📦 Provider:', data.provider);
         
         // Agora veya AWS IVS'ye göre yayın başlat
         if (data.provider === 'AGORA') {
+            console.log('📡 Agora yayını başlatılıyor...');
             await startAgoraStream(data);
         } else {
+            console.log('📡 AWS IVS yayını başlatılıyor...');
             await startAWSIVSStream(data);
         }
         
         isStreaming = true;
         updateLiveStatus('CANLI');
-        updateStatus('Yayın aktif!');
+        updateStatus('✅ Yayın aktif! İzleyiciler katılabilir.');
         
         // Butonları güncelle
-        const startBtn = document.getElementById('startStreamBtn');
+        if (startBtn) {
+            startBtn.style.display = 'none';
+        }
         const stopBtn = document.getElementById('stopStreamBtn');
-        if (startBtn) startBtn.style.display = 'none';
-        if (stopBtn) stopBtn.style.display = 'block';
+        if (stopBtn) {
+            stopBtn.style.display = 'block';
+            stopBtn.disabled = false;
+        }
         
         // Beğeni sayısını yükle
         await loadLikes();
         
+        // Başarı mesajı
+        console.log('✅ Yayın başarıyla başlatıldı!');
+        
     } catch (error) {
         console.error('❌ Yayın başlatma hatası:', error);
-        updateStatus('Yayın başlatma hatası: ' + error.message);
-        alert('Yayın başlatılamadı: ' + error.message);
+        console.error('Hata detayı:', error.name, error.message, error.stack);
+        
+        updateStatus('❌ Yayın başlatma hatası: ' + error.message);
+        
+        // Butonu tekrar aktif et
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Yayını Başlat';
+        }
+        
+        alert('Yayın başlatılamadı:\n\n' + error.message + '\n\nLütfen konsolu kontrol edin (F12).');
     }
 }
 
