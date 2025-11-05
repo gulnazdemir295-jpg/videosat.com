@@ -26,6 +26,26 @@ function getAPIBaseURL() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎬 Canlı Yayın Sistemi Başlatılıyor...');
     
+    // Agora SDK kontrolü
+    try {
+        // SDK yüklenene kadar bekle (max 5 saniye)
+        let attempts = 0;
+        while (typeof AgoraRTC === 'undefined' && attempts < 25) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            attempts++;
+        }
+        
+        if (typeof AgoraRTC === 'undefined') {
+            console.error('❌ Agora SDK yüklenemedi!');
+            updateStatus('Agora SDK yüklenemedi. Sayfayı yenileyin.');
+            return;
+        }
+        
+        checkAgoraSDK();
+    } catch (error) {
+        console.error('❌ Agora SDK kontrol hatası:', error);
+    }
+    
     // Kullanıcı bilgisini yükle
     loadUserData();
     
@@ -330,35 +350,110 @@ async function startAgoraStream(channelData) {
             codec: 'vp8' 
         });
         
-        // Channel'a katıl
+        // Event listeners ekle (remote user'lar için)
+        agoraClient.on('user-published', async (user, mediaType) => {
+            console.log('📡 Remote user published:', user.uid, mediaType);
+            try {
+                // Remote user'ı subscribe et
+                await agoraClient.subscribe(user, mediaType);
+                
+                if (mediaType === 'video') {
+                    const remoteVideo = document.getElementById('remoteVideo');
+                    if (remoteVideo && user.videoTrack) {
+                        user.videoTrack.play('remoteVideo');
+                        remoteVideo.style.display = 'block';
+                        console.log('✅ Remote video oynatılıyor');
+                    }
+                }
+                
+                if (mediaType === 'audio') {
+                    if (user.audioTrack) {
+                        user.audioTrack.play();
+                        console.log('✅ Remote audio oynatılıyor');
+                    }
+                }
+            } catch (subscribeError) {
+                console.error('❌ Subscribe hatası:', subscribeError);
+            }
+        });
+        
+        agoraClient.on('user-unpublished', (user, mediaType) => {
+            console.log('📡 Remote user unpublished:', user.uid, mediaType);
+            if (mediaType === 'video') {
+                const remoteVideo = document.getElementById('remoteVideo');
+                if (remoteVideo) {
+                    remoteVideo.style.display = 'none';
+                }
+            }
+        });
+        
+        agoraClient.on('exception', (evt) => {
+            console.error('❌ Agora exception:', evt);
+        });
+        
+        console.log('✅ Agora client oluşturuldu ve event listener\'lar eklendi');
+        
+        // Channel'a katıl - webrtc token kullan
+        const token = channelData.webrtc?.token || channelData.publisherToken || null;
+        const uid = channelData.webrtc?.uid || null;
+        
+        console.log('📡 Agora join parametreleri:', {
+            appId: channelData.appId,
+            channelName: channelData.channelName,
+            hasToken: !!token,
+            tokenLength: token ? token.length : 0,
+            uid: uid
+        });
+        
         await agoraClient.join(
             channelData.appId,
             channelData.channelName,
-            channelData.publisherToken || null
+            token,
+            uid || null // null = random UID
         );
         
         console.log('✅ Agora channel\'a katıldı');
         
         // Local stream'den track'leri al
-        const videoTrack = localStream.getVideoTracks()[0];
-        const audioTrack = localStream.getAudioTracks()[0];
+        const videoTracks = localStream.getVideoTracks();
+        const audioTracks = localStream.getAudioTracks();
         
         // Video track yayınla
-        if (videoTrack) {
-            agoraTracks.videoTrack = AgoraRTC.createCustomVideoTrack({
-                mediaStreamTrack: videoTrack
-            });
-            await agoraClient.publish([agoraTracks.videoTrack]);
-            console.log('✅ Video track yayınlandı');
+        if (videoTracks.length > 0) {
+            const videoTrack = videoTracks[0];
+            try {
+                // Agora SDK 4.x için createCustomVideoTrack kullan
+                agoraTracks.videoTrack = await AgoraRTC.createCustomVideoTrack({
+                    mediaStreamTrack: videoTrack
+                });
+                await agoraClient.publish([agoraTracks.videoTrack]);
+                console.log('✅ Video track yayınlandı:', videoTrack.label);
+            } catch (videoError) {
+                console.error('❌ Video track yayınlama hatası:', videoError);
+                // Fallback: direkt mediaStreamTrack kullan
+                throw new Error(`Video track yayınlanamadı: ${videoError.message}`);
+            }
+        } else {
+            console.warn('⚠️ Video track bulunamadı');
         }
         
         // Audio track yayınla
-        if (audioTrack) {
-            agoraTracks.audioTrack = AgoraRTC.createCustomAudioTrack({
-                mediaStreamTrack: audioTrack
-            });
-            await agoraClient.publish([agoraTracks.audioTrack]);
-            console.log('✅ Audio track yayınlandı');
+        if (audioTracks.length > 0) {
+            const audioTrack = audioTracks[0];
+            try {
+                // Agora SDK 4.x için createCustomAudioTrack kullan
+                agoraTracks.audioTrack = await AgoraRTC.createCustomAudioTrack({
+                    mediaStreamTrack: audioTrack
+                });
+                await agoraClient.publish([agoraTracks.audioTrack]);
+                console.log('✅ Audio track yayınlandı:', audioTrack.label);
+            } catch (audioError) {
+                console.error('❌ Audio track yayınlama hatası:', audioError);
+                // Fallback: direkt mediaStreamTrack kullan
+                throw new Error(`Audio track yayınlanamadı: ${audioError.message}`);
+            }
+        } else {
+            console.warn('⚠️ Audio track bulunamadı');
         }
         
         console.log('✅ Agora yayını başarıyla başlatıldı');

@@ -1393,7 +1393,7 @@ app.get('/api/streams', async (req, res) => {
               channelName: channel.channelName,
               title: channel.title || 'Canlı Yayın',
               companyName: channel.streamerName || 'Bilinmeyen',
-              provider: channel.provider || 'AWS_IVS',
+              provider: channel.provider || 'AGORA',
               status: channel.status,
               viewers: channel.viewers || 0,
               likes: (streamLikes.get(channelId) || { count: 0 }).count,
