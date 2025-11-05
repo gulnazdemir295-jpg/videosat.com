@@ -13,7 +13,25 @@ class RealPaymentService {
             testMode: true
         };
         
+        // API Base URL fonksiyonu
+        this.getAPIBaseURL = this.getAPIBaseURL.bind(this);
+        
         this.init();
+    }
+    
+    // API Base URL belirleme
+    getAPIBaseURL() {
+        if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
+            return window.getAPIBaseURL();
+        }
+        // Fallback: hostname'e göre belirle
+        if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+                return 'https://basvideo.com/api';
+            }
+        }
+        return 'http://localhost:3000/api';
     }
 
     async init() {
@@ -124,7 +142,9 @@ class RealPaymentService {
     // Ödeme intent oluştur
     async createPaymentIntent(amount, currency = 'TRY', metadata = {}) {
         try {
-            const response = await fetch('/api/create-payment-intent', {
+            const apiUrl = `${this.getAPIBaseURL()}/create-payment-intent`;
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -139,13 +159,18 @@ class RealPaymentService {
             });
 
             if (!response.ok) {
-                throw new Error('Payment intent oluşturulamadı');
+                const errorText = await response.text();
+                throw new Error(`Payment intent oluşturulamadı (${response.status}): ${errorText}`);
             }
 
             const data = await response.json();
             return data;
         } catch (error) {
             console.error('❌ Payment intent hatası:', error);
+            // Network error kontrolü
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                throw new Error(`Backend bağlantı hatası. Backend çalışıyor mu? (${this.getAPIBaseURL()})`);
+            }
             // Fallback: Simülasyon
             return this.createSimulatedPaymentIntent(amount, currency, metadata);
         }

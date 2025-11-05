@@ -6,17 +6,79 @@ class WebSocketService {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.listeners = {};
+        this.wsUrl = null;
+        this.init();
+    }
+    
+    init() {
+        // WebSocket URL'ini belirle
+        if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+                this.wsUrl = 'wss://basvideo.com/ws';
+            } else {
+                this.wsUrl = 'ws://localhost:3000/ws';
+            }
+        }
     }
 
-    // Connect to WebSocket server (mock)
+    // Connect to WebSocket server
     connect() {
-        console.log('🔌 WebSocket bağlantısı başlatılıyor (simüle)...');
+        // Gerçek WebSocket server yoksa mock kullan
+        if (!this.wsUrl) {
+            console.log('🔌 WebSocket bağlantısı başlatılıyor (simüle)...');
+            
+            // Simulate connection
+            setTimeout(() => {
+                this.isConnected = true;
+                this.onOpen();
+            }, 500);
+            return;
+        }
         
-        // Simulate connection
-        setTimeout(() => {
-            this.isConnected = true;
-            this.onOpen();
-        }, 500);
+        // Gerçek WebSocket bağlantısı (backend'de WebSocket server varsa)
+        try {
+            console.log(`🔌 WebSocket bağlantısı başlatılıyor: ${this.wsUrl}`);
+            this.socket = new WebSocket(this.wsUrl);
+            
+            this.socket.onopen = () => {
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                this.onOpen();
+            };
+            
+            this.socket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data.event || 'message', data);
+                } catch (error) {
+                    this.handleMessage('message', { data: event.data });
+                }
+            };
+            
+            this.socket.onerror = (error) => {
+                console.error('❌ WebSocket hatası:', error);
+                this.emit('error', error);
+            };
+            
+            this.socket.onclose = () => {
+                this.isConnected = false;
+                this.emit('disconnect', { status: 'disconnected' });
+                
+                // Otomatik yeniden bağlanma
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    setTimeout(() => this.connect(), 1000 * this.reconnectAttempts);
+                }
+            };
+        } catch (error) {
+            console.warn('⚠️ WebSocket bağlantısı kurulamadı, mock mod kullanılıyor:', error);
+            // Fallback: Mock bağlantı
+            setTimeout(() => {
+                this.isConnected = true;
+                this.onOpen();
+            }, 500);
+        }
     }
 
     // Handle connection open

@@ -112,18 +112,24 @@ class RealCargoService {
             payment_type: 'sender'
         };
 
-        const response = await fetch(`${this.cargoCompanies.aras.apiUrl}/shipment/create`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.config.arasApiKey}`,
-                'X-Secret': this.config.arasSecret
-            },
-            body: JSON.stringify(shipmentData)
-        });
+        let response;
+        try {
+            response = await fetch(`${this.cargoCompanies.aras.apiUrl}/shipment/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.config.arasApiKey}`,
+                    'X-Secret': this.config.arasSecret
+                },
+                body: JSON.stringify(shipmentData)
+            });
+        } catch (networkError) {
+            throw new Error(`Aras Kargo API bağlantı hatası: ${networkError.message}`);
+        }
 
         if (!response.ok) {
-            throw new Error('Aras Kargo API hatası');
+            const errorText = await response.text();
+            throw new Error(`Aras Kargo API hatası (${response.status}): ${errorText}`);
         }
 
         const result = await response.json();

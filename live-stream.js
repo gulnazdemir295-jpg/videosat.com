@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Kullanıcı bilgisini yükle
     loadUserData();
-    
-    // Backend bağlantısını test et
-    await testBackendConnection();
-    
+        
+        // Backend bağlantısını test et
+        await testBackendConnection();
+        
     // Pre-stream setup'ı gizle
     const preStreamSetup = document.getElementById('preStreamSetup');
     if (preStreamSetup) {
@@ -68,7 +68,7 @@ function loadUserData() {
         if (userData) {
             currentUser = JSON.parse(userData);
             console.log('✅ Kullanıcı yüklendi:', currentUser.email);
-        } else {
+    } else {
             // Test için varsayılan kullanıcı
             currentUser = {
                 email: 'test@example.com',
@@ -90,7 +90,7 @@ function loadUserData() {
 // Test Backend Connection
 async function testBackendConnection() {
     try {
-        const response = await fetch(`${getAPIBaseURL()}/health`);
+        const response = await fetch(`${getAPIBaseURL()}/api/health`);
         if (response.ok) {
             console.log('✅ Backend bağlantısı başarılı');
             return true;
@@ -120,11 +120,11 @@ async function requestCameraAccess() {
         }
         
         // HTTPS kontrolü
-        const isSecure = window.location.protocol === 'https:' || 
-                         window.location.hostname === 'localhost' || 
+    const isSecure = window.location.protocol === 'https:' || 
+                     window.location.hostname === 'localhost' || 
                          window.location.hostname === '127.0.0.1';
-        
-        if (!isSecure) {
+    
+    if (!isSecure) {
             throw new Error('Kamera erişimi için HTTPS gereklidir. Lütfen HTTPS kullanın.');
         }
         
@@ -163,7 +163,7 @@ async function requestCameraAccess() {
         if (videoTracks.length > 0) {
             console.log('✅ Video track aktif:', videoTracks[0].label);
             updateStatus('✅ Kamera erişimi başarılı! Video: ' + videoTracks[0].label + ' - Yayını başlatabilirsiniz.');
-        } else {
+    } else {
             console.warn('⚠️ Video track bulunamadı');
             updateStatus('⚠️ Kamera erişimi başarılı ama video track yok');
         }
@@ -196,7 +196,7 @@ async function requestCameraAccess() {
             errorMessage = 'Kamera bulunamadı. Lütfen bir kamera bağlı olduğundan emin olun.';
         } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
             errorMessage = 'Kamera kullanımda. Lütfen başka bir uygulama kamerayı kullanıyorsa kapatın.';
-        } else {
+    } else {
             errorMessage += error.message;
         }
         
@@ -255,7 +255,7 @@ async function startStream() {
         const roomId = 'main-room';
         console.log('📡 Backend\'e istek gönderiliyor:', `${getAPIBaseURL()}/rooms/${roomId}/join`);
         
-        const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/join`, {
+        const response = await fetch(`${getAPIBaseURL()}/api/rooms/${roomId}/join`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -266,7 +266,7 @@ async function startStream() {
                 deviceInfo: navigator.userAgent
             })
         });
-        
+
         console.log('📡 Backend yanıtı:', response.status, response.statusText);
         
         if (!response.ok) {
@@ -274,7 +274,7 @@ async function startStream() {
             console.error('❌ Backend hatası:', errorText);
             throw new Error(`Backend yanıt vermedi (${response.status}): ${errorText}`);
         }
-        
+
         const data = await response.json();
         console.log('✅ Backend yanıtı:', data);
         
@@ -433,7 +433,7 @@ async function startAgoraStream(channelData) {
                 // Fallback: direkt mediaStreamTrack kullan
                 throw new Error(`Video track yayınlanamadı: ${videoError.message}`);
             }
-        } else {
+    } else {
             console.warn('⚠️ Video track bulunamadı');
         }
         
@@ -501,11 +501,11 @@ async function stopStream() {
         }
         
         // Local stream'i kapat
-        if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            localStream = null;
-        }
-        
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
         // Local video'yu temizle
         const localVideo = document.getElementById('localVideo');
         if (localVideo) {
@@ -547,7 +547,7 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/chat`, {
+        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -604,7 +604,7 @@ async function toggleLike() {
     }
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/like`, {
+        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -630,7 +630,7 @@ async function loadLikes() {
     if (!currentChannelId) return;
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/likes`);
+        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/likes`);
         if (response.ok) {
             const data = await response.json();
             likeCount = data.likeCount || 0;

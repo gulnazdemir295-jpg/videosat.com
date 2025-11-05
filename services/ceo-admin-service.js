@@ -23,7 +23,25 @@ class CEOAdminService {
             musteri: ['payment', 'cargo', 'notifications']
         };
         
+        // API Base URL fonksiyonu
+        this.getAPIBaseURL = this.getAPIBaseURL.bind(this);
+        
         this.init();
+    }
+    
+    // API Base URL belirleme
+    getAPIBaseURL() {
+        if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
+            return window.getAPIBaseURL();
+        }
+        // Fallback: hostname'e göre belirle
+        if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+                return 'https://basvideo.com/api';
+            }
+        }
+        return 'http://localhost:3000/api';
     }
 
     init() {
@@ -168,23 +186,32 @@ class CEOAdminService {
             const stripe = Stripe(config.stripePublicKey);
             
             // Test payment intent oluştur
-            const response = await fetch('/api/create-payment-intent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${config.stripeSecretKey}`
-                },
-                body: JSON.stringify({
-                    amount: 1000, // 10.00 TL
-                    currency: 'try'
-                })
-            });
+            try {
+                const apiUrl = `${this.getAPIBaseURL()}/create-payment-intent`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.stripeSecretKey}`
+                    },
+                    body: JSON.stringify({
+                        amount: 1000, // 10.00 TL
+                        currency: 'try'
+                    })
+                });
 
-            if (response.ok) {
-                console.log('✅ Ödeme sistemi test başarılı');
-                this.updateModuleStatus('payment', 'active');
-            } else {
-                throw new Error('Ödeme sistemi test başarısız');
+                if (response.ok) {
+                    console.log('✅ Ödeme sistemi test başarılı');
+                    this.updateModuleStatus('payment', 'active');
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Ödeme sistemi test başarısız (${response.status}): ${errorText}`);
+                }
+            } catch (error) {
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error(`Backend bağlantı hatası. Backend çalışıyor mu? (${this.getAPIBaseURL()})`);
+                }
+                throw error;
             }
         } else {
             throw new Error('Stripe kütüphanesi yüklenmedi');
@@ -199,9 +226,10 @@ class CEOAdminService {
             throw new Error('Canlı yayın yapılandırması eksik');
         }
 
-        // AWS IVS test
+        // AWS IVS test (deprecated - Agora kullanılıyor)
         try {
-            const response = await fetch('/api/test-livestream', {
+            const apiUrl = `${this.getAPIBaseURL()}/test-livestream`;
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -298,7 +326,8 @@ class CEOAdminService {
 
         // Database test
         try {
-            const response = await fetch('/api/test-database', {
+            const apiUrl = `${this.getAPIBaseURL()}/test-database`;
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
