@@ -84,18 +84,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Backend bağlantısını test et
         await testBackendConnection();
         
-        // ✅ OTOMATİK KAMERA ERİŞİMİ - Sayfa yüklendiğinde otomatik aç (sadece yayıncı modunda)
-        if (isStreamer && !localStream) {
-            console.log('✅ Yayıncı modu: Otomatik kamera erişimi başlatılıyor...');
-            updateStatus('Kamera erişimi otomatik olarak isteniyor...');
+        // ✅ OTOMATİK KAMERA ERİŞİMİ - Sayfa yüklendiğinde otomatik aç (HER ZAMAN)
+        console.log('✅ Otomatik kamera erişimi başlatılıyor...');
+        updateStatus('Kamera erişimi otomatik olarak isteniyor...');
+        
+        // 2 saniye bekle (sayfa tamamen yüklensin)
+        setTimeout(async () => {
             try {
-                await requestCameraAccess();
-                console.log('✅ Kamera erişimi otomatik olarak başarılı!');
+                if (!localStream) {
+                    console.log('📹 Otomatik kamera erişimi isteniyor...');
+                    await requestCameraAccess();
+                    console.log('✅ Kamera erişimi otomatik olarak başarılı!');
+                }
             } catch (error) {
                 console.warn('⚠️ Otomatik kamera erişimi başarısız, kullanıcı manuel yapabilir:', error);
-                updateStatus('⚠️ Kamera erişimi için izin verin');
+                updateStatus('⚠️ Kamera erişimi için "Kamera Erişimi İste" butonuna tıklayın');
             }
-        }
+        }, 2000);
         
         // Auto-setup IVS playback for viewers
         (async () => {
@@ -1230,8 +1235,18 @@ function stopTimer() {
 // Update status
 function updateStatus(message) {
     const statusInfo = document.getElementById('statusInfo');
-    if (statusInfo) {
-        statusInfo.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+    const statusText = document.getElementById('statusText');
+    
+    if (statusText) {
+        statusText.textContent = message;
+    } else if (statusInfo) {
+        // Fallback: Eski yöntem
+        const existingText = statusInfo.querySelector('#statusText');
+        if (existingText) {
+            existingText.textContent = message;
+        } else {
+            statusInfo.innerHTML = `<i class="fas fa-info-circle"></i> <span id="statusText">${message}</span>`;
+        }
     }
 }
 
@@ -1473,14 +1488,26 @@ async function requestCameraAccess() {
     console.log('📹 Kamera erişimi isteniyor...');
     
     try {
-        updateStatus('Kamera ve mikrofon erişimi isteniyor...');
+        updateStatus('Kamera ve mikrofon erişimi isteniyor... Tarayıcıdan izin verin...');
         
         // Check if getUserMedia is available
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             throw new Error('WebRTC desteklenmiyor. Lütfen modern bir tarayıcı kullanın.');
         }
         
+        // HTTPS kontrolü
+        const isSecure = window.location.protocol === 'https:' || 
+                         window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' ||
+                         window.location.hostname.includes('basvideo.com');
+        
+        if (!isSecure && window.location.hostname !== 'localhost') {
+            console.warn('⚠️ HTTPS gereklidir. basvideo.com HTTPS kullanıyor.');
+        }
+        
         // Request camera and microphone access
+        // ÖNEMLİ: getUserMedia çağrısı tarayıcıda izin pop-up'ını açar
+        console.log('🔔 Tarayıcı izin pop-up'ı açılacak...');
         localStream = await navigator.mediaDevices.getUserMedia({
             video: { 
                 width: { ideal: 1280 },
