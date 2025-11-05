@@ -665,23 +665,28 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <script src="script-loader.js?v=2"></script>
     <script>
-        // Cache bypass için dinamik script yükleme (hemen yükle)
+        // Notification Service'i tamamen devre dışı bırak (cache sorununu önlemek için)
+        // Eski dosya yüklenirse bile hata vermeyecek şekilde fallback ekle
         (function() {
-            // Önce mevcut script'i kaldır (varsa)
-            var existingScript = document.querySelector('script[src*="notification-service"]');
-            if (existingScript) {
-                existingScript.remove();
-            }
+            // Önce mevcut script'leri kaldır (varsa)
+            var existingScripts = document.querySelectorAll('script[src*="notification-service"]');
+            existingScripts.forEach(function(script) {
+                script.remove();
+            });
             
-            // Yeni script oluştur ve yükle
-            var script = document.createElement('script');
-            script.src = 'services/notification-service.js?v=' + Date.now() + '&nocache=' + Math.random();
-            script.async = false;
-            script.onerror = function() {
-                // Hata durumunda sessizce devam et
-                console.warn('⚠️ Notification Service yüklenemedi, sessizce devam ediliyor');
-            };
-            document.head.insertBefore(script, document.head.firstChild);
+            // Fallback: Boş Notification Service oluştur
+            if (!window.notificationService) {
+                window.notificationService = {
+                    isConnected: true,
+                    connect: function() {},
+                    on: function() {},
+                    emit: function() {},
+                    joinLiveStream: function(streamId) {
+                        window.location.href = 'live-stream.html?join=' + streamId;
+                    },
+                    processMessageQueue: function() {}
+                };
+            }
         })();
     </script>
     <script>
