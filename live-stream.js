@@ -518,6 +518,9 @@ function loadStreamBalance() {
 function skipPaymentStep() {
     console.log('skipPaymentStep() çağrıldı');
     
+    // Global erişim için window'a ekle
+    window.skipPaymentStep = skipPaymentStep;
+    
     try {
         // Test için bakiye ekle
         localStorage.setItem('livestreamBalance', '120'); // 2 saat
@@ -1571,6 +1574,9 @@ window.addEventListener('beforeunload', function() {
 async function requestCameraAccess() {
     console.log('📹 Kamera erişimi isteniyor...');
     
+    // Global erişim için window'a ekle
+    window.requestCameraAccess = requestCameraAccess;
+    
     try {
         updateStatus('Kamera ve mikrofon erişimi isteniyor... Tarayıcıdan izin verin...');
         
@@ -2060,4 +2066,14 @@ function setupIVSPlaybackIfNeeded() {
 // document.addEventListener/DOMContentLoaded içinden veya viewer mode setup içinde çağırmalısın:
 // if (!isStreamer) setupIVSPlaybackIfNeeded();
 
+// Global fonksiyonları window'a ekle (script yükleme kontrolü için)
+window.skipPaymentStep = skipPaymentStep;
+window.requestCameraAccess = requestCameraAccess;
+window.startStream = startStream;
+
 console.log('✅ Enhanced Live Stream System Loaded v2');
+console.log('✅ Global fonksiyonlar window objesine eklendi:', {
+    skipPaymentStep: typeof window.skipPaymentStep,
+    requestCameraAccess: typeof window.requestCameraAccess,
+    startStream: typeof window.startStream
+});
