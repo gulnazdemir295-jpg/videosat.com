@@ -32,7 +32,9 @@ class NotificationService {
             this.reconnectAttempts = 0;
             
             // Kuyruktaki mesajları gönder
-            this.processMessageQueue();
+            if (this.messageQueue && this.messageQueue.length > 0) {
+                this.processMessageQueue();
+            }
             
         } catch (error) {
             console.error('❌ Notification Service bağlantı hatası:', error);
@@ -50,6 +52,30 @@ class NotificationService {
         }, 2000);
         
         console.log('📱 LocalStorage simülasyon sistemi aktif');
+    }
+
+    // Mesaj kuyruğunu işle
+    processMessageQueue() {
+        if (!this.isConnected || !this.messageQueue || this.messageQueue.length === 0) {
+            return;
+        }
+
+        console.log(`📨 Mesaj kuyruğu işleniyor: ${this.messageQueue.length} mesaj`);
+        
+        // Kuyruktaki tüm mesajları işle
+        while (this.messageQueue.length > 0) {
+            const message = this.messageQueue.shift();
+            try {
+                // Mesajı işle (örnek: bildirim gönder)
+                if (message.type === 'notification') {
+                    this.emit('notification', message.data);
+                }
+            } catch (error) {
+                console.error('Mesaj işleme hatası:', error);
+            }
+        }
+        
+        console.log('✅ Mesaj kuyruğu işlendi');
     }
 
     checkForNotifications() {
