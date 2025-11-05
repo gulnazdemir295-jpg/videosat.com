@@ -1506,7 +1506,7 @@ function openShopping() {
     showAlert('Alışveriş sepeti açıldı!', 'success');
     
     // Redirect to order page or show modal
-    console.log('Shopping order:', order);
+    // console.log('Shopping order:', order); // Kaldırıldı (gereksiz)
 }
 
 // Leave Stream
@@ -2074,9 +2074,10 @@ window.skipPaymentStep = skipPaymentStep;
 window.requestCameraAccess = requestCameraAccess;
 window.startStream = startStream;
 
-console.log('✅ Enhanced Live Stream System Loaded v2');
-console.log('✅ Global fonksiyonlar window objesine eklendi:', {
-    skipPaymentStep: typeof window.skipPaymentStep,
-    requestCameraAccess: typeof window.requestCameraAccess,
-    startStream: typeof window.startStream
-});
+// Konsol log'ları kaldırıldı (sessiz çalışma)
+// console.log('✅ Enhanced Live Stream System Loaded v2');
+// console.log('✅ Global fonksiyonlar window objesine eklendi:', {
+//     skipPaymentStep: typeof window.skipPaymentStep,
+//     requestCameraAccess: typeof window.requestCameraAccess,
+//     startStream: typeof window.startStream
+// });
