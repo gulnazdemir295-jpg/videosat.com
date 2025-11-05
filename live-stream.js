@@ -858,6 +858,9 @@ async function loadAWSIVSBroadcastSDK() {
 async function startStream() {
     console.log('🎬 Yayın başlatılıyor (Hybrid: Agora veya AWS IVS)...');
     
+    // Global erişim için window'a ekle
+    window.startStream = startStream;
+    
     if (!checkWebRTCSupport()) {
         console.error('❌ WebRTC desteklenmiyor');
         return;
