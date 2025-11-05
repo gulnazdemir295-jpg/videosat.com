@@ -536,14 +536,27 @@ function showBuyStreamTimeModal() {
 function getAPIBaseURL() {
     if (typeof window !== 'undefined' && window.location) {
         const hostname = window.location.hostname;
+        const protocol = window.location.protocol;
+        const isHTTPS = protocol === 'https:';
+        
         // Local development
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return 'http://localhost:4000';
         }
+        
         // Production backend URL
-        // Eğer api.basvideo.com domain'i ayarlandıysa onu kullan, yoksa EC2 IP'yi kullan
-        if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
-            return 'http://107.23.178.153:4000'; // Production backend
+        // basvideo.com için HTTPS kullan, yoksa HTTP
+        if (hostname === 'basvideo.com' || hostname === 'www.basvideo.com' || hostname.includes('basvideo.com')) {
+            // HTTPS ise API'yi de HTTPS ile çağır (Nginx reverse proxy varsa)
+            // Yoksa backend IP'yi direkt HTTP ile çağır
+            if (isHTTPS && hostname.includes('basvideo.com')) {
+                // Nginx reverse proxy varsa: https://basvideo.com/api
+                // Yoksa backend IP: http://107.23.178.153:4000
+                return 'https://basvideo.com/api'; // Nginx reverse proxy varsa
+                // Veya: return 'http://107.23.178.153:4000'; // Direkt backend IP
+            } else {
+                return 'http://107.23.178.153:4000'; // Production backend
+            }
         }
     }
     // Fallback: Production backend
@@ -749,9 +762,9 @@ async function loadAWSIVSBroadcastSDK() {
     });
 }
 
-// === PATCH: AWS IVS Entegrasyonu (Multi-Channel Room) === //
+// === HYBRID STREAMING: Agora veya AWS IVS === //
 async function startStream() {
-    console.log('🎬 Yayın başlatılıyor (Multi-Channel Room)...');
+    console.log('🎬 Yayın başlatılıyor (Hybrid: Agora veya AWS IVS)...');
     
     if (!checkWebRTCSupport()) {
         console.error('❌ WebRTC desteklenmiyor');
@@ -789,34 +802,42 @@ async function startStream() {
             }
             
             if (myChannelInfo) {
-                // Stream key'i al
-                const keyData = await claimStreamKeyForChannel(
-                    currentRoomId, 
-                    myChannelId, 
-                    currentUser.email
-                );
+                // Provider kontrolü (Agora veya AWS IVS)
+                const provider = myChannelInfo.provider || 'AWS_IVS';
                 
-                currentStreamKey = keyData.streamKey;
-                currentBroadcastConfig = {
-                    ingest: keyData.ingest,
-                    playbackUrl: myChannelInfo.playbackUrl
-                };
-                
-                // Bilgileri göster
-                console.log('📡 IVS Ingest:', keyData.ingest);
-                console.log('🔑 Stream Key:', currentStreamKey.substring(0, 20) + '...');
-                console.log('📺 Playback URL:', myChannelInfo.playbackUrl);
-                
-                // UI'da göster (varsa)
-                const infoBox = document.getElementById('userIvsInfo');
-                const ep = document.getElementById('ivsEndpoint');
-                const sk = document.getElementById('ivsStreamKey');
-                const pu = document.getElementById('ivsPlaybackUrl');
-                if (infoBox && ep && sk && pu) {
-                    infoBox.style.display = 'block';
-                    ep.textContent = keyData.ingest || '-';
-                    sk.textContent = currentStreamKey || '-';
-                    pu.textContent = myChannelInfo.playbackUrl || '-';
+                if (provider === 'AGORA') {
+                    // Agora ile yayın başlat
+                    await startAgoraStreamLivePage();
+                } else {
+                    // AWS IVS ile yayın (mevcut kod)
+                    const keyData = await claimStreamKeyForChannel(
+                        currentRoomId, 
+                        myChannelId, 
+                        currentUser.email
+                    );
+                    
+                    currentStreamKey = keyData.streamKey;
+                    currentBroadcastConfig = {
+                        ingest: keyData.ingest,
+                        playbackUrl: myChannelInfo.playbackUrl
+                    };
+                    
+                    // Bilgileri göster
+                    console.log('📡 IVS Ingest:', keyData.ingest);
+                    console.log('🔑 Stream Key:', currentStreamKey.substring(0, 20) + '...');
+                    console.log('📺 Playback URL:', myChannelInfo.playbackUrl);
+                    
+                    // UI'da göster (varsa)
+                    const infoBox = document.getElementById('userIvsInfo');
+                    const ep = document.getElementById('ivsEndpoint');
+                    const sk = document.getElementById('ivsStreamKey');
+                    const pu = document.getElementById('ivsPlaybackUrl');
+                    if (infoBox && ep && sk && pu) {
+                        infoBox.style.display = 'block';
+                        ep.textContent = keyData.ingest || '-';
+                        sk.textContent = currentStreamKey || '-';
+                        pu.textContent = myChannelInfo.playbackUrl || '-';
+                    }
                 }
             }
         }
@@ -917,14 +938,24 @@ async function startStream() {
             showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
         }
         
-        // ✅ AWS IVS Broadcast SDK ile tarayıcıdan direkt yayın başlat
-        if (isStreamer && myChannelInfo && currentStreamKey && localStream) {
-            try {
-                await startAWSIVSBroadcast(localStream, currentStreamKey, myChannelInfo);
-                updateStatus('✅ AWS IVS yayını başlatıldı!');
-            } catch (error) {
-                console.error('❌ AWS IVS broadcast başlatma hatası:', error);
-                updateStatus('⚠️ AWS IVS broadcast başlatılamadı, OBS Studio kullanabilirsiniz.');
+        // ✅ Provider'a göre yayın başlat (Agora veya AWS IVS)
+        if (isStreamer && myChannelInfo && localStream) {
+            const provider = myChannelInfo.provider || 'AWS_IVS';
+            
+            if (provider === 'AGORA') {
+                // Agora yayını zaten başlatıldı (startAgoraStreamLivePage içinde)
+                updateStatus('✅ Agora yayını başlatıldı!');
+            } else {
+                // AWS IVS Broadcast SDK ile tarayıcıdan direkt yayın başlat
+                if (currentStreamKey) {
+                    try {
+                        await startAWSIVSBroadcast(localStream, currentStreamKey, myChannelInfo);
+                        updateStatus('✅ AWS IVS yayını başlatıldı!');
+                    } catch (error) {
+                        console.error('❌ AWS IVS broadcast başlatma hatası:', error);
+                        updateStatus('⚠️ AWS IVS broadcast başlatılamadı, OBS Studio kullanabilirsiniz.');
+                    }
+                }
             }
         }
         
@@ -937,8 +968,88 @@ async function startStream() {
     }
 }
 
-// stopStream fonksiyonuna patch:
+// Agora ile Yayın Başlat (live-stream.html için)
+async function startAgoraStreamLivePage() {
+    try {
+        if (typeof AgoraRTC === 'undefined') {
+            throw new Error('Agora SDK yüklenemedi');
+        }
+        
+        if (!myChannelInfo || !localStream) {
+            throw new Error('Channel bilgisi veya kamera stream eksik');
+        }
+        
+        console.log('📡 Agora yayını başlatılıyor...');
+        updateStatus('Agora yayını başlatılıyor...');
+        
+        // Agora client oluştur
+        const agoraClient = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        
+        // Channel'a katıl
+        await agoraClient.join(
+            myChannelInfo.appId,
+            myChannelInfo.channelName,
+            myChannelInfo.publisherToken,
+            null // Random UID
+        );
+        
+        // Kamera ve mikrofon track'lerini al
+        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        
+        // Yayını başlat
+        await agoraClient.publish([audioTrack, videoTrack]);
+        
+        // Video göster
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            videoTrack.play('localVideo');
+        }
+        
+        // Client'i kaydet (durdurma için)
+        window.currentAgoraClient = agoraClient;
+        window.currentAgoraTracks = [audioTrack, videoTrack];
+        
+        // UI güncelle
+        const infoBox = document.getElementById('userIvsInfo');
+        const ep = document.getElementById('ivsEndpoint');
+        const sk = document.getElementById('ivsStreamKey');
+        const pu = document.getElementById('ivsPlaybackUrl');
+        if (infoBox && ep && sk && pu) {
+            infoBox.style.display = 'block';
+            ep.textContent = 'Agora WebRTC';
+            sk.textContent = myChannelInfo.channelName || '-';
+            pu.textContent = myChannelInfo.hlsUrl || myChannelInfo.playbackUrl || '-';
+        }
+        
+        updateStatus('✅ Agora yayını başlatıldı!');
+        console.log('✅ Agora yayını başarıyla başlatıldı');
+        
+    } catch (error) {
+        console.error('❌ Agora yayın hatası:', error);
+        updateStatus('❌ Agora yayını başlatılamadı: ' + error.message);
+        throw error;
+    }
+}
+
+// stopStream fonksiyonuna patch (Hybrid: Agora veya AWS IVS):
 function stopStream() {
+    // Agora yayınını durdur
+    if (window.currentAgoraClient && window.currentAgoraTracks) {
+        try {
+            window.currentAgoraTracks.forEach(track => {
+                track.stop();
+                track.close();
+            });
+            window.currentAgoraClient.leave();
+            window.currentAgoraClient = null;
+            window.currentAgoraTracks = null;
+            updateStatus('Agora yayını durduruldu.');
+        } catch (error) {
+            console.error('Agora durdurma hatası:', error);
+        }
+    }
+    
+    // Local stream'i durdur
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
@@ -953,15 +1064,21 @@ function stopStream() {
     updateStatus('Yayın duraklatıldı.');
     
     // Enable/disable buttons
-    document.querySelector('.control-btn.start').disabled = false;
-    document.getElementById('stopBtn').disabled = true;
+    const startBtn = document.querySelector('.control-btn.start');
+    const stopBtn = document.getElementById('stopBtn');
+    if (startBtn) startBtn.disabled = false;
+    if (stopBtn) stopBtn.disabled = true;
     
     // Stop timer
     stopTimer();
     
     // Update live badge
-    document.getElementById('liveBadge').innerHTML = '<i class="fas fa-circle"></i> <span>DURAKLATILDI</span>';
+    const liveBadge = document.getElementById('liveBadge');
+    if (liveBadge) {
+        liveBadge.innerHTML = '<i class="fas fa-circle"></i> <span>DURAKLATILDI</span>';
+    }
 
+    // AWS IVS yayınını durdur
     try {
         if (window.awsIVSService && typeof window.awsIVSService.stopIVSPublish === 'function') {
             window.awsIVSService.stopIVSPublish();
@@ -1160,19 +1277,52 @@ function startWebRTC() {
     }, 2000);
 }
 
-// Toggle Like
-function toggleLike() {
-    isLiked = !isLiked;
-    
-    if (isLiked) {
-        likeCount++;
-    } else {
-        likeCount = Math.max(0, likeCount - 1);
+// Toggle Like (Backend entegrasyonu ile)
+async function toggleLike() {
+    if (!myChannelId && !streamId) {
+        showAlert('Aktif yayın bulunamadı', 'warning');
+        return;
     }
     
-    updateLikeCount();
+    const channelId = myChannelId || streamId;
     
-    // Notify streamer
+    try {
+        // Backend'e beğeni gönder
+        const response = await fetch(`${API_BASE_URL}/api/streams/${channelId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userEmail: currentUser?.email || 'anonim@example.com'
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            isLiked = data.liked || false;
+            likeCount = data.likeCount || 0;
+            updateLikeCount();
+            
+            if (isLiked) {
+                showAlert('✅ Beğenildi!', 'success');
+            } else {
+                showAlert('Beğeni geri alındı', 'info');
+            }
+        } else {
+            throw new Error('Backend beğeni gönderilemedi');
+        }
+    } catch (error) {
+        console.warn('⚠️ Backend beğeni hatası:', error);
+        // Fallback: Local beğeni
+        isLiked = !isLiked;
+        if (isLiked) {
+            likeCount++;
+        } else {
+            likeCount = Math.max(0, likeCount - 1);
+        }
+        updateLikeCount();
+    }
+    
+    // Notify streamer (WebSocket)
     if (window.websocketService && streamId) {
         window.websocketService.emit('like', {
             streamId: streamId,
@@ -1665,8 +1815,8 @@ function sendInvitation() {
     loadInvitationsForStreamer();
 }
 
-// Send Message
-function sendMessage() {
+// Send Message (Backend entegrasyonu ile)
+async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
     
@@ -1674,18 +1824,39 @@ function sendMessage() {
     
     const messageData = {
         id: Date.now(),
-        sender: currentUser?.companyName || 'Anonim',
+        sender: currentUser?.companyName || currentUser?.name || 'Anonim',
         message: message,
         timestamp: new Date().toISOString()
     };
     
-    // Add message to container
+    // Backend'e mesaj gönder (varsa channelId)
+    if (myChannelId && API_BASE_URL) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/streams/${myChannelId}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    userEmail: currentUser?.email || 'anonim@example.com',
+                    userName: currentUser?.companyName || currentUser?.name || 'Kullanıcı'
+                })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Mesaj backend\'e gönderildi');
+            }
+        } catch (error) {
+            console.warn('⚠️ Backend mesaj gönderilemedi:', error);
+        }
+    }
+    
+    // Add message to container (her durumda)
     addMessageToContainer(messageData);
     
     // Clear input
     messageInput.value = '';
     
-    // Notify other participants
+    // Notify other participants (WebSocket)
     if (window.websocketService && streamId) {
         window.websocketService.emit('message', {
             streamId: streamId,
@@ -1748,6 +1919,7 @@ window.closeInviteModal = closeInviteModal;
 window.sendInvitation = sendInvitation;
 window.sendMessage = sendMessage;
 window.handleMessageKeyPress = handleMessageKeyPress;
+window.startAgoraStreamLivePage = startAgoraStreamLivePage;
 
 // İzleyici için IVS player başlat
 function setupIVSPlaybackIfNeeded() {
