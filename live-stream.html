@@ -8,10 +8,9 @@
     <meta http-equiv="Expires" content="0">
     <title>VideoSat - Canlı Yayın</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="text-readability-fix.css">
-    <link rel="stylesheet" href="color-contrast-fix.css">
-    <link rel="stylesheet" href="red-white-black-theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Agora SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <style>
         * {
             margin: 0;
@@ -21,10 +20,9 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #000000 !important; /* Siyah arka plan */
-            min-height: 100vh;
+            background: #000000;
             color: #ffffff;
-            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         .container {
@@ -34,11 +32,10 @@
         }
 
         .header {
-            background: #1a1a1a !important;
+            background: #1a1a1a;
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -61,13 +58,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            animation: pulse 2s infinite;
-            font-weight: bold;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
 
         .main-content {
@@ -77,16 +67,15 @@
         }
 
         .video-section {
-            background: #1a1a1a !important;
+            background: #1a1a1a;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
             border: 1px solid #404040;
         }
 
         .video-container {
             position: relative;
-            background: #000000 !important; /* Ana video container siyah */
+            background: #000000;
             border-radius: 10px;
             overflow: hidden;
             aspect-ratio: 16/9;
@@ -94,115 +83,65 @@
             border: 2px solid #dc2626;
         }
 
-        /* Ana görüntü - remoteVideo (büyük, tam ekran) */
-        #remoteVideo {
+        #remoteVideo, #localVideo {
             width: 100%;
             height: 100%;
             object-fit: cover;
             background: #000000;
         }
 
-        /* Yerel görüntü - localVideo (küçük, sağ alt köşe) */
         #localVideo {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             width: 200px;
             height: 150px;
-            border: 3px solid #dc2626;
             border-radius: 10px;
+            border: 2px solid #dc2626;
             z-index: 10;
-            background: #000000;
-            object-fit: cover;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
         }
 
-        .waiting-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            z-index: 5;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-        }
-
-        .waiting-message i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-            color: #dc2626;
-        }
-
-        .video-controls {
+        .controls {
             display: flex;
             gap: 10px;
-            justify-content: center;
+            margin-top: 20px;
             flex-wrap: wrap;
         }
 
-        .control-btn {
+        .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s;
         }
 
-        .control-btn.start {
-            background: #28a745;
-            color: white;
-        }
-
-        .control-btn.start:hover {
-            background: #218838;
-            transform: scale(1.05);
-        }
-
-        .control-btn.stop {
+        .btn-primary {
             background: #dc2626;
             color: white;
         }
 
-        .control-btn.stop:hover {
+        .btn-primary:hover {
             background: #b91c1c;
-            transform: scale(1.05);
         }
 
-        .control-btn.end {
-            background: #6c757d;
+        .btn-danger {
+            background: #991b1b;
             color: white;
         }
 
-        .control-btn.end:hover {
-            background: #5a6268;
-            transform: scale(1.05);
+        .btn-danger:hover {
+            background: #7f1d1d;
         }
 
-        .control-btn:disabled {
+        .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-        
-        .control-btn {
-            transition: all 0.3s ease;
-        }
-        
-        .control-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-        
-        .control-btn:active:not(:disabled) {
-            transform: scale(0.95);
         }
 
         .sidebar {
@@ -212,10 +151,9 @@
         }
 
         .card {
-            background: #1a1a1a !important;
+            background: #1a1a1a;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.2);
             border: 1px solid #404040;
         }
 
@@ -227,256 +165,68 @@
             gap: 10px;
         }
 
-        /* Viewer Interactions */
-        .viewer-interactions {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .interaction-btn {
-            padding: 10px 15px;
+        .status-info {
+            background: #1a1a1a;
             border: 1px solid #dc2626;
-            border-radius: 8px;
-            background: transparent;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
             color: #ffffff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            width: 100%;
         }
 
-        .interaction-btn:hover {
-            background: #dc2626;
-            transform: translateX(5px);
-        }
-
-        .interaction-btn.active {
-            background: #dc2626;
-        }
-
-        .interaction-btn i {
-            font-size: 18px;
-        }
-
-        .products-list {
+        .messages {
             max-height: 300px;
             overflow-y: auto;
+            margin-top: 10px;
         }
 
-        .product-item {
-            padding: 12px;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
+        .message {
+            padding: 8px 12px;
+            margin-bottom: 8px;
             background: #0a0a0a;
+            border-radius: 8px;
+            border-left: 3px solid #dc2626;
         }
 
-        .product-item:hover {
-            border-color: #dc2626;
-            background: #1a1a1a;
-            transform: translateX(5px);
-        }
-
-        .product-item.active {
-            border-color: #dc2626;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
-        }
-
-        .product-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #ffffff;
-        }
-
-        .product-price {
-            color: #28a745;
-            font-size: 14px;
-        }
-
-        .product-item.active .product-price {
-            color: #ffffff;
-        }
-
-        .timer {
-            text-align: center;
-            font-size: 24px;
+        .message-sender {
             font-weight: bold;
             color: #dc2626;
-            padding: 15px;
-            background: #0a0a0a;
-            border-radius: 10px;
-            border: 1px solid #dc2626;
+            font-size: 12px;
         }
 
-        .participants {
-            list-style: none;
+        .message-text {
+            color: #ffffff;
+            margin-top: 4px;
         }
 
-        .participant {
-            padding: 10px;
-            background: #0a0a0a;
-            border-radius: 8px;
-            margin-bottom: 10px;
+        .input-group {
             display: flex;
-            align-items: center;
             gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
             border: 1px solid #404040;
-        }
-
-        .participant-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .status-info {
-            text-align: center;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #0a0a0a;
             color: #ffffff;
-            border: 1px solid #dc2626;
         }
 
-        /* Pre-stream Setup */
-        .pre-stream-setup {
-            display: none;
-        }
-
-        .pre-stream-setup.active {
-            display: block;
-        }
-
-        .pre-stream-card {
-            background: #1a1a1a;
-            border: 1px solid #dc2626;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-
-        .pre-stream-card h3 {
-            color: #dc2626;
-            margin-bottom: 20px;
-        }
-
-        .payment-step {
-            display: none;
-        }
-
-        .payment-step.active {
-            display: block;
-        }
-
-        .skip-payment-btn {
-            margin-top: 15px;
+        .input-group button {
             padding: 10px 20px;
-            background: transparent;
-            border: 1px solid #6c757d;
-            color: #6c757d;
+            background: #dc2626;
+            color: white;
+            border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .skip-payment-btn:hover {
-            background: #6c757d;
-            color: white;
-        }
-
-        /* Post-stream Summary */
-        .post-stream-summary {
-            display: none;
-        }
-
-        .post-stream-summary.active {
-            display: block;
-        }
-
-        .summary-card {
-            background: #1a1a1a;
-            border: 1px solid #404040;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-
-        .summary-stat {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #404040;
-        }
-
-        .summary-stat:last-child {
-            border-bottom: none;
         }
 
         @media (max-width: 1024px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
-        }
-
-        /* Invitations Management */
-        .invitations-panel {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .invitation-item {
-            padding: 15px;
-            background: #0a0a0a;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .invitation-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .invitation-actions {
-            display: flex;
-            gap: 10px;
-        }
-        /* ✅ PRE-STREAM SETUP TAMAMEN GİZLİ - CSS İLE */
-        #preStreamSetup {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            width: 0 !important;
-            overflow: hidden !important;
-            opacity: 0 !important;
-            position: absolute !important;
-            left: -9999px !important;
-            top: -9999px !important;
-            z-index: -9999 !important;
-            pointer-events: none !important;
-        }
-        
-        /* ✅ ANA İÇERİK HER ZAMAN GÖRÜNÜR */
-        #mainContent {
-            display: grid !important;
-            visibility: visible !important;
-            opacity: 1 !important;
         }
     </style>
 </head>
@@ -489,571 +239,53 @@
             </div>
         </div>
 
-        <!-- IVS KULLANICI INFO - Canlı yayıncıya özel -->
-        <div id="userIvsInfo" style="display:none; background:#222; color:#fff; border:1px solid #dc2626; border-radius:12px; padding:14px; margin:24px 0;">
-          <div style="font-weight:bold; color:#dc2626;">Admin tarafından onaylandı! Yayın açmak için IVS bilgilerin:</div>
-          <div style="font-size:14px">
-            URL: <span id="ivsEndpoint">-</span><br>
-            StreamKey: <span id="ivsStreamKey">-</span><br>
-            PlaybackUrl: <span id="ivsPlaybackUrl">-</span>
-          </div>
-        </div>
-
-        <!-- Pre-Stream Setup -->
-        <div class="pre-stream-setup" id="preStreamSetup" style="display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important;">
-            <div class="pre-stream-card">
-                <h3><i class="fas fa-cog"></i> Yayın Öncesi Hazırlık</h3>
-                
-                <!-- Payment Step -->
-                <div class="payment-step active" id="paymentStep">
-                    <p style="margin-bottom: 15px; color: #ffffff;">
-                        Canlı yayın yapmak için süre paketi satın almanız gerekmektedir.
-                    </p>
-                    <button class="btn btn-primary" onclick="showBuyStreamTimeModal()">
-                        <i class="fas fa-shopping-cart"></i> Süre Paketi Satın Al
-                    </button>
-                    <button class="skip-payment-btn" onclick="skipPaymentStep()" id="skipPaymentBtn">
-                        <i class="fas fa-forward"></i> Bu Adımı Atla (Test İçin)
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content" id="mainContent" style="display: grid !important;">
+        <div class="main-content">
             <div class="video-section">
-                <div class="status-info" id="statusInfo" style="display: block !important;">
+                <div class="status-info" id="statusInfo">
                     <i class="fas fa-info-circle"></i> <span id="statusText">Kamera erişimi için aşağıdaki butona tıklayın</span>
-                    <button class="control-btn start" onclick="requestCameraAccess()" id="cameraAccessBtn" style="margin-top: 15px; display: block !important; opacity: 1 !important; cursor: pointer !important;">
+                    <button class="btn btn-primary" onclick="requestCameraAccess()" id="cameraAccessBtn" style="margin-top: 15px;">
                         <i class="fas fa-camera"></i> Kamera Erişimi İste
                     </button>
-                    <p style="margin-top: 15px; font-size: 13px; color: #dc2626; font-weight: bold;">
-                        <i class="fas fa-exclamation-triangle"></i> ÖNEMLİ: Butona tıkladığınızda tarayıcıdan izin pop-up'ı gelecek. "İzin Ver" veya "Allow" butonuna tıklayın!
-                    </p>
                 </div>
 
                 <div class="video-container">
                     <video id="remoteVideo" autoplay playsinline></video>
-                    <video id="localVideo" autoplay muted playsinline></video>
-                    <div class="waiting-message" id="waitingMessage">
-                        <i class="fas fa-video"></i>
-                        <p>Kamera başlatılıyor...</p>
-                    </div>
+                    <video id="localVideo" autoplay muted playsinline style="display: none;"></video>
                 </div>
 
-                <div class="video-controls">
-                    <button class="control-btn start" onclick="startStream()" id="startStreamBtn">
+                <div class="controls">
+                    <button class="btn btn-primary" id="startStreamBtn" onclick="startStream()">
                         <i class="fas fa-play"></i> Yayını Başlat
                     </button>
-                    <button class="control-btn stop" onclick="stopStream()" disabled id="stopBtn">
+                    <button class="btn btn-danger" id="stopStreamBtn" onclick="stopStream()" style="display: none;">
                         <i class="fas fa-stop"></i> Yayını Durdur
-                    </button>
-                    <button class="control-btn end" onclick="endStream()" id="endStreamBtn">
-                        <i class="fas fa-times"></i> Yayını Sonlandır
                     </button>
                 </div>
             </div>
 
             <div class="sidebar">
-                <!-- Timer Card -->
-                <div class="card">
-                    <h3><i class="fas fa-clock"></i> Yayın Süresi</h3>
-                    <div class="timer" id="timer">00:00:00</div>
-                    <p style="text-align: center; margin-top: 10px; color: #999;">
-                        <i class="fas fa-link"></i> <span id="balanceDisplay">Bakiye: 0 saat</span>
-                    </p>
-                </div>
-
-                <!-- Viewer Interactions (For viewers, not streamer) -->
-                <div class="card viewer-interactions" id="viewerInteractions" style="display: none;">
-                    <h3><i class="fas fa-heart"></i> İnteraksiyonlar</h3>
-                    <button class="interaction-btn" id="likeBtn" onclick="toggleLike()">
-                        <i class="far fa-heart"></i> Beğen (<span id="likeCount">0</span>)
-                    </button>
-                    <button class="interaction-btn" id="followBtn" onclick="toggleFollow()">
-                        <i class="far fa-star"></i> Takip Et
-                    </button>
-                    <button class="interaction-btn" onclick="openShopping()">
-                        <i class="fas fa-shopping-cart"></i> Alışveriş
-                    </button>
-                </div>
-
-                <!-- Products Card -->
-                <div class="card">
-                    <h3><i class="fas fa-box"></i> Ürünler</h3>
-                    <button class="control-btn start" onclick="openProductSelector()" style="width: 100%; margin-bottom: 15px;">
-                        <i class="fas fa-plus"></i> Ürün Ekle
-                    </button>
-                    <div class="products-list" id="productsList">
-                        <!-- Products will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Participants Card -->
-                <div class="card">
-                    <h3><i class="fas fa-users"></i> Katılımcılar</h3>
-                    <button class="control-btn start" onclick="openInviteModal()" style="width: 100%; margin-bottom: 15px;">
-                        <i class="fas fa-user-plus"></i> Yayına Davet Et
-                    </button>
-                    <ul class="participants" id="participantsList">
-                        <!-- Participants will be loaded here -->
-                    </ul>
-                </div>
-
-                <!-- Messages Card -->
                 <div class="card">
                     <h3><i class="fas fa-comments"></i> Mesajlar</h3>
-                    <div class="messages-container" id="messagesContainer" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
-                        <!-- Messages will be loaded here -->
+                    <div class="messages" id="messagesContainer"></div>
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                     </div>
-                    <div class="message-input" style="display: flex; gap: 10px;">
-                        <input type="text" id="messageInput" placeholder="Mesaj yazın..." style="flex: 1; padding: 8px; border: 1px solid #404040; border-radius: 5px; background: #0a0a0a; color: white;" onkeypress="handleMessageKeyPress(event)">
-                        <button class="control-btn start" onclick="sendMessage()" style="padding: 8px 15px;">
-                            <i class="fas fa-paper-plane"></i>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-heart"></i> Beğeniler</h3>
+                    <div id="likesContainer">
+                        <button class="btn btn-primary" onclick="toggleLike()" id="likeBtn">
+                            <i class="far fa-heart"></i> Beğen (<span id="likeCount">0</span>)
                         </button>
                     </div>
-                </div>
-
-                <!-- Invitations Card (For streamer) -->
-                <div class="card" id="invitationsCard" style="display: none;">
-                    <h3><i class="fas fa-envelope"></i> Davetler</h3>
-                    <div class="invitations-panel" id="invitationsPanel">
-                        <!-- Invitations will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Post-Stream Summary -->
-        <div class="post-stream-summary" id="postStreamSummary">
-            <div class="summary-card">
-                <h3><i class="fas fa-chart-line"></i> Yayın Özeti</h3>
-                <div class="summary-stat">
-                    <span>Toplam Süre:</span>
-                    <strong id="summaryDuration">00:00:00</strong>
-                </div>
-                <div class="summary-stat">
-                    <span>Katılımcı Sayısı:</span>
-                    <strong id="summaryParticipants">0</strong>
-                </div>
-                <div class="summary-stat">
-                    <span>Beğeni Sayısı:</span>
-                    <strong id="summaryLikes">0</strong>
-                </div>
-                <div class="summary-stat">
-                    <span>Yapılan Siparişler:</span>
-                    <strong id="summaryOrders">0</strong>
-                </div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="btn btn-primary" onclick="startNewStream()">
-                        <i class="fas fa-redo"></i> Yeni Yayın Başlat
-                    </button>
-                    <button class="btn btn-outline" onclick="goToDashboard()">
-                        <i class="fas fa-home"></i> Panele Dön
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Alert Container -->
-    <div id="alertContainer"></div>
-
-    <!-- Scripts -->
-    <!-- AWS IVS Player (for viewers) -->
-    <script src="https://player.live-video.net/1.24.0/amazon-ivs-player.min.js"></script>
-    <!-- Agora SDK CDN -->
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
-    <script src="script-loader.js?v=2"></script>
-    <script>
-        // Notification Service'i tamamen devre dışı bırak (cache sorununu önlemek için)
-        // Eski dosya yüklenirse bile hata vermeyecek şekilde fallback ekle
-        (function() {
-            // Önce mevcut script'leri kaldır (varsa)
-            var existingScripts = document.querySelectorAll('script[src*="notification-service"]');
-            existingScripts.forEach(function(script) {
-                script.remove();
-            });
-            
-            // Fallback: Boş Notification Service oluştur
-            if (!window.notificationService) {
-                window.notificationService = {
-                    isConnected: true,
-                    connect: function() {},
-                    on: function() {},
-                    emit: function() {},
-                    joinLiveStream: function(streamId) {
-                        window.location.href = 'live-stream.html?join=' + streamId;
-                    },
-                    processMessageQueue: function() {}
-                };
-            }
-        })();
-    </script>
-    <script>
-        // Güvenilir script yükleme
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Live Stream sayfası yükleniyor...');
-            
-            // Önce script-loader'ı kontrol et
-            if (typeof window.scriptLoader === 'undefined') {
-                console.error('❌ script-loader.js yüklenmedi!');
-                
-                // Fallback: Direkt script yükleme
-                console.log('🔄 Fallback: Direkt script yükleme başlatılıyor...');
-                await loadScriptsDirectly();
-                return;
-            }
-            
-            try {
-                // Script'leri sırayla yükle
-                await window.scriptLoader.loadScripts([
-                    'modules/module-loader.js?v=2',
-                    'app.js?v=2',
-                    'services/payment-service.js?v=2',
-                    'services/order-service.js?v=2',
-                    'live-stream.js?v=2'
-                ], {
-                    timeout: 20000, // 20 saniye timeout
-                    continueOnError: true // Kritik olmayan scriptler için devam et
-                });
-                
-                console.log('✅ Tüm scriptler yüklendi');
-                
-                // Fonksiyonları kontrol et ve fallback ekle
-                setTimeout(function() {
-                    console.log('🔍 Fonksiyonlar kontrol ediliyor...');
-                    
-                    // Kritik fonksiyonları kontrol et
-                    const criticalFunctions = {
-                        'skipPaymentStep': function() {
-                            console.log('Fallback skipPaymentStep() çağrıldı');
-                            try {
-                                localStorage.setItem('livestreamBalance', '120');
-                                
-                                const preStreamSetup = document.getElementById('preStreamSetup');
-                                const mainContent = document.getElementById('mainContent');
-                                
-                                if (preStreamSetup) {
-                                    preStreamSetup.classList.remove('active');
-                                }
-                                
-                                if (mainContent) {
-                                    mainContent.style.display = 'grid';
-                                }
-                                
-                                if (typeof showAlert === 'function') {
-                                    showAlert('Test modu: 2 saat bakiye eklendi.', 'info');
-                                } else {
-                                    alert('Test modu: 2 saat bakiye eklendi.');
-                                }
-                                console.log('Fallback skipPaymentStep() başarıyla tamamlandı');
-                            } catch (error) {
-                                console.error('Fallback skipPaymentStep() hatası:', error);
-                                alert('Hata: ' + error.message);
-                            }
-                        },
-                        'showAlert': function(message, type = 'info') {
-                            console.log(`Alert: ${message} (${type})`);
-                            alert(message);
-                        },
-                        'requestCameraAccess': function() {
-                            console.log('Fallback requestCameraAccess() çağrıldı');
-                            alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
-                        },
-                        'startStream': function() {
-                            console.log('Fallback startStream() çağrıldı');
-                            alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
-                        }
-                    };
-                    
-                    // Eksik fonksiyonları ekle
-                    Object.keys(criticalFunctions).forEach(funcName => {
-                        if (typeof window[funcName] !== 'function') {
-                            console.warn(`⚠️ ${funcName} fonksiyonu yüklenmedi, fallback kullanılıyor`);
-                            window[funcName] = criticalFunctions[funcName];
-                        } else {
-                            console.log(`✅ ${funcName} fonksiyonu mevcut`);
-                        }
-                    });
-                    
-                    // Butonları aktif hale getir
-                    activateButtons();
-                    
-                    // Sayfa hazır olduğunu bildir
-                    console.log('🎉 Canlı yayın sayfası hazır!');
-                    
-                }, 3000);
-                
-                // Butonları aktif hale getir
-                function activateButtons() {
-                    console.log('🔘 Butonlar aktif hale getiriliyor...');
-                    
-                    // Kamera erişimi butonunu aktif et
-                    const cameraBtn = document.getElementById('cameraAccessBtn');
-                    if (cameraBtn) {
-                        cameraBtn.disabled = false;
-                        cameraBtn.style.opacity = '1';
-                        cameraBtn.style.cursor = 'pointer';
-                        console.log('✅ Kamera erişimi butonu aktif edildi');
-                    }
-                    
-                    // Yayın başlat butonunu aktif et
-                    const startBtn = document.getElementById('startStreamBtn');
-                    if (startBtn) {
-                        startBtn.disabled = false;
-                        startBtn.style.opacity = '1';
-                        startBtn.style.cursor = 'pointer';
-                        console.log('✅ Yayın başlat butonu aktif edildi');
-                    }
-                    
-                    // Event listener'ları ekle
-                    addButtonEventListeners();
-                }
-                
-                // Event listener'ları ekle
-                function addButtonEventListeners() {
-                    console.log('🎧 Event listener\'lar ekleniyor...');
-                    
-                    // Kamera erişimi butonu
-                    const cameraBtn = document.getElementById('cameraAccessBtn');
-                    if (cameraBtn) {
-                        cameraBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('📹 Kamera erişimi butonuna tıklandı');
-                            if (typeof requestCameraAccess === 'function') {
-                                requestCameraAccess();
-                            } else {
-                                alert('Kamera erişimi fonksiyonu yüklenmedi. Sayfayı yenileyin.');
-                            }
-                        });
-                        console.log('✅ Kamera erişimi event listener eklendi');
-                    }
-                    
-                    // Yayın başlat butonu
-                    const startBtn = document.getElementById('startStreamBtn');
-                    if (startBtn) {
-                        startBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('🎬 Yayın başlat butonuna tıklandı');
-                            if (typeof startStream === 'function') {
-                                startStream();
-                            } else {
-                                alert('Yayın başlatma fonksiyonu yüklenmedi. Sayfayı yenileyin.');
-                            }
-                        });
-                        console.log('✅ Yayın başlat event listener eklendi');
-                    }
-                    
-                    // Diğer butonlar
-                    const stopBtn = document.getElementById('stopBtn');
-                    if (stopBtn) {
-                        stopBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('⏹️ Yayın durdur butonuna tıklandı');
-                            if (typeof stopStream === 'function') {
-                                stopStream();
-                            }
-                        });
-                    }
-                    
-                    const endBtn = document.getElementById('endStreamBtn');
-                    if (endBtn) {
-                        endBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('🛑 Yayın sonlandır butonuna tıklandı');
-                            if (typeof endStream === 'function') {
-                                endStream();
-                            }
-                        });
-                    }
-                }
-                
-            } catch (error) {
-                console.error('❌ Script yükleme hatası:', error);
-                
-                // Acil durum fallback'leri
-                window.skipPaymentStep = function() {
-                    alert('Acil durum modu: 2 saat bakiye eklendi.');
-                    localStorage.setItem('livestreamBalance', '120');
-                    
-                    const preStreamSetup = document.getElementById('preStreamSetup');
-                    const mainContent = document.getElementById('mainContent');
-                    
-                    if (preStreamSetup) preStreamSetup.style.display = 'none';
-                    if (mainContent) mainContent.style.display = 'grid';
-                };
-                
-                window.showAlert = function(message, type) {
-                    alert(message);
-                };
-                
-                window.requestCameraAccess = function() {
-                    alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
-                };
-                
-                window.startStream = function() {
-                    alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
-                };
-            }
-        });
-        
-        // Direkt script yükleme fonksiyonu
-        async function loadScriptsDirectly() {
-            console.log('🔄 Direkt script yükleme başlatılıyor...');
-            
-            const scripts = [
-                'modules/module-loader.js?v=2',
-                'app.js?v=2',
-                'services/payment-service.js?v=2',
-                'services/order-service.js?v=2',
-                'live-stream.js?v=2'
-            ];
-            
-            for (const scriptSrc of scripts) {
-                try {
-                    await loadScript(scriptSrc);
-                    console.log(`✅ Script yüklendi: ${scriptSrc}`);
-                } catch (error) {
-                    console.warn(`⚠️ Script yüklenemedi: ${scriptSrc}`, error);
-                }
-            }
-            
-            // Fonksiyonları kontrol et ve butonları aktif et
-            setTimeout(function() {
-                console.log('🔍 Fonksiyonlar kontrol ediliyor (direkt yükleme)...');
-                checkAndActivateFunctions();
-            }, 2000);
-        }
-        
-        // Tek script yükleme fonksiyonu
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = false;
-                script.onload = () => resolve(script);
-                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-                document.head.appendChild(script);
-            });
-        }
-        
-        // Fonksiyon kontrolü ve buton aktivasyonu
-        function checkAndActivateFunctions() {
-            // Kritik fonksiyonları kontrol et
-            const criticalFunctions = {
-                'skipPaymentStep': function() {
-                    console.log('Fallback skipPaymentStep() çağrıldı');
-                    try {
-                        localStorage.setItem('livestreamBalance', '120');
-                        
-                        const preStreamSetup = document.getElementById('preStreamSetup');
-                        const mainContent = document.getElementById('mainContent');
-                        
-                        if (preStreamSetup) {
-                            preStreamSetup.classList.remove('active');
-                        }
-                        
-                        if (mainContent) {
-                            mainContent.style.display = 'grid';
-                        }
-                        
-                        alert('Test modu: 2 saat bakiye eklendi.');
-                        console.log('Fallback skipPaymentStep() başarıyla tamamlandı');
-                    } catch (error) {
-                        console.error('Fallback skipPaymentStep() hatası:', error);
-                        alert('Hata: ' + error.message);
-                    }
-                },
-                'showAlert': function(message, type = 'info') {
-                    console.log(`Alert: ${message} (${type})`);
-                    alert(message);
-                },
-                'requestCameraAccess': function() {
-                    console.log('Fallback requestCameraAccess() çağrıldı');
-                    alert('Kamera erişimi için lütfen tarayıcı ayarlarından izin verin.');
-                },
-                'startStream': function() {
-                    console.log('Fallback startStream() çağrıldı');
-                    alert('Yayın başlatılamadı. Lütfen sayfayı yenileyin.');
-                }
-            };
-            
-            // Eksik fonksiyonları ekle
-            Object.keys(criticalFunctions).forEach(funcName => {
-                if (typeof window[funcName] !== 'function') {
-                    console.warn(`⚠️ ${funcName} fonksiyonu yüklenmedi, fallback kullanılıyor`);
-                    window[funcName] = criticalFunctions[funcName];
-                } else {
-                    console.log(`✅ ${funcName} fonksiyonu mevcut`);
-                }
-            });
-            
-            // Butonları aktif hale getir
-            activateButtonsDirectly();
-            
-            console.log('🎉 Canlı yayın sayfası hazır (direkt yükleme)!');
-        }
-        
-        // Direkt buton aktivasyonu
-        function activateButtonsDirectly() {
-            console.log('🔘 Butonlar aktif hale getiriliyor (direkt)...');
-            
-            // Kamera erişimi butonunu aktif et
-            const cameraBtn = document.getElementById('cameraAccessBtn');
-            if (cameraBtn) {
-                cameraBtn.disabled = false;
-                cameraBtn.style.opacity = '1';
-                cameraBtn.style.cursor = 'pointer';
-                console.log('✅ Kamera erişimi butonu aktif edildi (direkt)');
-            }
-            
-            // Yayın başlat butonunu aktif et
-            const startBtn = document.getElementById('startStreamBtn');
-            if (startBtn) {
-                startBtn.disabled = false;
-                startBtn.style.opacity = '1';
-                startBtn.style.cursor = 'pointer';
-                console.log('✅ Yayın başlat butonu aktif edildi (direkt)');
-            }
-            
-            // Event listener'ları ekle
-            addButtonEventListenersDirectly();
-        }
-        
-        // Direkt event listener'ları ekle
-        function addButtonEventListenersDirectly() {
-            console.log('🎧 Event listener\'lar ekleniyor (direkt)...');
-            
-            // Kamera erişimi butonu
-            const cameraBtn = document.getElementById('cameraAccessBtn');
-            if (cameraBtn) {
-                cameraBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('📹 Kamera erişimi butonuna tıklandı (direkt)');
-                    if (typeof requestCameraAccess === 'function') {
-                        requestCameraAccess();
-                    } else {
-                        alert('Kamera erişimi fonksiyonu yüklenmedi. Sayfayı yenileyin.');
-                    }
-                });
-                console.log('✅ Kamera erişimi event listener eklendi (direkt)');
-            }
-            
-            // Yayın başlat butonu
-            const startBtn = document.getElementById('startStreamBtn');
-            if (startBtn) {
-                startBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('🎬 Yayın başlat butonuna tıklandı (direkt)');
-                    if (typeof startStream === 'function') {
-                        startStream();
-                    } else {
-                        alert('Yayın başlatma fonksiyonu yüklenmedi. Sayfayı yenileyin.');
-                    }
-                });
-                console.log('✅ Yayın başlat event listener eklendi (direkt)');
-            }
-        }
-    </script>
+    <script src="live-stream-clean.js"></script>
 </body>
 </html>
+
