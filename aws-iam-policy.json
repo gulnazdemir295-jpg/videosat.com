@@ -1,0 +1,40 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "IVSFullAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ivs:CreateChannel",
+        "ivs:GetChannel",
+        "ivs:ListChannels",
+        "ivs:DeleteChannel",
+        "ivs:UpdateChannel",
+        "ivs:CreateStreamKey",
+        "ivs:GetStreamKey",
+        "ivs:ListStreamKeys",
+        "ivs:DeleteStreamKey",
+        "ivs:StopStream",
+        "ivs:GetStream",
+        "ivs:ListStreams",
+        "ivs:PutMetadata",
+        "ivs:GetRecordingConfiguration",
+        "ivs:ListRecordingConfigurations",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+

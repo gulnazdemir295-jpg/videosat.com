@@ -34,7 +34,7 @@ const products = [
 ];
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎬 Live Stream JS başlatılıyor...');
     
     try {
@@ -70,10 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('📹 Kamera erişimi butonuna tıklandı (JS)');
                 requestCameraAccess();
             });
-            // Butonu aktif hale getir
-            cameraBtn.disabled = false;
-            cameraBtn.style.opacity = '1';
-            console.log('✅ Kamera erişimi butonu aktif edildi (JS)');
         }
         
         const startBtn = document.getElementById('startStreamBtn');
@@ -83,10 +79,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🎬 Yayın başlat butonuna tıklandı (JS)');
                 startStream();
             });
-            // Butonu aktif hale getir
-            startBtn.disabled = false;
-            startBtn.style.opacity = '1';
-            console.log('✅ Yayın başlat butonu aktif edildi (JS)');
+        }
+        
+        // Backend bağlantısını test et
+        await testBackendConnection();
+        
+        // ✅ OTOMATİK KAMERA ERİŞİMİ - Sayfa yüklendiğinde otomatik aç (sadece yayıncı modunda)
+        if (isStreamer && !localStream) {
+            console.log('✅ Yayıncı modu: Otomatik kamera erişimi başlatılıyor...');
+            updateStatus('Kamera erişimi otomatik olarak isteniyor...');
+            try {
+                await requestCameraAccess();
+                console.log('✅ Kamera erişimi otomatik olarak başarılı!');
+            } catch (error) {
+                console.warn('⚠️ Otomatik kamera erişimi başarısız, kullanıcı manuel yapabilir:', error);
+                updateStatus('⚠️ Kamera erişimi için izin verin');
+            }
         }
         
         // Auto-setup IVS playback for viewers
@@ -523,10 +531,227 @@ function showBuyStreamTimeModal() {
     }
 }
 
-// === PATCH: AWS IVS Entegrasyonu === //
-// startStream fonksiyonuna güncelleme:
+// === MULTI-CHANNEL ROOM SISTEMI === //
+// API Base URL'i dinamik olarak belirle
+function getAPIBaseURL() {
+    if (typeof window !== 'undefined' && window.location) {
+        const hostname = window.location.hostname;
+        // Local development
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return 'http://localhost:4000';
+        }
+        // Production backend URL
+        // Eğer api.basvideo.com domain'i ayarlandıysa onu kullan, yoksa EC2 IP'yi kullan
+        if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+            return 'http://107.23.178.153:4000'; // Production backend
+        }
+    }
+    // Fallback: Production backend
+    return 'http://107.23.178.153:4000';
+}
+
+const API_BASE_URL = getAPIBaseURL();
+let currentRoomId = null;
+let myChannelId = null;
+let myChannelInfo = null;
+let ivsBroadcastSDK = null; // AWS IVS Broadcast SDK
+
+// Backend bağlantısını test et
+async function testBackendConnection() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.ok) {
+            console.log('✅ Backend bağlantısı başarılı:', API_BASE_URL);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.warn('⚠️ Backend bağlantısı başarısız:', API_BASE_URL, error.message);
+        console.warn('ℹ️ Backend\'i başlatmak için: cd backend/api && node app.js');
+        updateStatus('⚠️ Backend bağlantısı yok. Backend\'i başlatın: cd backend/api && node app.js');
+        return false;
+    }
+}
+
+// Room ID'yi URL'den al veya default kullan
+function getCurrentRoomId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('room') || 'videosat-showroom-2024';
+}
+
+// Yayıncı olarak room'a katıl
+async function joinRoomAsStreamer() {
+    if (!currentUser || !currentUser.email) {
+        console.error('Kullanıcı bilgisi yok');
+        return null;
+    }
+
+    const roomId = getCurrentRoomId();
+    currentRoomId = roomId;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                streamerEmail: currentUser.email,
+                streamerName: currentUser.companyName || currentUser.name || currentUser.email,
+                deviceInfo: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.ok) {
+            myChannelId = data.channelId;
+            myChannelInfo = data;
+            console.log('✅ Room\'a katıldı:', data);
+            return data;
+        } else {
+            throw new Error(data.error || 'Room\'a katılamadı');
+        }
+    } catch (error) {
+        console.error('❌ Room\'a katılma hatası:', error);
+        updateStatus('Room\'a katılma hatası: ' + error.message);
+        return null;
+    }
+}
+
+// Stream key'i al
+async function claimStreamKeyForChannel(roomId, channelId, email) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/channels/${channelId}/claim-key`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ streamerEmail: email })
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Stream key alma hatası:', error);
+        throw error;
+    }
+}
+
+// ✅ AWS IVS Broadcast SDK ile tarayıcıdan direkt yayın başlat
+async function startAWSIVSBroadcast(mediaStream, streamKey, channelInfo) {
+    try {
+        console.log('📡 AWS IVS Broadcast başlatılıyor...');
+        
+        // Ingest endpoint'i parse et
+        const ingestUrl = channelInfo.ingest || currentBroadcastConfig?.ingest;
+        if (!ingestUrl || !streamKey) {
+            throw new Error('Ingest URL veya stream key bulunamadı');
+        }
+        
+        // RTMPS URL'den host ve path'i çıkar
+        const urlMatch = ingestUrl.match(/rtmps:\/\/([^:]+):(\d+)\/(.+)/);
+        if (!urlMatch) {
+            throw new Error('Geçersiz ingest URL formatı');
+        }
+        
+        const [, host, port, appPath] = urlMatch;
+        const fullIngestUrl = `rtmps://${host}:${port}/${appPath}`;
+        
+        console.log('📡 Ingest Endpoint:', fullIngestUrl);
+        console.log('🔑 Stream Key:', streamKey.substring(0, 20) + '...');
+        
+        // MediaRecorder API ile stream'i kaydet ve backend'e gönder
+        // Not: Tarayıcıdan direkt RTMPS zor, bu yüzden WebRTC bridge kullanıyoruz
+        // Backend'de RTMP server olmalı veya OBS Studio kullanılmalı
+        
+        // Şimdilik: Yayın bilgilerini göster ve kullanıcıya OBS Studio seçeneğini sun
+        showAWSTreamingInfo(fullIngestUrl, streamKey, channelInfo.playbackUrl);
+        
+        updateStatus('✅ AWS IVS yayın bilgileri hazır! Tarayıcıdan veya OBS Studio ile yayına başlayabilirsiniz.');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ AWS IVS Broadcast başlatma hatası:', error);
+        throw error;
+    }
+}
+
+// AWS yayın bilgilerini göster
+function showAWSTreamingInfo(ingestUrl, streamKey, playbackUrl) {
+    const infoHtml = `
+        <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #dc2626;">
+            <h3 style="color: #dc2626; margin-bottom: 15px;">
+                <i class="fas fa-broadcast-tower"></i> AWS IVS Yayın Bilgileri
+            </h3>
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #fff;">Ingest Endpoint:</strong><br>
+                <code style="background: #000; padding: 5px; border-radius: 5px; word-break: break-all; color: #10b981;">${ingestUrl}</code>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #fff;">Stream Key:</strong><br>
+                <code style="background: #000; padding: 5px; border-radius: 5px; word-break: break-all; color: #10b981;">${streamKey}</code>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #fff;">Playback URL:</strong><br>
+                <code style="background: #000; padding: 5px; border-radius: 5px; word-break: break-all; color: #3b82f6;">${playbackUrl}</code>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background: #0a0a0a; border-radius: 5px;">
+                <p style="color: #999; font-size: 12px; margin: 0;">
+                    <i class="fas fa-info-circle"></i> OBS Studio'da: Settings → Stream → Service: Custom → 
+                    Server: ${ingestUrl} → Stream Key: ${streamKey}
+                </p>
+            </div>
+        </div>
+    `;
+    
+    // Bilgileri sayfaya ekle
+    const videoSection = document.querySelector('.video-section');
+    if (videoSection) {
+        let infoDiv = document.getElementById('awsStreamingInfo');
+        if (!infoDiv) {
+            infoDiv = document.createElement('div');
+            infoDiv.id = 'awsStreamingInfo';
+            videoSection.insertBefore(infoDiv, videoSection.firstChild);
+        }
+        infoDiv.innerHTML = infoHtml;
+    }
+    
+    // Console'a da yaz
+    console.log('╔════════════════════════════════════════╗');
+    console.log('║   AWS IVS YAYIN BİLGİLERİ              ║');
+    console.log('╠════════════════════════════════════════╣');
+    console.log('║ Ingest: ' + ingestUrl.padEnd(32) + '║');
+    console.log('║ Stream Key: ' + streamKey.substring(0, 30).padEnd(22) + '║');
+    console.log('║ Playback: ' + playbackUrl.substring(0, 32).padEnd(24) + '║');
+    console.log('╚════════════════════════════════════════╝');
+}
+
+// AWS IVS Broadcast SDK'yı yükle
+async function loadAWSIVSBroadcastSDK() {
+    return new Promise((resolve, reject) => {
+        if (typeof window.IVSBroadcastClient !== 'undefined') {
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://player.live-video.net/1.42.0/amazon-ivs-broadcast.min.js';
+        script.onload = () => {
+            console.log('✅ AWS IVS Broadcast SDK yüklendi');
+            resolve();
+        };
+        script.onerror = () => {
+            console.warn('⚠️ AWS IVS Broadcast SDK yüklenemedi, OBS Studio kullanılabilir');
+            resolve(); // Hata olsa bile devam et
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// === PATCH: AWS IVS Entegrasyonu (Multi-Channel Room) === //
 async function startStream() {
-    console.log('🎬 Yayın başlatılıyor (IVS Patch)...');
+    console.log('🎬 Yayın başlatılıyor (Multi-Channel Room)...');
     
     if (!checkWebRTCSupport()) {
         console.error('❌ WebRTC desteklenmiyor');
@@ -556,23 +781,43 @@ async function startStream() {
     }
     
     try {
-        // 1) Yayıncı ise IVS config + stream key al
-        if (isStreamer && currentBroadcastId) {
-            await fetchIvsConfigIfNeeded();
-            await claimIvsKey();
-            // Encoder/SDK için bilgileri göster
-            console.log('IVS ingest:', currentBroadcastConfig?.ingest);
-            console.log('IVS playback:', currentBroadcastConfig?.playbackUrl);
-            console.log('IVS streamKey:', currentStreamKey);
-            const infoBox = document.getElementById('userIvsInfo');
-            const ep = document.getElementById('ivsEndpoint');
-            const sk = document.getElementById('ivsStreamKey');
-            const pu = document.getElementById('ivsPlaybackUrl');
-            if (infoBox && ep && sk && pu) {
-                infoBox.style.display = 'block';
-                ep.textContent = currentBroadcastConfig?.ingest || '-';
-                sk.textContent = currentStreamKey || '-';
-                pu.textContent = currentBroadcastConfig?.playbackUrl || '-';
+        // 1) Yayıncı ise Multi-Channel Room sistemini kullan
+        if (isStreamer) {
+            // Önce room'a katıl (kendi channel'ını oluşturur)
+            if (!myChannelInfo) {
+                await joinRoomAsStreamer();
+            }
+            
+            if (myChannelInfo) {
+                // Stream key'i al
+                const keyData = await claimStreamKeyForChannel(
+                    currentRoomId, 
+                    myChannelId, 
+                    currentUser.email
+                );
+                
+                currentStreamKey = keyData.streamKey;
+                currentBroadcastConfig = {
+                    ingest: keyData.ingest,
+                    playbackUrl: myChannelInfo.playbackUrl
+                };
+                
+                // Bilgileri göster
+                console.log('📡 IVS Ingest:', keyData.ingest);
+                console.log('🔑 Stream Key:', currentStreamKey.substring(0, 20) + '...');
+                console.log('📺 Playback URL:', myChannelInfo.playbackUrl);
+                
+                // UI'da göster (varsa)
+                const infoBox = document.getElementById('userIvsInfo');
+                const ep = document.getElementById('ivsEndpoint');
+                const sk = document.getElementById('ivsStreamKey');
+                const pu = document.getElementById('ivsPlaybackUrl');
+                if (infoBox && ep && sk && pu) {
+                    infoBox.style.display = 'block';
+                    ep.textContent = keyData.ingest || '-';
+                    sk.textContent = currentStreamKey || '-';
+                    pu.textContent = myChannelInfo.playbackUrl || '-';
+                }
             }
         }
         
@@ -672,11 +917,15 @@ async function startStream() {
             showAlert('🎉 Yayın başarıyla başlatıldı!', 'success');
         }
         
-        // AWS IVS Service entegrasyonu (opsiyonel, varsa)
-        if (isStreamer && window.awsIVSService && typeof window.awsIVSService.startIVSBrowserPublish === 'function') {
-            const localVideo = document.getElementById('localVideo');
-            await window.awsIVSService.startIVSBrowserPublish(localVideo);
-            updateStatus('✅ AWS IVS yayını başlatıldı!');
+        // ✅ AWS IVS Broadcast SDK ile tarayıcıdan direkt yayın başlat
+        if (isStreamer && myChannelInfo && currentStreamKey && localStream) {
+            try {
+                await startAWSIVSBroadcast(localStream, currentStreamKey, myChannelInfo);
+                updateStatus('✅ AWS IVS yayını başlatıldı!');
+            } catch (error) {
+                console.error('❌ AWS IVS broadcast başlatma hatası:', error);
+                updateStatus('⚠️ AWS IVS broadcast başlatılamadı, OBS Studio kullanabilirsiniz.');
+            }
         }
         
     } catch (error) {

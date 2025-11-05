@@ -1,0 +1,89 @@
+Merhaba AWS Support,
+
+Account ID: 328185871955
+
+**REVİZE - Bu Mesajı Lütfen Dikkate Alın**
+
+Güvenlik Mesajına Yanıt - Adımlar Tamamlandı:
+
+Step 1: ✅ Eksik Access Key Yönetimi
+- Eski access key (AKIAUY2LG7ZJ77D2CKVA) silindi
+- Yeni access key (AKIAUY2LG7ZJZVIQG3PI) oluşturuldu ve aktif olarak kullanılıyor
+- Tüm uygulamalar yeni key ile güncellendi
+- GitHub'daki public repository'den tüm access key bilgileri kaldırıldı
+
+Step 2: ✅ CloudTrail Logları Kontrol Edildi
+- Hesabımda istenmeyen IAM user, policy veya role oluşturulmamış
+- Herhangi bir şüpheli aktivite tespit edilmedi
+
+Step 3: ✅ AWS Kullanımı Kontrol Edildi
+- Tüm region'larda istenmeyen EC2 instance, Lambda function veya diğer kaynaklar kontrol edildi
+- Sadece meşru kaynaklarımız mevcut
+- Billing console'da şüpheli ücret görülmedi
+
+Step 4: Quarantine Policy Kaldırma Talebi
+- Adımlar 1-3 tamamlandı
+- Hesabım güvenli durumda
+- Lütfen IAM User "GULNAZ" üzerindeki "AWSCompromisedKeyQuarantineV3" policy'sini kaldırın
+
+---
+
+EK TALEP - IVS Service Quotas ve WebRTC Desteği:
+
+Amazon Interactive Video Service (IVS) kullanarak multi-channel canlı yayın platformu geliştiriyorum. Ancak iki önemli sorunla karşılaşıyorum:
+
+1. Stream Key Quota Artışı Talebi:
+   - Mevcut Stream Key quota: 1 (Service Quotas)
+   - Bu quota "Ayarlanabilir değil" (Not adjustable) olarak gösteriliyor
+   - Çoklu channel sistemimiz için daha fazla stream key'e ihtiyacımız var
+   - Lütfen Stream Key quota'sını artırın (en az 10-20 stream key)
+
+2. WebRTC Modu Desteği Talebi:
+   - AWS IVS Broadcast SDK kullanarak tarayıcıdan canlı yayın yapmaya çalışıyorum
+   - Ancak şu hatayı alıyorum: "Stream parameters are not supported by this account"
+   - Bu hata, hesabımın WebRTC broadcast modunu desteklemediğini gösteriyor
+   - Multi-channel room sistemimiz için WebRTC desteği kritik öneme sahip
+   - Lütfen hesabımın WebRTC özelliklerini aktif edin ve hesap doğrulamasını tamamlayın
+
+Kullanım Senaryomuz:
+- BasVideo.com e-ticaret platformu için satıcıların müşterilerine canlı yayın yapması
+- Her satıcı kendi channel'ında yayın yapıyor
+- OBS Studio kurulumu olmadan tarayıcıdan direkt yayın yapabilmeleri gerekiyor
+- Region: us-east-1
+
+Bu özellikler olmadan sistemimiz çalışamıyor. Lütfen yardımcı olun.
+
+Teşekkürler.
+
+---
+
+**GÜNCEL GÜVENLİK SORULARI CEVAPLARI:**
+
+1. **Lokasyon Bilgisi:**
+   - Ülke: Türkiye
+   - Şehir: Antalya
+   - VPN kullanımı: Hayır, VPN kullanmıyorum
+   
+2. **Hesap Erişimi:**
+   - Hayır, hesaba sadece ben (Gülna z Demir) erişebilirim
+   - IT geliştirici veya başka bir kişi erişim hakkına sahip değil
+   - Tüm development benim kendi bilgisayarımdan yapılıyor
+   
+3. **Ek Erişim Yoktur:**
+   - Hesaba sadece Antalya, Türkiye'den erişim sağlanıyor
+   - Hiç kimse başka bir lokasyondan hesaba erişemiyor
+
+**ÖNEMLİ NOT - TAMAMLANDI:**
+- ✅ Root user için Multi-Factor Authentication (MFA) EKLENDI
+- ✅ Hesap güvenliği konusunda tam işbirliği yapıldı
+- Tüm güvenlik önlemleri tamamlandı, IVS ve WebRTC taleplerinin değerlendirilmesini rica ediyorum
+
+---
+
+**EKLENİLECEKLER:**
+- [x] Root user için MFA ✅ **TAMAMLANDI!**
+- [x] Güvenlik soruları cevaplandı ✅
+
+Teşekkürler.
+
+

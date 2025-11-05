@@ -332,6 +332,7 @@
                         </div>
                         <div class="btn-row">
                             <button type="button" class="btn" onclick="setAwsCreds()"><i class="fas fa-link"></i> AWS'e Bağlan</button>
+                            <button type="button" class="btn" onclick="quickConnectAws()" style="background:#28a745; color:#fff;"><i class="fas fa-bolt"></i> Hızlı Bağlan</button>
                         </div>
                         <div class="section-title"><i class="fas fa-user-clock"></i> Yayıncı Dakika Yönetimi</div>
                         <div class="form-grid">
@@ -366,6 +367,7 @@
                         <div class="btn-row">
                             <button type="button" class="btn" onclick="listIvsChannels()"><i class="fas fa-list"></i> Kanalları Listele</button>
                             <button type="button" class="btn" onclick="deleteIvsChannel()"><i class="fas fa-trash"></i> Kanalı Sil</button>
+                            <button type="button" class="btn" onclick="deleteAllChannels()" style="background:#dc3545; color:#fff;"><i class="fas fa-bomb"></i> Tümünü Sil</button>
                         </div>
                         <div class="form-group" style="margin-top:10px;">
                             <label>Playback URL:</label>
@@ -606,6 +608,17 @@
     <script src="panel-app.js"></script>
     <script src="../services/ceo-admin-service.js"></script>
     <script>
+        // API redirection for local development (always active)
+        (function(){
+            const origFetch = window.fetch;
+            window.fetch = function(url, options) {
+                if (typeof url === 'string' && url.startsWith('/api/')) {
+                    url = 'http://127.0.0.1:4000' + url;
+                }
+                return origFetch(url, options);
+            };
+            console.log('✅ API redirection active: /api -> http://127.0.0.1:4000');
+        })();
         document.addEventListener('DOMContentLoaded', function() {
             const moduleCards = document.querySelectorAll('.module-card');
             const settingsForms = document.querySelectorAll('.settings-form');
@@ -695,6 +708,29 @@
             localStorage.removeItem('currentUser');
             window.location.href = '../index.html';
         }
+        // Fallback: Quick AWS connect with hardcoded values
+        async function quickConnectAws() {
+            const token = getAdminToken();
+            if (!token) { setResult('Önce Admin Token girin'); return; }
+            try {
+                const resp = await fetch('/api/admin/aws/creds', {
+                    method: 'POST', headers: apiHeaders(),
+                    body: JSON.stringify({ 
+                        accessKeyId: 'AKIAUY2LG7ZJ4R6V3UEF', 
+                        secretAccessKey: '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',
+                        region: 'us-east-1'
+                    })
+                });
+                const res = await parseResponse(resp);
+                if (resp.ok) {
+                    const v = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
+                    const vj = await parseResponse(v);
+                    setResult(v.ok ? { ok: true, message: 'AWS bağlandı (geçici)', verify: vj } : { ok: false, error: vj });
+                } else {
+                    setResult({ ok: false, ...res });
+                }
+            } catch (e) { setResult({ ok: false, error: e.message }); }
+        }
         function getAdminToken() {
             const val = (document.getElementById('adminToken')?.value || '').trim();
             if (val) { try { localStorage.setItem('adminToken', val); } catch(_) {} }
@@ -711,6 +747,13 @@
             const el = document.getElementById('ivsResult');
             if (el) el.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
         }
+        function explainHttpError(status, extra) {
+            if (status === 401) return 'Yetkisiz (401): Admin Token yanlış/boş. Canlı Yayın Ayarları > Admin Token alanına sunucudaki ADMIN_TOKEN değerini yazın.';
+            if (status === 404) return 'Bulunamadı (404): /api yolu yanlış yönleniyor. Nginx\'te /api -> 127.0.0.1:4000 proxy ayarını kontrol edin.';
+            if (status === 405) return 'İzin verilmiyor (405): Sunucu POST isteklerini engelliyor. Nginx\'te /api bloğunda limit_except/try_files kısıtları kaldırılmalı.';
+            if (status === 0) return 'Ağ hatası: CORS/HTTPS ya da bağlantı sorunu. Sayfayı https://basvideo.com üzerinden açtığınızdan emin olun.';
+            return `Hata (${status}): Ayrıntılar için bodyPreview\'e bakın.` + (extra ? `\n${extra}` : '');
+        }
         async function parseResponse(resp) {
             const ct = (resp.headers.get('content-type') || '').toLowerCase();
             if (ct.includes('application/json')) {
@@ -721,27 +764,32 @@
         }
         async function setAwsCreds() {
             try {
+                // 0) Token kontrolü
+                const adminToken = getAdminToken();
+                if (!adminToken) {
+                    setResult('Lütfen Admin Token (x-admin-token) alanına sunucudaki ADMIN_TOKEN değerini yazın.');
+                    return;
+                }
                 const accessKeyId = document.getElementById('awsAccessKeyId').value.trim();
                 const secretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
                 const region = document.getElementById('awsRegion').value;
                 if (!accessKeyId || !secretAccessKey) {
                     const v0 = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
                     const v0j = await parseResponse(v0);
-                    if (v0.ok) { setResult({ message: 'Sunucu kimlik bilgileri ile doğrulandı', verify: v0j }); return; }
+                    if (v0.ok) { setResult({ message: 'AWS bağlantısı başarılı (sunucudaki .env anahtarları ile)', verify: v0j }); return; }
+                    setResult({ message: explainHttpError(v0.status, ''), error: v0j });
+                    return;
                 }
                 const resp = await fetch('/api/admin/aws/creds', {
                     method: 'POST', headers: apiHeaders(), body: JSON.stringify({ accessKeyId, secretAccessKey, region })
                 });
                 const credsRes = await parseResponse(resp);
-                if (!resp.ok) { setResult(credsRes); return; }
+                if (!resp.ok) { setResult({ message: explainHttpError(resp.status, ''), error: credsRes }); return; }
                 // immediately verify connectivity
                 const v = await fetch('/api/admin/aws/verify', { headers: apiHeaders() });
                 const vj = await parseResponse(v);
-                if (v.ok) {
-                    setResult({ message: 'AWS bağlantısı başarılı', verify: vj, creds: credsRes });
-                } else {
-                    setResult({ message: 'AWS bağlantısı doğrulanamadı', error: vj });
-                }
+                if (v.ok) setResult({ message: 'AWS bağlantısı başarılı', verify: vj, creds: credsRes });
+                else setResult({ message: explainHttpError(v.status, ''), error: vj });
             } catch (e) { setResult('Hata: ' + e.message); }
         }
         async function addStreamerMinutes() {
@@ -824,6 +872,15 @@
                 const bid = document.getElementById('broadcastId').value.trim();
                 const resp = await fetch('/api/admin/ivs/channel', {
                     method: 'DELETE', headers: apiHeaders(), body: JSON.stringify({ broadcastId: bid })
+                });
+                setResult(await resp.json());
+            } catch (e) { setResult('Hata: ' + e.message); }
+        }
+        async function deleteAllChannels() {
+            if (!confirm('TÜM kanalları ve stream key\'leri silmek istediğinize emin misiniz?')) return;
+            try {
+                const resp = await fetch('/api/admin/ivs/channels/delete-all', {
+                    method: 'POST', headers: apiHeaders()
                 });
                 setResult(await resp.json());
             } catch (e) { setResult('Hata: ' + e.message); }

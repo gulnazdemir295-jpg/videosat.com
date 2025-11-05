@@ -1,4 +1,25 @@
 // Panel Application JavaScript
+
+// API Base URL'i dinamik olarak belirle
+function getAPIBaseURL() {
+    if (typeof window !== 'undefined' && window.location) {
+        const hostname = window.location.hostname;
+        // Local development
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return 'http://localhost:4000';
+        }
+        // Production backend URL
+        // Eğer api.basvideo.com domain'i ayarlandıysa onu kullan, yoksa EC2 IP'yi kullan
+        if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+            return 'http://107.23.178.153:4000'; // Production backend
+        }
+    }
+    // Fallback: Production backend
+    return 'http://107.23.178.153:4000';
+}
+
+const API_BASE_URL = getAPIBaseURL();
+
 let currentUser = null;
 let userRole = null;
 let products = [];
@@ -8,6 +29,12 @@ let orders = [];
 let messages = [];
 let isStreaming = false;
 let streamBalance = 0;
+
+// Agora Client ve Track'ler (çoklu yayın için)
+let agoraClients = new Map(); // channelId -> client
+let agoraTracks = null; // Shared tracks (tek kamera, çoklu yayın)
+let activeAgoraStreams = new Map(); // channelId -> streamInfo
+let isAgoraStreaming = false;
 
 // Initialize Panel
 document.addEventListener('DOMContentLoaded', function() {
@@ -1792,14 +1819,15 @@ function skipPurchase() {
     showAlert('Canlı yayın satın alma adımı atlandı.', 'info');
 }
 
-// Handle Stream Setup (güncellendi: gerçek AWS IVS yayını ve ödeme/IVS kontrol)
+// Handle Stream Setup (Hybrid: Agora veya AWS IVS)
 async function handleStreamSetup(e) {
     e.preventDefault();
     const selectedProducts = Array.from(document.querySelectorAll('#streamProductSelection input:checked'))
         .map(input => parseInt(input.value));
     const slogans = document.getElementById('streamSlogans').value;
     const title = document.getElementById('streamTitle').value;
-    const userEmail = localStorage.getItem('userEmail') || '';
+    const userEmail = getCurrentUserEmail() || localStorage.getItem('userEmail') || '';
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     if (selectedProducts.length === 0) {
         showAlert('Lütfen en az bir ürün seçin!', 'error');
@@ -1810,10 +1838,175 @@ async function handleStreamSetup(e) {
         return;
     }
 
+    // Provider kontrolü (Agora veya AWS IVS)
+    try {
+        // Önce Agora ile deneyelim (daha hızlı, daha güvenilir)
+        const provider = await detectStreamProvider();
+        
+        if (provider === 'AGORA' || !provider) {
+            // Agora ile yayın başlat
+            await startAgoraStream(title, slogans, selectedProducts, userEmail, currentUser);
+        } else {
+            // AWS IVS ile yayın (mevcut kod)
+            await startAWSIVSStream(title, slogans, selectedProducts, userEmail);
+        }
+    } catch(error) {
+        console.error('Stream setup error:', error);
+        showAlert('Yayın başlatılamadı: ' + error.message, 'error');
+    }
+}
+
+// Provider tespit et (Agora öncelikli)
+async function detectStreamProvider() {
+    try {
+        // Backend'den provider bilgisi al (test için)
+        const response = await fetch(`${API_BASE_URL}/api/health`);
+        // Varsayılan: Agora kullan (AWS IVS pending verification nedeniyle)
+        return 'AGORA';
+    } catch(e) {
+        return 'AGORA'; // Default: Agora
+    }
+}
+
+// Agora ile Yayın Başlat
+async function startAgoraStream(title, slogans, selectedProducts, userEmail, currentUser) {
+    try {
+        showAlert('Agora yayını başlatılıyor...', 'info');
+        
+        // 1. Room oluştur veya mevcut room'u kullan
+        const roomId = `room-${userEmail.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
+        
+        // 2. Backend'den Agora channel bilgilerini al
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                streamerEmail: userEmail,
+                streamerName: currentUser.companyName || currentUser.name || 'Yayıncı',
+                deviceInfo: navigator.userAgent
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.ok) {
+            throw new Error(data.error || 'Room\'a katılamadı');
+        }
+        
+        if (data.provider !== 'AGORA') {
+            throw new Error('Agora provider bekleniyor. Backend STREAM_PROVIDER=AGORA olmalı.');
+        }
+        
+        // 3. Agora client oluştur
+        if (typeof AgoraRTC === 'undefined') {
+            throw new Error('Agora SDK yüklenemedi. Lütfen sayfayı yenileyin.');
+        }
+        
+        const agoraClient = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        
+        // 4. Channel'a katıl
+        await agoraClient.join(
+            data.appId,
+            data.channelName,
+            data.publisherToken, // Publisher token
+            null // Random UID
+        );
+        
+        // 5. Kamera ve mikrofon al (tek kez, çoklu yayın için paylaşılacak)
+        if (!agoraTracks) {
+            agoraTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+        }
+        
+        // 6. Yayını başlat
+        await agoraClient.publish(agoraTracks);
+        
+        // 7. Video göster (panel'de)
+        const videoElement = document.getElementById('localVideo');
+        if (videoElement) {
+            agoraTracks[1].play('localVideo');
+        }
+        
+        // 8. Client'i kaydet
+        agoraClients.set(data.channelId, agoraClient);
+        activeAgoraStreams.set(data.channelId, {
+            channelId: data.channelId,
+            channelName: data.channelName,
+            title: title,
+            slogans: slogans,
+            products: selectedProducts,
+            roomId: roomId,
+            appId: data.appId,
+            subscriberToken: data.subscriberToken,
+            startedAt: new Date().toISOString()
+        });
+        
+        isAgoraStreaming = true;
+        isStreaming = true;
+        
+        // 9. UI güncellemeleri
+        const activeStreamEl = document.getElementById('activeStream');
+        if (activeStreamEl) {
+            activeStreamEl.classList.remove('hidden');
+        }
+        
+        const currentStreamTitle = document.getElementById('currentStreamTitle');
+        if (currentStreamTitle) {
+            currentStreamTitle.textContent = title;
+        }
+        
+        const currentStreamSlogan = document.getElementById('currentStreamSlogan');
+        if (currentStreamSlogan) {
+            currentStreamSlogan.textContent = slogans.split('\n')[0] || 'Slogan yok';
+        }
+        
+        const streamProductsList = document.getElementById('streamProductsList');
+        if (streamProductsList) {
+            streamProductsList.innerHTML = selectedProducts.map(pid => 
+                `<div class="stream-product">${products.find(p=>p.id===pid)?.name||'-'}</div>`
+            ).join('');
+        }
+        
+        // 10. Yayın bilgilerini localStorage'a kaydet (müşteriler için)
+        saveLivestreamInfo({
+            id: data.channelId,
+            channelName: data.channelName,
+            appId: data.appId,
+            subscriberToken: data.subscriberToken,
+            title: title,
+            products: selectedProducts.map(pid => products.find(p=>p.id===pid)?.name || ''),
+            companyName: currentUser.companyName || currentUser.name || 'Bilinmeyen',
+            status: 'live',
+            provider: 'AGORA',
+            roomId: roomId,
+            startedAt: new Date().toISOString()
+        });
+        
+        showAlert('✅ Agora canlı yayını başlatıldı!', 'success');
+        
+        console.log('✅ Agora yayını başlatıldı:', {
+            channelId: data.channelId,
+            channelName: data.channelName,
+            roomId: roomId
+        });
+        
+    } catch(error) {
+        console.error('Agora yayın hatası:', error);
+        showAlert('Agora yayını başlatılamadı: ' + error.message, 'error');
+        
+        // Fallback: AWS IVS dene
+        if (error.message.includes('Agora SDK')) {
+            showAlert('AWS IVS ile deneniyor...', 'info');
+            await startAWSIVSStream(title, slogans, selectedProducts, userEmail);
+        }
+    }
+}
+
+// AWS IVS ile Yayın Başlat (mevcut kod)
+async function startAWSIVSStream(title, slogans, selectedProducts, userEmail) {
     // 1. Ödeme Kontrolü
     let paymentStatus;
     try {
-        let psRes = await fetch(`http://localhost:4000/api/payments/status?userEmail=${encodeURIComponent(userEmail)}`);
+        let psRes = await fetch(`${API_BASE_URL}/api/payments/status?userEmail=${encodeURIComponent(userEmail)}`);
         paymentStatus = await psRes.json();
         if (!paymentStatus.hasTime) {
             showAlert('Canlı yayın bakiyeniz yok! Lütfen önce süre satın alın.', 'error');
@@ -1827,7 +2020,7 @@ async function handleStreamSetup(e) {
     // 2. IVS Config Kontrolü
     let ivsConfig;
     try {
-        let ivsRes = await fetch(`http://localhost:4000/api/livestream/config?userEmail=${encodeURIComponent(userEmail)}`);
+        let ivsRes = await fetch(`${API_BASE_URL}/api/livestream/config?userEmail=${encodeURIComponent(userEmail)}`);
         ivsConfig = await ivsRes.json();
         if (!ivsConfig.endpoint || !ivsConfig.playbackUrl) {
             showAlert('Yayın bilgisi atanmadı. Lütfen admin ile temasa geçin.', 'error');
@@ -1843,7 +2036,9 @@ async function handleStreamSetup(e) {
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         const videoElement = document.getElementById('localVideo');
-        videoElement.srcObject = cameraStream;
+        if (videoElement) {
+            videoElement.srcObject = cameraStream;
+        }
     } catch(e) {
         showAlert('Kamera/mikrofon izni alınamadı: '+e.message, 'error');
         return;
@@ -1852,7 +2047,7 @@ async function handleStreamSetup(e) {
     // 4. IVS Key al ve yayın başlat
     let streamKey;
     try {
-        let keyRes = await fetch('http://localhost:4000/api/livestream/claim-key', {
+        let keyRes = await fetch(`${API_BASE_URL}/api/livestream/claim-key`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userEmail })
@@ -1871,14 +2066,25 @@ async function handleStreamSetup(e) {
         await window.awsIVSService.startIVSBrowserPublish(ivsConfig.endpoint, streamKey, 'localVideo');
         showAlert('Gerçek AWS IVS yayını başladı!', 'success');
         // UI güncellemeleri
-        document.getElementById('activeStream').classList.remove('hidden');
+        const activeStreamEl = document.getElementById('activeStream');
+        if (activeStreamEl) {
+            activeStreamEl.classList.remove('hidden');
+        }
         isStreaming = true;
         // Yayına başlık/slogan gibi info ekle
-        document.getElementById('currentStreamTitle').textContent = title;
-        document.getElementById('currentStreamSlogan').textContent = slogans.split('\n')[0] || 'Slogan yok';
+        const currentStreamTitle = document.getElementById('currentStreamTitle');
+        if (currentStreamTitle) {
+            currentStreamTitle.textContent = title;
+        }
+        const currentStreamSlogan = document.getElementById('currentStreamSlogan');
+        if (currentStreamSlogan) {
+            currentStreamSlogan.textContent = slogans.split('\n')[0] || 'Slogan yok';
+        }
         // Ürünler UI
         const streamProductsList = document.getElementById('streamProductsList');
-        streamProductsList.innerHTML = selectedProducts.map(pid => `<div class="stream-product">${products.find(p=>p.id===pid)?.name||'-'}</div>`).join('');
+        if (streamProductsList) {
+            streamProductsList.innerHTML = selectedProducts.map(pid => `<div class="stream-product">${products.find(p=>p.id===pid)?.name||'-'}</div>`).join('');
+        }
         // İzleyicilere IVS Player ile oynatmayı öner
         window.lastIvsPlaybackUrl = ivsConfig.playbackUrl;
     } catch(e) {
@@ -1887,11 +2093,45 @@ async function handleStreamSetup(e) {
     }
 }
 
-// Stop Stream
-function stopStream() {
-    if (isStreaming) {
-        if (window.awsIVSService) window.awsIVSService.stopStream();
-        document.getElementById('activeStream').classList.add('hidden');
+// Stop Stream (Hybrid: Agora veya AWS IVS)
+async function stopStream() {
+    if (isAgoraStreaming) {
+        // Agora yayınlarını durdur
+        for (const [channelId, client] of agoraClients.entries()) {
+            try {
+                if (agoraTracks) {
+                    agoraTracks.forEach(track => {
+                        track.stop();
+                        track.close();
+                    });
+                }
+                await client.leave();
+                agoraClients.delete(channelId);
+            } catch(error) {
+                console.error('Agora stream stop error:', error);
+            }
+        }
+        
+        agoraTracks = null;
+        activeAgoraStreams.clear();
+        isAgoraStreaming = false;
+        isStreaming = false;
+        
+        const activeStreamEl = document.getElementById('activeStream');
+        if (activeStreamEl) {
+            activeStreamEl.classList.add('hidden');
+        }
+        
+        showAlert('Agora yayını durduruldu!', 'success');
+    } else if (isStreaming) {
+        // AWS IVS yayınını durdur
+        if (window.awsIVSService) {
+            window.awsIVSService.stopStream();
+        }
+        const activeStreamEl = document.getElementById('activeStream');
+        if (activeStreamEl) {
+            activeStreamEl.classList.add('hidden');
+        }
         isStreaming = false;
         showAlert('Canlı yayın durduruldu!', 'success');
     }
@@ -1903,20 +2143,73 @@ function previewStream() {
 }
 
 // Send Stream Message
-function sendStreamMessage() {
+// Send Stream Message (Backend entegrasyonu ile)
+async function sendStreamMessage() {
     const input = document.getElementById('streamChatInput');
     const message = input.value.trim();
     
-    if (message) {
-        const chatMessages = document.getElementById('streamChatMessages');
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message';
-        messageElement.textContent = `${currentUser.companyName}: ${message}`;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (!message) return;
+    
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userEmail = getCurrentUserEmail();
+    
+    // Aktif yayın bilgisini al
+    const activeStream = Array.from(activeAgoraStreams.values())[0];
+    
+    try {
+        // Backend'e mesaj gönder (varsa)
+        if (activeStream) {
+            const response = await fetch(`${API_BASE_URL}/api/streams/${activeStream.channelId}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    userEmail: userEmail,
+                    userName: currentUser.companyName || currentUser.name || 'Kullanıcı'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Backend mesaj gönderemedi');
+            }
+        }
         
+        // UI'da mesajı göster (her durumda)
+        const chatMessages = document.getElementById('streamChatMessages');
+        if (chatMessages) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            messageElement.textContent = `${currentUser.companyName || currentUser.name || 'Sen'}: ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        input.value = '';
+    } catch(error) {
+        // Fallback: Local mesaj (backend yoksa veya hata varsa)
+        const chatMessages = document.getElementById('streamChatMessages');
+        if (chatMessages) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            messageElement.textContent = `${currentUser.companyName || currentUser.name || 'Sen'}: ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
         input.value = '';
     }
+}
+
+// Yayın bilgilerini kaydet (müşteriler için)
+function saveLivestreamInfo(streamInfo) {
+    const streams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+    const existingIndex = streams.findIndex(s => s.id === streamInfo.id);
+    
+    if (existingIndex >= 0) {
+        streams[existingIndex] = streamInfo;
+    } else {
+        streams.push(streamInfo);
+    }
+    
+    localStorage.setItem('liveStreams', JSON.stringify(streams));
 }
 
 // Messages Management
@@ -2425,19 +2718,37 @@ function editUser(userId) {
 let invitations = [];
 
 // Load Invitations (for Üretici)
-function loadInvitations() {
+// Load Invitations (Backend entegrasyonu ile)
+async function loadInvitations() {
     console.log('Loading invitations...');
     
-    // Check localStorage for incoming invitations
-    const savedInvitations = localStorage.getItem('liveStreamInvitations');
+    const userEmail = getCurrentUserEmail();
     
-    if (savedInvitations) {
-        invitations = JSON.parse(savedInvitations);
-        console.log('Found invitations:', invitations.length);
-    } else {
-        // If no invitations exist, create empty array
-        invitations = [];
-        console.log('No invitations found');
+    try {
+        // Backend'den davetleri al
+        const response = await fetch(`${API_BASE_URL}/api/invitations/${encodeURIComponent(userEmail)}?status=pending`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            invitations = data.invitations || [];
+            console.log('Found backend invitations:', invitations.length);
+            
+            // LocalStorage'a da kaydet (sync)
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        } else {
+            throw new Error('Backend davet alınamadı');
+        }
+    } catch(error) {
+        console.warn('Backend invitation load error:', error);
+        // Fallback: LocalStorage
+        const savedInvitations = localStorage.getItem('liveStreamInvitations');
+        if (savedInvitations) {
+            invitations = JSON.parse(savedInvitations);
+            console.log('Found local invitations:', invitations.length);
+        } else {
+            invitations = [];
+            console.log('No invitations found');
+        }
     }
     
     // Update statistics
@@ -2606,7 +2917,8 @@ function renderDeclinedInvitations(declinedInvitations) {
 }
 
 // Accept Invitation
-function acceptInvitation(invitationId) {
+// Accept Invitation (Backend entegrasyonu ile)
+async function acceptInvitation(invitationId) {
     const invitation = invitations.find(i => i.id === invitationId);
     
     if (!invitation) {
@@ -2614,29 +2926,58 @@ function acceptInvitation(invitationId) {
         return;
     }
     
-    // Update invitation status
-    invitation.status = 'accepted';
-    invitation.acceptedAt = new Date().toISOString();
-    
-    // Save to localStorage
-    localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
-    
-    // Update UI
-    updateInvitationStats();
-    renderInvitations();
-    showInvitationAlert();
-    
-    // Show success message
-    showAlert('Davet kabul edildi! Canlı yayına yönlendiriliyorsunuz...', 'success');
-    
-    // Redirect to live stream page
-    setTimeout(() => {
-        window.location.href = '../live-stream.html';
-    }, 1500);
+    try {
+        // Backend'e kabul gönder
+        const response = await fetch(`${API_BASE_URL}/api/invitations/${invitationId}/respond`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'accept' })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // LocalStorage'ı da güncelle
+            invitation.status = 'accepted';
+            invitation.acceptedAt = new Date().toISOString();
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        } else {
+            // Fallback: Sadece local
+            invitation.status = 'accepted';
+            invitation.acceptedAt = new Date().toISOString();
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        }
+        
+        // Update UI
+        updateInvitationStats();
+        renderInvitations();
+        showInvitationAlert();
+        
+        // Show success message
+        showAlert('Davet kabul edildi! Canlı yayına yönlendiriliyorsunuz...', 'success');
+        
+        // Redirect to live stream page
+        setTimeout(() => {
+            const streamId = invitation.streamId || invitation.channelId;
+            if (streamId) {
+                joinCustomerLivestream(streamId);
+            } else {
+                window.location.href = '../live-stream.html';
+            }
+        }, 1500);
+    } catch(error) {
+        // Fallback: Local
+        invitation.status = 'accepted';
+        invitation.acceptedAt = new Date().toISOString();
+        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+        updateInvitationStats();
+        renderInvitations();
+        showInvitationAlert();
+        showAlert('Davet kabul edildi!', 'success');
+    }
 }
 
-// Decline Invitation
-function declineInvitation(invitationId) {
+// Decline Invitation (Backend entegrasyonu ile)
+async function declineInvitation(invitationId) {
     const invitation = invitations.find(i => i.id === invitationId);
     
     if (!invitation) {
@@ -2645,19 +2986,42 @@ function declineInvitation(invitationId) {
     }
     
     if (confirm('Bu daveti reddetmek istediğinize emin misiniz?')) {
-        // Update invitation status
-        invitation.status = 'declined';
-        invitation.declinedAt = new Date().toISOString();
-        
-        // Save to localStorage
-        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
-        
-        // Update UI
-        updateInvitationStats();
-        renderInvitations();
-        showInvitationAlert();
-        
-        showAlert('Davet reddedildi.', 'info');
+        try {
+            // Backend'e reddet gönder
+            const response = await fetch(`${API_BASE_URL}/api/invitations/${invitationId}/respond`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'reject' })
+            });
+            
+            if (response.ok) {
+                // LocalStorage'ı da güncelle
+                invitation.status = 'declined';
+                invitation.declinedAt = new Date().toISOString();
+                localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+            } else {
+                // Fallback: Sadece local
+                invitation.status = 'declined';
+                invitation.declinedAt = new Date().toISOString();
+                localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+            }
+            
+            // Update UI
+            updateInvitationStats();
+            renderInvitations();
+            showInvitationAlert();
+            
+            showAlert('Davet reddedildi.', 'info');
+        } catch(error) {
+            // Fallback: Local
+            invitation.status = 'declined';
+            invitation.declinedAt = new Date().toISOString();
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+            updateInvitationStats();
+            renderInvitations();
+            showInvitationAlert();
+            showAlert('Davet reddedildi.', 'info');
+        }
     }
 }
 
@@ -3334,67 +3698,166 @@ function loadFollowers() {
     }
 }
 
-// Invite follower to livestream
-function inviteFollowerToLivestream(followerId, followerName) {
-    // Check if company is streaming
-    const activeStream = localStorage.getItem('activeLivestream');
+// Invite follower to livestream (Backend entegrasyonu ile)
+async function inviteFollowerToLivestream(followerId, followerName) {
+    // Aktif yayın bilgisini al
+    const activeStream = Array.from(activeAgoraStreams.values())[0];
     if (!activeStream) {
-        showAlert('Canlı yayın başlatmanız gerekiyor', 'warning');
-        return;
+        // LocalStorage'dan kontrol et
+        const localStreams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+        const liveStream = localStreams.find(s => s.status === 'live');
+        if (!liveStream) {
+            showAlert('Canlı yayın başlatmanız gerekiyor', 'warning');
+            return;
+        }
+        activeStream = liveStream;
     }
 
-    const stream = JSON.parse(activeStream);
-    if (stream.status !== 'live') {
-        showAlert('Aktif canlı yayın bulunmuyor', 'warning');
-        return;
-    }
-
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userEmail = getCurrentUserEmail();
+    const followerEmail = getUserEmailById(followerId); // Bu fonksiyon varsa kullan
+    
     if (confirm(`${followerName} kullanıcısını canlı yayına davet etmek istiyor musunuz?`)) {
-        // Send invitation
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
-        const invitation = {
-            id: Date.now(),
-            streamId: stream.id,
-            fromCompanyId: currentUser.id,
-            fromCompanyName: currentUser.companyName || currentUser.name,
-            toUserId: followerId,
-            toUserName: followerName,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-
-        // Save invitation
-        const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
-        invitations.push(invitation);
-        localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
-
-        showAlert(`${followerName} kullanıcısına davet gönderildi`, 'success');
+        try {
+            // Backend'e davet gönder
+            const response = await fetch(`${API_BASE_URL}/api/streams/${activeStream.channelId || activeStream.id}/invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fromEmail: userEmail,
+                    toEmail: followerEmail || `${followerId}@example.com`, // Fallback
+                    streamTitle: activeStream.title || 'Canlı Yayın'
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                showAlert(`${followerName} kullanıcısına davet gönderildi`, 'success');
+            } else {
+                // Fallback: LocalStorage
+                const invitation = {
+                    id: Date.now(),
+                    streamId: activeStream.id || activeStream.channelId,
+                    fromCompanyId: currentUser.id,
+                    fromCompanyName: currentUser.companyName || currentUser.name,
+                    toUserId: followerId,
+                    toUserName: followerName,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+                invitations.push(invitation);
+                localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+                
+                showAlert(`${followerName} kullanıcısına davet gönderildi`, 'success');
+            }
+        } catch(error) {
+            // Fallback: LocalStorage
+            const invitation = {
+                id: Date.now(),
+                streamId: activeStream.id || activeStream.channelId,
+                fromCompanyId: currentUser.id,
+                fromCompanyName: currentUser.companyName || currentUser.name,
+                toUserId: followerId,
+                toUserName: followerName,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            const invitations = JSON.parse(localStorage.getItem('liveStreamInvitations') || '[]');
+            invitations.push(invitation);
+            localStorage.setItem('liveStreamInvitations', JSON.stringify(invitations));
+            
+            showAlert(`${followerName} kullanıcısına davet gönderildi`, 'success');
+        }
     }
+}
+
+// Kullanıcı ID'sinden email al
+function getUserEmailById(userId) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.id === userId);
+    return user ? user.email : null;
 }
 
 // ============================================
 // CUSTOMER - LIVESTREAMS AND FOLLOWING
 // ============================================
 
-// Load Live Streams (for customer)
+// Load Live Streams (for customer) - Kategori ve Arama ile
 function loadCustomerLiveStreams() {
-    if (!window.followService) {
-        console.warn('Follow service not available');
-        return;
+    // 1. LocalStorage'dan yayınları al
+    const localStreams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+    const activeStreams = localStreams.filter(s => s.status === 'live');
+    
+    // 2. Follow service'den yayınları al (varsa)
+    let followServiceStreams = [];
+    if (window.followService) {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const userId = currentUser.id;
+        if (userId) {
+            followServiceStreams = window.followService.getFollowedLiveStreams(userId) || [];
+        }
     }
+    
+    // 3. Tüm yayınları birleştir
+    const allStreams = [...activeStreams, ...followServiceStreams];
+    
+    // 4. Yayınları render et (kategori ve arama ile)
+    renderStreamsWithFilters(allStreams);
+}
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.id;
-
-    if (!userId) return;
-
-    const streams = window.followService.getFollowedLiveStreams(userId);
+// Yayınları kategori ve arama ile göster
+function renderStreamsWithFilters(streams) {
     const streamsList = document.getElementById('liveStreamsList');
-
     if (!streamsList) return;
-
-    if (streams.length === 0) {
+    
+    // Kategori ve arama input'ları oluştur (yoksa)
+    if (!document.getElementById('streamCategoryFilter')) {
+        const filterContainer = document.createElement('div');
+        filterContainer.style.marginBottom = '20px';
+        filterContainer.innerHTML = `
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <select id="streamCategoryFilter" style="flex: 1; padding: 10px; border-radius: 8px; background: #1f1f1f; color: #fff; border: 1px solid #404040;">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="metal">Metal</option>
+                    <option value="plastik">Plastik</option>
+                    <option value="kimyasal">Kimyasal</option>
+                    <option value="tekstil">Tekstil</option>
+                    <option value="gida">Gıda</option>
+                    <option value="diger">Diğer</option>
+                </select>
+                <input type="text" id="streamSearch" placeholder="Yayın ara..." style="flex: 2; padding: 10px; border-radius: 8px; background: #1f1f1f; color: #fff; border: 1px solid #404040;">
+            </div>
+        `;
+        streamsList.parentElement.insertBefore(filterContainer, streamsList);
+        
+        // Event listener'lar ekle
+        document.getElementById('streamCategoryFilter').addEventListener('change', () => {
+            const allStreams = [...JSON.parse(localStorage.getItem('liveStreams') || '[]').filter(s => s.status === 'live'), ...(window.followService ? window.followService.getFollowedLiveStreams(JSON.parse(localStorage.getItem('currentUser') || '{}').id) || []) : [])];
+            renderStreamsWithFilters(allStreams);
+        });
+        document.getElementById('streamSearch').addEventListener('input', () => {
+            const allStreams = [...JSON.parse(localStorage.getItem('liveStreams') || '[]').filter(s => s.status === 'live'), ...(window.followService ? window.followService.getFollowedLiveStreams(JSON.parse(localStorage.getItem('currentUser') || '{}').id) || []) : [])];
+            renderStreamsWithFilters(allStreams);
+        });
+    }
+    
+    // Filtreleme
+    const categoryFilter = document.getElementById('streamCategoryFilter')?.value || '';
+    const searchFilter = document.getElementById('streamSearch')?.value.toLowerCase() || '';
+    
+    const filteredStreams = streams.filter(stream => {
+        const matchesCategory = !categoryFilter || stream.category === categoryFilter;
+        const matchesSearch = !searchFilter || 
+            (stream.title || '').toLowerCase().includes(searchFilter) ||
+            (stream.companyName || '').toLowerCase().includes(searchFilter);
+        return matchesCategory && matchesSearch;
+    });
+    
+    // Render
+    if (filteredStreams.length === 0) {
         streamsList.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #999;">
                 <i class="fas fa-broadcast-tower" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
@@ -3404,8 +3867,8 @@ function loadCustomerLiveStreams() {
         `;
         return;
     }
-
-    streamsList.innerHTML = streams.map(stream => `
+    
+    streamsList.innerHTML = filteredStreams.map(stream => `
         <div class="action-card" style="margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div style="flex: 1;">
@@ -3414,19 +3877,90 @@ function loadCustomerLiveStreams() {
                         ${stream.title || 'Canlı Yayın'}
                     </h3>
                     <p style="margin: 0 0 10px 0; color: #ffffff;">
-                        <i class="fas fa-building"></i> ${stream.companyName}
+                        <i class="fas fa-building"></i> ${stream.companyName || 'Bilinmeyen'}
                     </p>
-                    <p style="margin: 0; color: #999; font-size: 14px;">
-                        <i class="fas fa-users"></i> ${stream.viewers || 0} İzleyici
-                    </p>
+                    <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                        <p style="margin: 0; color: #999; font-size: 14px;">
+                            <i class="fas fa-users"></i> ${stream.viewers || 0} İzleyici
+                        </p>
+                        <p style="margin: 0; color: #999; font-size: 14px;">
+                            <i class="fas fa-heart"></i> <span id="like-count-${stream.id}">${stream.likes || 0}</span> Beğeni
+                        </p>
+                    </div>
+                    ${stream.products && stream.products.length > 0 ? `
+                        <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">
+                            <i class="fas fa-box"></i> ${stream.products.slice(0, 3).join(', ')}${stream.products.length > 3 ? '...' : ''}
+                        </p>
+                    ` : ''}
                 </div>
-                <button class="btn btn-primary" onclick="joinCustomerLivestream('${stream.id}')">
-                    <i class="fas fa-play"></i>
-                    Yayına Katıl
-                </button>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" onclick="joinCustomerLivestream('${stream.id}')">
+                        <i class="fas fa-play"></i>
+                        Yayına Katıl
+                    </button>
+                    <button class="btn btn-outline btn-small" onclick="likeStream('${stream.id}')" style="display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-heart"></i>
+                        Beğen
+                    </button>
+                </div>
             </div>
+            <div id="stream-video-${stream.id}" style="width: 100%; height: 400px; background: #000; border-radius: 10px; margin-top: 15px; display: none;"></div>
         </div>
     `).join('');
+}
+
+// Beğeni Fonksiyonu
+async function likeStream(streamId) {
+    try {
+        const userEmail = getCurrentUserEmail();
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+        // Backend'e beğeni gönder
+        const response = await fetch(`${API_BASE_URL}/api/streams/${streamId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userEmail: userEmail,
+                userName: currentUser.companyName || currentUser.name || 'Kullanıcı'
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Beğeni sayısını güncelle
+            const likeCountEl = document.getElementById(`like-count-${streamId}`);
+            if (likeCountEl) {
+                likeCountEl.textContent = data.likeCount || 0;
+            }
+            showAlert('✅ Beğenildi!', 'success');
+        } else {
+            // Fallback: Local beğeni
+            const streams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+            const stream = streams.find(s => s.id === streamId);
+            if (stream) {
+                stream.likes = (stream.likes || 0) + 1;
+                localStorage.setItem('liveStreams', JSON.stringify(streams));
+                const likeCountEl = document.getElementById(`like-count-${streamId}`);
+                if (likeCountEl) {
+                    likeCountEl.textContent = stream.likes;
+                }
+                showAlert('✅ Beğenildi!', 'success');
+            }
+        }
+    } catch(error) {
+        // Fallback: Local beğeni
+        const streams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+        const stream = streams.find(s => s.id === streamId);
+        if (stream) {
+            stream.likes = (stream.likes || 0) + 1;
+            localStorage.setItem('liveStreams', JSON.stringify(streams));
+            const likeCountEl = document.getElementById(`like-count-${streamId}`);
+            if (likeCountEl) {
+                likeCountEl.textContent = stream.likes;
+            }
+            showAlert('✅ Beğenildi!', 'success');
+        }
+    }
 }
 
 // Load Following list (for customer)
@@ -3515,9 +4049,90 @@ function unfollowCompany(companyId) {
     }
 }
 
-// Join customer livestream
-function joinCustomerLivestream(streamId) {
-    window.location.href = `../live-stream.html?id=${streamId}`;
+// Join customer livestream (Agora veya AWS IVS)
+async function joinCustomerLivestream(streamId) {
+    try {
+        // Yayın bilgilerini al
+        const streams = JSON.parse(localStorage.getItem('liveStreams') || '[]');
+        const stream = streams.find(s => s.id === streamId);
+        
+        if (!stream) {
+            showAlert('Yayın bulunamadı', 'error');
+            return;
+        }
+        
+        if (stream.provider === 'AGORA') {
+            // Agora ile izle
+            await watchAgoraStream(stream);
+        } else {
+            // AWS IVS ile izle (mevcut sayfa)
+            window.location.href = `../live-stream.html?id=${streamId}`;
+        }
+    } catch(error) {
+        console.error('Join livestream error:', error);
+        showAlert('Yayına katılamadı: ' + error.message, 'error');
+    }
+}
+
+// Agora Yayınını İzle (Müşteri)
+async function watchAgoraStream(streamInfo) {
+    try {
+        if (typeof AgoraRTC === 'undefined') {
+            throw new Error('Agora SDK yüklenemedi');
+        }
+        
+        // Agora client oluştur (izleyici modu)
+        const viewerClient = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        
+        // Channel'a katıl (subscriber olarak)
+        await viewerClient.join(
+            streamInfo.appId,
+            streamInfo.channelName,
+            streamInfo.subscriberToken || streamInfo.webrtc?.token,
+            null // Random UID
+        );
+        
+        // Yayıncı geldiğinde video göster
+        viewerClient.on("user-published", async (user, mediaType) => {
+            await viewerClient.subscribe(user, mediaType);
+            
+            if (mediaType === "video") {
+                const videoContainer = document.getElementById(`stream-video-${streamInfo.id}`);
+                if (videoContainer) {
+                    user.videoTrack.play(`stream-video-${streamInfo.id}`);
+                } else {
+                    // Video container oluştur
+                    const container = document.createElement('div');
+                    container.id = `stream-video-${streamInfo.id}`;
+                    container.style.width = '100%';
+                    container.style.height = '400px';
+                    container.style.background = '#000';
+                    container.style.borderRadius = '10px';
+                    
+                    const streamsList = document.getElementById('liveStreamsList');
+                    if (streamsList) {
+                        streamsList.insertBefore(container, streamsList.firstChild);
+                    }
+                    
+                    user.videoTrack.play(`stream-video-${streamInfo.id}`);
+                }
+            }
+            
+            if (mediaType === "audio") {
+                user.audioTrack.play();
+            }
+        });
+        
+        // Client'i kaydet (çıkış için)
+        if (!agoraClients) agoraClients = new Map();
+        agoraClients.set(`viewer-${streamInfo.id}`, viewerClient);
+        
+        showAlert('✅ Yayın izleniyor!', 'success');
+        
+    } catch(error) {
+        console.error('Watch Agora stream error:', error);
+        showAlert('Yayın izlenemedi: ' + error.message, 'error');
+    }
 }
 
 // Export functions
@@ -4935,3 +5550,4 @@ window.startBrowserStream = startBrowserStream;
 window.stopBrowserStream = stopBrowserStream;
 
 console.log('Panel Application JavaScript Loaded Successfully');
+

@@ -51,7 +51,13 @@ node_modules/
 config.env
 .env
 *.env
+.env.save
+.env.local
+.env.production
+.env.development
 !config.env.example
+!.env.example
+!backend/api/.env.example
 jspm_packages/
 
 # Optional npm cache directory

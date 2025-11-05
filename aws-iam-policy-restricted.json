@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "IVSMinimalAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ivs:CreateChannel",
+        "ivs:GetChannel",
+        "ivs:ListChannels",
+        "ivs:DeleteChannel",
+        "ivs:CreateStreamKey",
+        "ivs:GetStreamKey",
+        "ivs:ListStreamKeys",
+        "ivs:DeleteStreamKey",
+        "ivs:StopStream",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ],
+  "Comment": "Minimum required permissions for VideoSat Multi-Channel Room System"
+}
+
+
+
+
+
+
+
+
+
+
+
+

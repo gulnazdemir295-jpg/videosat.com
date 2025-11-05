@@ -1,0 +1,16 @@
+AWS Support Case Numarası: 176217761800459
+
+Oluşturulma Tarihi: 2025-11-03
+Konu: IVS hesap doğrulaması bekleniyor - lütfen hesabı doğrulayın
+Kategori: Account (Hesap)
+Durum: Açık (Open)
+Beklenen Yanıt: 24-48 saat
+
+Takip:
+- AWS Console → Support → Support Center → Open cases
+- E-posta ile güncellemeler gelecek
+
+Test Komutu (Doğrulama tamamlandığında):
+aws ivs create-channel --name test-verification-success-$(date +%s) --type BASIC --latency-mode LOW --region us-east-1
+
+
