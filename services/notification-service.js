@@ -28,28 +28,26 @@ class NotificationService {
             // Simülasyon için localStorage tabanlı sistem
             this.setupLocalStorageSimulation();
             
-            // Başarılı bağlantı mesajı (sadece gerekirse göster)
-            // console.log('✅ Notification Service bağlandı');
+            // Başarılı bağlantı
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
-            // Kuyruktaki mesajları gönder (güvenli çağrı)
+            // Kuyruktaki mesajları gönder (güvenli çağrı - sessiz)
             if (this.messageQueue && this.messageQueue.length > 0) {
                 if (typeof this.processMessageQueue === 'function') {
                     try {
                         this.processMessageQueue();
                     } catch (queueError) {
-                        console.warn('⚠️ Mesaj kuyruğu işleme hatası (görmezden geliniyor):', queueError);
+                        // Sessizce görmezden gel
                     }
-                } else {
-                    console.warn('⚠️ processMessageQueue metodu henüz yüklenmedi, atlanıyor');
                 }
             }
             
         } catch (error) {
-            console.error('❌ Notification Service bağlantı hatası:', error);
-            // Hata durumunda reconnect'i çağırma (sonsuz döngüye girmemek için)
+            // Hata durumunda sessizce devam et (konsol mesajı yok)
+            // Sadece gerçekten kritik hatalar için log tut
             if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                // Reconnect'i sessizce dene
                 this.handleReconnect();
             }
         }
@@ -74,7 +72,7 @@ class NotificationService {
             return;
         }
 
-        console.log(`📨 Mesaj kuyruğu işleniyor: ${this.messageQueue.length} mesaj`);
+        // Konsol mesajları kaldırıldı (sessiz çalışma)
         
         // Kuyruktaki tüm mesajları işle
         while (this.messageQueue.length > 0) {
@@ -85,11 +83,9 @@ class NotificationService {
                     this.emit('notification', message.data);
                 }
             } catch (error) {
-                console.error('Mesaj işleme hatası:', error);
+                // Sessizce görmezden gel
             }
         }
-        
-        console.log('✅ Mesaj kuyruğu işlendi');
     }
 
     checkForNotifications() {
@@ -343,18 +339,18 @@ class NotificationService {
     handleReconnect() {
         // Reconnect'i sınırla (sonsuz döngüyü önle)
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.warn('⚠️ Maksimum yeniden bağlanma denemesi aşıldı, reconnect durduruldu');
+            // Sessizce durdur
             return;
         }
         
         this.reconnectAttempts++;
-        console.log(`🔄 Yeniden bağlanma denemesi ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+        // Reconnect mesajı kaldırıldı (sessiz çalışma)
         
         setTimeout(() => {
             try {
                 this.connect();
             } catch (error) {
-                console.error('❌ Reconnect sırasında hata:', error);
+                // Sessizce görmezden gel
             }
         }, this.reconnectDelay * this.reconnectAttempts);
     }
@@ -365,24 +361,24 @@ class NotificationService {
             this.ws.close();
         }
         this.isConnected = false;
-        console.log('🔌 Notification Service bağlantısı kapatıldı');
+        // Kapatma mesajı kaldırıldı (sessiz çalışma)
     }
 }
 
-// Global instance oluştur (güvenli başlatma)
+// Global instance oluştur (güvenli başlatma - sessiz)
 try {
     window.notificationService = new NotificationService();
-    // Instance oluşturma mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
-    // console.log('✅ Notification Service instance oluşturuldu');
 } catch (error) {
-    console.error('❌ Notification Service başlatma hatası:', error);
-    // Fallback: Boş bir obje oluştur
+    // Hata durumunda sessizce fallback obje oluştur
     window.notificationService = {
         isConnected: false,
-        connect: function() { console.warn('⚠️ Notification Service kullanılamıyor'); },
+        connect: function() {},
         on: function() {},
         emit: function() {},
-        joinLiveStream: function(streamId) { console.warn('⚠️ Notification Service kullanılamıyor, joinLiveStream çağrılamadı'); }
+        joinLiveStream: function(streamId) {
+            // Fallback: Direkt sayfaya yönlendir
+            window.location.href = `live-stream.html?join=${streamId}`;
+        }
     };
 }
 
@@ -391,8 +387,7 @@ window.joinLiveStream = function(streamId) {
     if (window.notificationService && typeof window.notificationService.joinLiveStream === 'function') {
         window.notificationService.joinLiveStream(streamId);
     } else {
-        console.warn('⚠️ Notification Service joinLiveStream metodu kullanılamıyor');
-        // Fallback: Direkt sayfaya yönlendir
+        // Fallback: Direkt sayfaya yönlendir (sessiz)
         window.location.href = `live-stream.html?join=${streamId}`;
     }
 };
