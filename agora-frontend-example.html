@@ -168,11 +168,39 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
 
     <script>
-        const BACKEND_URL = 'http://107.23.178.153:4000';
+        // API Base URL - Dinamik olarak belirle
+        function getAPIBaseURL() {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            
+            // Production (basvideo.com)
+            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+                return 'https://basvideo.com/api';
+            }
+            
+            // File:// protokolü (local dosya)
+            if (protocol === 'file:') {
+                return 'http://localhost:3000/api';
+            }
+            
+            // Localhost geliştirme
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return 'http://localhost:3000/api';
+            }
+            
+            // Varsayılan: localhost
+            return 'http://localhost:3000/api';
+        }
+        
+        const BACKEND_URL = getAPIBaseURL().replace('/api', '');
         
         let client = null;
         let localTracks = [];
         let remoteUsers = {};
+        
+        // Debug: Backend URL'i göster
+        console.log('🔗 Backend URL:', BACKEND_URL);
+        console.log('🔗 API Base URL:', getAPIBaseURL());
 
         // Agora client oluştur
         function createClient() {
@@ -204,54 +232,166 @@
                     '<div class="status info">Yayın başlatılıyor...</div>';
 
                 // Backend'den channel bilgilerini al
-                const response = await fetch(`${BACKEND_URL}/api/rooms/${roomId}/join`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        streamerEmail: streamerEmail,
-                        streamerName: 'Yayıncı',
-                        deviceInfo: navigator.userAgent
-                    })
-                });
+                console.log('📡 Backend\'e istek gönderiliyor:', `${BACKEND_URL}/api/rooms/${roomId}/join`);
+                
+                let response;
+                try {
+                    response = await fetch(`${BACKEND_URL}/api/rooms/${roomId}/join`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            streamerEmail: streamerEmail,
+                            streamerName: 'Yayıncı',
+                            deviceInfo: navigator.userAgent
+                        })
+                    });
+                } catch (networkError) {
+                    console.error('❌ Network hatası:', networkError);
+                    throw new Error(`Backend bağlantı hatası: ${networkError.message}. Backend çalışıyor mu? (${BACKEND_URL})`);
+                }
+
+                // Response status kontrolü
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Backend hatası:', response.status, errorText);
+                    throw new Error(`Backend hatası (${response.status}): ${errorText}`);
+                }
 
                 const data = await response.json();
+                console.log('✅ Backend yanıtı:', data);
 
+                // Response validation
                 if (!data.ok) {
-                    throw new Error(data.error || 'Yayın başlatılamadı');
+                    throw new Error(data.error || data.detail || 'Yayın başlatılamadı');
                 }
 
                 if (data.provider !== 'AGORA') {
-                    throw new Error('Agora provider bekleniyor. Backend STREAM_PROVIDER=AGORA olmalı.');
+                    throw new Error(`Agora provider bekleniyor. Backend STREAM_PROVIDER=AGORA olmalı. Şu anki provider: ${data.provider || 'undefined'}`);
+                }
+
+                // Gerekli alanları kontrol et
+                if (!data.appId) {
+                    throw new Error('Backend yanıtında appId eksik. AGORA_APP_ID environment variable set edilmeli.');
+                }
+
+                if (!data.channelName) {
+                    throw new Error('Backend yanıtında channelName eksik.');
+                }
+
+                if (!data.webrtc || !data.webrtc.token) {
+                    throw new Error('Backend yanıtında webrtc.token eksik.');
                 }
 
                 // Agora client oluştur
                 const agoraClient = createClient();
+                console.log('📡 Agora client oluşturuldu');
 
                 // Channel'a katıl
-                await agoraClient.join(
-                    data.appId,
-                    data.channelName,
-                    data.webrtc.token,
-                    data.webrtc.uid
-                );
+                console.log('📡 Agora channel\'a katılıyor...', {
+                    appId: data.appId,
+                    channelName: data.channelName,
+                    uid: data.webrtc.uid || null,
+                    tokenLength: data.webrtc.token ? data.webrtc.token.length : 0
+                });
+
+                try {
+                    await agoraClient.join(
+                        data.appId,
+                        data.channelName,
+                        data.webrtc.token,
+                        data.webrtc.uid || null // null = random UID
+                    );
+                    console.log('✅ Agora channel\'a katıldı!');
+                } catch (joinError) {
+                    console.error('❌ Agora join hatası:', joinError);
+                    throw new Error(`Agora channel'a katılamadı: ${joinError.message || joinError}`);
+                }
 
                 // Kamera ve mikrofon başlat
-                localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+                console.log('📹 Kamera ve mikrofon başlatılıyor...');
+                try {
+                    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+                    console.log('✅ Kamera ve mikrofon başlatıldı:', {
+                        videoTrack: localTracks[1] ? 'var' : 'yok',
+                        audioTrack: localTracks[0] ? 'var' : 'yok'
+                    });
+                } catch (mediaError) {
+                    console.error('❌ Media device hatası:', mediaError);
+                    throw new Error(`Kamera/mikrofon erişimi hatası: ${mediaError.message}. Tarayıcı izinlerini kontrol edin.`);
+                }
 
                 // Yayını başlat
-                await agoraClient.publish(localTracks);
+                console.log('📡 Yayın publish ediliyor...');
+                try {
+                    await agoraClient.publish(localTracks);
+                    console.log('✅ Yayın publish edildi!');
+                } catch (publishError) {
+                    console.error('❌ Publish hatası:', publishError);
+                    throw new Error(`Yayın publish edilemedi: ${publishError.message || publishError}`);
+                }
 
                 // Local video göster
-                localTracks[1].play("localVideo");
+                try {
+                    localTracks[1].play("localVideo");
+                    console.log('✅ Local video gösteriliyor');
+                } catch (playError) {
+                    console.warn('⚠️ Video play hatası:', playError);
+                    // Kritik değil, devam et
+                }
 
                 document.getElementById('broadcastStatus').innerHTML = 
                     `<div class="status success">✅ Yayın başlatıldı! Channel: ${data.channelName}</div>`;
 
                 console.log('✅ Agora yayını başlatıldı:', data);
             } catch (error) {
-                console.error('Yayın başlatma hatası:', error);
+                console.error('❌ Yayın başlatma hatası:', error);
+                console.error('Hata detayı:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Local tracks temizle (varsa)
+                if (localTracks.length > 0) {
+                    localTracks.forEach(track => {
+                        try {
+                            track.stop();
+                            track.close();
+                        } catch (e) {
+                            console.warn('Track temizleme hatası:', e);
+                        }
+                    });
+                    localTracks = [];
+                }
+                
+                // Client temizle (varsa)
+                if (client) {
+                    try {
+                        await client.leave();
+                        client = null;
+                    } catch (e) {
+                        console.warn('Client temizleme hatası:', e);
+                    }
+                }
+                
+                // Detaylı hata mesajı
+                let errorMessage = error.message || 'Bilinmeyen hata';
+                
+                // Network hatası kontrolü
+                if (error.message && error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Backend bağlantı hatası. Backend çalışıyor mu? (http://localhost:3000)';
+                }
+                
+                // Agora hatası kontrolü
+                if (error.message && error.message.includes('Agora')) {
+                    errorMessage = `Agora hatası: ${error.message}. AGORA_APP_ID ve AGORA_APP_CERTIFICATE kontrol edin.`;
+                }
+                
                 document.getElementById('broadcastStatus').innerHTML = 
-                    `<div class="status error">❌ Hata: ${error.message}</div>`;
+                    `<div class="status error">
+                        <strong>❌ Hata: ${errorMessage}</strong><br>
+                        <small>Konsolu kontrol edin (F12) detaylı bilgi için.</small>
+                    </div>`;
             }
         }
 
@@ -293,39 +433,108 @@
                     '<div class="status info">İzleyici olarak katılılıyor...</div>';
 
                 // Room'daki channel'ları al
-                const response = await fetch(`${BACKEND_URL}/api/rooms/${roomId}/channels`);
+                console.log('📡 Channel listesi alınıyor:', `${BACKEND_URL}/api/rooms/${roomId}/channels`);
+                
+                let response;
+                try {
+                    response = await fetch(`${BACKEND_URL}/api/rooms/${roomId}/channels`);
+                } catch (networkError) {
+                    console.error('❌ Network hatası:', networkError);
+                    throw new Error(`Backend bağlantı hatası: ${networkError.message}`);
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Backend hatası (${response.status}): ${errorText}`);
+                }
+
                 const data = await response.json();
+                console.log('✅ Channel listesi:', data);
 
                 if (!data.ok || !data.channels || data.channels.length === 0) {
-                    throw new Error('Aktif yayın bulunamadı');
+                    throw new Error('Aktif yayın bulunamadı. Önce yayıncı yayını başlatmalı.');
                 }
 
                 // İlk Agora channel'ı bul
                 const agoraChannel = data.channels.find(c => c.provider === 'AGORA');
                 
                 if (!agoraChannel) {
-                    throw new Error('Agora channel bulunamadı');
+                    const providers = data.channels.map(c => c.provider).join(', ');
+                    throw new Error(`Agora channel bulunamadı. Mevcut provider'lar: ${providers || 'yok'}`);
+                }
+
+                // Gerekli alanları kontrol et
+                if (!agoraChannel.appId) {
+                    throw new Error('Channel\'da appId eksik.');
+                }
+
+                if (!agoraChannel.channelName) {
+                    throw new Error('Channel\'da channelName eksik.');
+                }
+
+                if (!agoraChannel.subscriberToken) {
+                    throw new Error('Channel\'da subscriberToken eksik.');
                 }
 
                 // Agora client oluştur
                 const agoraClient = createClient();
+                console.log('📡 Agora client oluşturuldu (subscriber)');
 
                 // Channel'a katıl (subscriber olarak)
-                await agoraClient.join(
-                    agoraChannel.appId,
-                    agoraChannel.channelName,
-                    agoraChannel.subscriberToken,
-                    null // Random UID
-                );
+                console.log('📡 Agora channel\'a katılıyor (subscriber)...', {
+                    appId: agoraChannel.appId,
+                    channelName: agoraChannel.channelName,
+                    tokenLength: agoraChannel.subscriberToken ? agoraChannel.subscriberToken.length : 0
+                });
+
+                try {
+                    await agoraClient.join(
+                        agoraChannel.appId,
+                        agoraChannel.channelName,
+                        agoraChannel.subscriberToken,
+                        null // Random UID
+                    );
+                    console.log('✅ İzleyici olarak channel\'a katıldı!');
+                } catch (joinError) {
+                    console.error('❌ Agora join hatası:', joinError);
+                    throw new Error(`Agora channel'a katılamadı: ${joinError.message || joinError}`);
+                }
 
                 document.getElementById('viewerStatus').innerHTML = 
                     `<div class="status success">✅ İzleyici olarak katıldınız! Channel: ${agoraChannel.channelName}</div>`;
 
                 console.log('✅ İzleyici olarak katıldı:', agoraChannel);
             } catch (error) {
-                console.error('İzleyici katılma hatası:', error);
+                console.error('❌ İzleyici katılma hatası:', error);
+                console.error('Hata detayı:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Client temizle (varsa)
+                if (client) {
+                    try {
+                        await client.leave();
+                        client = null;
+                    } catch (e) {
+                        console.warn('Client temizleme hatası:', e);
+                    }
+                }
+                
+                // Detaylı hata mesajı
+                let errorMessage = error.message || 'Bilinmeyen hata';
+                
+                // Network hatası kontrolü
+                if (error.message && error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Backend bağlantı hatası. Backend çalışıyor mu?';
+                }
+                
                 document.getElementById('viewerStatus').innerHTML = 
-                    `<div class="status error">❌ Hata: ${error.message}</div>`;
+                    `<div class="status error">
+                        <strong>❌ Hata: ${errorMessage}</strong><br>
+                        <small>Konsolu kontrol edin (F12) detaylı bilgi için.</small>
+                    </div>`;
             }
         }
 
