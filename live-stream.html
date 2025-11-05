@@ -665,12 +665,23 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <script src="script-loader.js?v=2"></script>
     <script>
-        // Cache bypass için dinamik script yükleme
+        // Cache bypass için dinamik script yükleme (hemen yükle)
         (function() {
+            // Önce mevcut script'i kaldır (varsa)
+            var existingScript = document.querySelector('script[src*="notification-service"]');
+            if (existingScript) {
+                existingScript.remove();
+            }
+            
+            // Yeni script oluştur ve yükle
             var script = document.createElement('script');
-            script.src = 'services/notification-service.js?v=' + Date.now();
+            script.src = 'services/notification-service.js?v=' + Date.now() + '&nocache=' + Math.random();
             script.async = false;
-            document.head.appendChild(script);
+            script.onerror = function() {
+                // Hata durumunda sessizce devam et
+                console.warn('⚠️ Notification Service yüklenemedi, sessizce devam ediliyor');
+            };
+            document.head.insertBefore(script, document.head.firstChild);
         })();
     </script>
     <script>

@@ -33,6 +33,7 @@ class NotificationService {
             this.reconnectAttempts = 0;
             
             // Kuyruktaki mesajları gönder (güvenli çağrı - sessiz)
+            // processMessageQueue yoksa atla (sessiz çalışma)
             if (this.messageQueue && this.messageQueue.length > 0) {
                 if (typeof this.processMessageQueue === 'function') {
                     try {
@@ -41,11 +42,23 @@ class NotificationService {
                         // Sessizce görmezden gel
                     }
                 }
+                // processMessageQueue yoksa, mesaj kuyruğunu temizle
+                else if (this.messageQueue) {
+                    this.messageQueue = [];
+                }
             }
             
         } catch (error) {
             // Hata durumunda sessizce devam et (konsol mesajı yok)
-            // Sadece gerçekten kritik hatalar için log tut
+            // processMessageQueue hatası özel olarak yakalanıyor
+            if (error && error.message && error.message.includes('processMessageQueue')) {
+                // Bu hatayı sessizce görmezden gel
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                return;
+            }
+            
+            // Diğer hatalar için reconnect dene
             if (this.reconnectAttempts < this.maxReconnectAttempts) {
                 // Reconnect'i sessizce dene
                 this.handleReconnect();
@@ -59,31 +72,46 @@ class NotificationService {
         
         // Periyodik olarak bildirimleri kontrol et
         setInterval(() => {
-            this.checkForNotifications();
+            try {
+                if (typeof this.checkForNotifications === 'function') {
+                    this.checkForNotifications();
+                }
+            } catch (error) {
+                // Sessizce görmezden gel
+            }
         }, 2000);
         
         // Konsol mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
         // console.log('📱 LocalStorage simülasyon sistemi aktif');
     }
 
-    // Mesaj kuyruğunu işle
+    // Mesaj kuyruğunu işle (güvenli - her zaman mevcut)
     processMessageQueue() {
-        if (!this.isConnected || !this.messageQueue || this.messageQueue.length === 0) {
-            return;
-        }
+        try {
+            if (!this.isConnected || !this.messageQueue || this.messageQueue.length === 0) {
+                return;
+            }
 
-        // Konsol mesajları kaldırıldı (sessiz çalışma)
-        
-        // Kuyruktaki tüm mesajları işle
-        while (this.messageQueue.length > 0) {
-            const message = this.messageQueue.shift();
-            try {
-                // Mesajı işle (örnek: bildirim gönder)
-                if (message.type === 'notification') {
-                    this.emit('notification', message.data);
+            // Konsol mesajları kaldırıldı (sessiz çalışma)
+            
+            // Kuyruktaki tüm mesajları işle
+            while (this.messageQueue && this.messageQueue.length > 0) {
+                const message = this.messageQueue.shift();
+                try {
+                    // Mesajı işle (örnek: bildirim gönder)
+                    if (message && message.type === 'notification') {
+                        if (typeof this.emit === 'function') {
+                            this.emit('notification', message.data);
+                        }
+                    }
+                } catch (error) {
+                    // Sessizce görmezden gel
                 }
-            } catch (error) {
-                // Sessizce görmezden gel
+            }
+        } catch (error) {
+            // Hata durumunda sessizce devam et
+            if (this.messageQueue) {
+                this.messageQueue = [];
             }
         }
     }
