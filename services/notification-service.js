@@ -15,7 +15,8 @@ class NotificationService {
     }
 
     init() {
-        console.log('🔔 Notification Service başlatılıyor...');
+        // Başlatma mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
+        // console.log('🔔 Notification Service başlatılıyor...');
         this.connect();
     }
 
@@ -27,7 +28,8 @@ class NotificationService {
             // Simülasyon için localStorage tabanlı sistem
             this.setupLocalStorageSimulation();
             
-            console.log('✅ Notification Service bağlandı');
+            // Başarılı bağlantı mesajı (sadece gerekirse göster)
+            // console.log('✅ Notification Service bağlandı');
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
@@ -62,7 +64,8 @@ class NotificationService {
             this.checkForNotifications();
         }, 2000);
         
-        console.log('📱 LocalStorage simülasyon sistemi aktif');
+        // Konsol mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
+        // console.log('📱 LocalStorage simülasyon sistemi aktif');
     }
 
     // Mesaj kuyruğunu işle
@@ -369,7 +372,8 @@ class NotificationService {
 // Global instance oluştur (güvenli başlatma)
 try {
     window.notificationService = new NotificationService();
-    console.log('✅ Notification Service instance oluşturuldu');
+    // Instance oluşturma mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
+    // console.log('✅ Notification Service instance oluşturuldu');
 } catch (error) {
     console.error('❌ Notification Service başlatma hatası:', error);
     // Fallback: Boş bir obje oluştur
@@ -393,4 +397,5 @@ window.joinLiveStream = function(streamId) {
     }
 };
 
-console.log('✅ Notification Service yüklendi');
+// Yükleme mesajı kaldırıldı (gereksiz bilgi kirliliği önleniyor)
+// console.log('✅ Notification Service yüklendi');
