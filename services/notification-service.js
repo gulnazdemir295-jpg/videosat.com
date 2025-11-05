@@ -176,7 +176,7 @@ class NotificationService {
     }
 
     sendCustomerNotification(userEmail, notification) {
-        console.log('📱 Müşteriye bildirim gönderiliyor:', notification);
+        // Konsol mesajı kaldırıldı (sessiz çalışma)
         
         // Bildirimi kaydet
         let notifications = JSON.parse(localStorage.getItem(`customerNotifications_${userEmail}`) || '[]');
@@ -191,7 +191,7 @@ class NotificationService {
     }
 
     sendSellerNotification(sellerEmail, notification) {
-        console.log('📱 Satıcıya bildirim gönderiliyor:', notification);
+        // Konsol mesajı kaldırıldı (sessiz çalışma)
         
         // Bildirimi kaydet
         let notifications = JSON.parse(localStorage.getItem(`sellerNotifications_${sellerEmail}`) || '[]');
@@ -302,7 +302,7 @@ class NotificationService {
                 try {
                     callback(data);
                 } catch (error) {
-                    console.error('Notification listener hatası:', error);
+                    // Sessizce görmezden gel
                 }
             });
         }
@@ -325,7 +325,7 @@ class NotificationService {
 
     // Canlı yayın başlatıldığında bildirim gönder
     notifyLiveStreamStarted(streamData) {
-        console.log('📡 Canlı yayın başlatıldı, bildirimler gönderiliyor:', streamData);
+        // Konsol mesajı kaldırıldı (sessiz çalışma)
         
         // Stream verisini kaydet
         let activeStreams = JSON.parse(localStorage.getItem('activeLivestreams') || '[]');
