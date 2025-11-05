@@ -1418,10 +1418,21 @@ app.get('/api/streams', async (req, res) => {
 
 app.listen(PORT, HOST, () => {
   const localIP = getLocalIP();
-  console.log(`✅ IVS backend API running on http://localhost:${PORT}`);
-  console.log(`🌐 Yerel network: http://${localIP}:${PORT}`);
+  const config = getBackendConfig();
+  console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
+  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
+  console.log(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
   console.log(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
   console.log(`💬 Chat, beğeni ve davet sistemi aktif`);
+  console.log(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
+  console.log(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
+  console.log(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);
+  
+  // Port validasyon uyarısı
+  if (PORT !== DEFAULT_BACKEND_PORT) {
+    console.log(`⚠️  Port ${PORT} kullanılıyor (Default: ${DEFAULT_BACKEND_PORT})`);
+    console.log(`   Frontend'in bu port'u kullanacak şekilde yapılandırıldığından emin olun!`);
+  }
 });
 
 
