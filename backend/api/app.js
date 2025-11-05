@@ -1178,7 +1178,7 @@ app.post('/api/livestream/claim-key', (req, res) => {
   res.json({ streamKey: cfg.streamKey, ttlSec: 60 });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0'; // Tüm network interface'lere bind
 
 // Yerel IP'yi algıla (gösterim için)

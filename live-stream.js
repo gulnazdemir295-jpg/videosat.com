@@ -16,10 +16,21 @@ let isLiked = false;
 // API Base URL
 function getAPIBaseURL() {
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    
+    // Production
     if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
         return 'https://basvideo.com/api';
     }
-    return 'http://localhost:3000/api';
+    
+    // Local development - Backend port'u kontrol et
+    const backendPort = process.env.BACKEND_PORT || 3000;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:${backendPort}/api`;
+    }
+    
+    // Fallback: Mevcut origin + /api
+    return `${protocol}//${hostname}:${backendPort}/api`;
 }
 
 // Initialize

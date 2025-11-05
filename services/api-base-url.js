@@ -20,9 +20,10 @@ function getAPIBaseURL() {
             return 'https://basvideo.com/api';
         }
         
-        // Local development
+        // Local development - Backend port'u kontrol et
+        const backendPort = process.env.BACKEND_PORT || 3000;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:3000/api';
+            return `http://localhost:${backendPort}/api`;
         }
         
         // Fallback: mevcut origin + /api

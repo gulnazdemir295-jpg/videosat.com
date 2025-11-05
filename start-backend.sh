@@ -52,7 +52,7 @@ else
     echo "✅ Agora credentials bulundu"
 fi
 
-# Port kontrolü
+# Port kontrolü (backend app.js ile eşleşmeli)
 PORT=${PORT:-3000}
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     echo "⚠️ Port $PORT zaten kullanımda!"

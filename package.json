@@ -8,6 +8,8 @@
   },
   "scripts": {
     "start": "node backend/api/app.js",
+    "start:backend": "cd backend/api && npm start",
+    "install:backend": "cd backend/api && npm install",
     "obfuscate": "node obfuscate.js",
     "build": "npm run obfuscate"
   },
