@@ -1,7 +1,7 @@
 # AWS Access Key Kullanım Kontrolü
 
 ## 🔑 Key Bilgisi
-- **Access Key ID**: `AKIAUY2LG7ZJ3IQTWA6C`
+- **Access Key ID**: `AKIA...` (gerçek key gösterilmiyor)
 - **Oluşturulma**: 2 gün önce
 - **Durum**: Kontrol ediliyor...
 
@@ -18,7 +18,7 @@
 1. AWS Console: https://console.aws.amazon.com/cloudtrail/
 2. **Event history** bölümüne gidin
 3. **Filter by**: Access key ID
-4. Key ID'yi girin: `AKIAUY2LG7ZJ3IQTWA6C`
+4. Key ID'yi girin: `AKIA...` (gerçek key gösterilmiyor)
 5. Son 7 günün aktivitelerini görün
 
 ## ⚠️ Güvenlik Değerlendirmesi
@@ -54,11 +54,11 @@
 
 ```bash
 # AWS CLI ile kontrol (eğer yapılandırıldıysa)
-aws iam get-access-key-last-used --access-key-id AKIAUY2LG7ZJ3IQTWA6C
+aws iam get-access-key-last-used --access-key-id YOUR_ACCESS_KEY_ID
 
 # Veya CloudTrail ile
 aws cloudtrail lookup-events \
-  --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=AKIAUY2LG7ZJ3IQTWA6C \
+  --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=YOUR_ACCESS_KEY_ID \
   --max-results 10
 ```
 
