@@ -168,10 +168,17 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
 
     <script>
-        // API Base URL - Dinamik olarak belirle
+        // API Base URL - Merkezi config kullan
         function getAPIBaseURL() {
+            // Merkezi config kullan (eğer yüklüyse)
+            if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
+                return window.getAPIBaseURL();
+            }
+            
+            // Fallback: Hostname'e göre belirle
             const protocol = window.location.protocol;
             const hostname = window.location.hostname;
+            const DEFAULT_BACKEND_PORT = window.DEFAULT_BACKEND_PORT || 3000;
             
             // Production (basvideo.com)
             if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
@@ -180,16 +187,16 @@
             
             // File:// protokolü (local dosya)
             if (protocol === 'file:') {
-                return 'http://localhost:3000/api';
+                return `http://localhost:${DEFAULT_BACKEND_PORT}/api`;
             }
             
             // Localhost geliştirme
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return 'http://localhost:3000/api';
+                return `http://localhost:${DEFAULT_BACKEND_PORT}/api`;
             }
             
             // Varsayılan: localhost
-            return 'http://localhost:3000/api';
+            return `http://localhost:${DEFAULT_BACKEND_PORT}/api`;
         }
         
         const BACKEND_URL = getAPIBaseURL().replace('/api', '');
@@ -379,7 +386,8 @@
                 
                 // Network hatası kontrolü
                 if (error.message && error.message.includes('Failed to fetch')) {
-                    errorMessage = 'Backend bağlantı hatası. Backend çalışıyor mu? (http://localhost:3000)';
+                    const defaultPort = window.DEFAULT_BACKEND_PORT || 3000;
+                    errorMessage = `Backend bağlantı hatası. Backend çalışıyor mu? (http://localhost:${defaultPort})`;
                 }
                 
                 // Agora hatası kontrolü

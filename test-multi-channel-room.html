@@ -444,29 +444,32 @@
     <script>
         // Backend API URL - Otomatik IP algılama
         function getBackendURL() {
+            // Merkezi config kullan (eğer yüklüyse)
+            if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
+                return window.getAPIBaseURL().replace('/api', '');
+            }
+            
             const hostname = window.location.hostname;
             const protocol = window.location.protocol;
+            const DEFAULT_BACKEND_PORT = window.DEFAULT_BACKEND_PORT || 3000;
+            
+            // Production domain
+            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
+                return 'https://basvideo.com';
+            }
             
             // Localhost'tan açılıyorsa
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return 'http://localhost:4000';
+                return `http://localhost:${DEFAULT_BACKEND_PORT}`;
             }
             
-            // File protocol ile açılıyorsa (file://) - Production backend kullan
-            // Chrome file:// protokolünden yapılan fetch isteklerini CORS nedeniyle engelleyebilir
-            // Web server kullanmak daha güvenli: python3 -m http.server 8000
+            // File protocol ile açılıyorsa (file://) - Local backend kullan
             if (protocol === 'file:') {
-                // Production backend URL'i kullan
-                return 'http://107.23.178.153:4000';
+                return `http://localhost:${DEFAULT_BACKEND_PORT}`;
             }
             
-            // Production domain'den açılıyorsa
-            if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
-                return 'http://107.23.178.153:4000';
-            }
-            
-            // Web server üzerinden açılıyorsa - Production backend kullan
-            return 'http://107.23.178.153:4000';
+            // Varsayılan: Local backend
+            return `http://localhost:${DEFAULT_BACKEND_PORT}`;
         }
         
         const API_BASE_URL = getBackendURL();
@@ -596,14 +599,14 @@
                     errorMessage = 'Backend\'e bağlanılamadı (10 saniye timeout)';
                     addLog('❌ ' + errorMessage, 'error');
                     addLog(`Backend URL: ${API_BASE_URL}`, 'info');
-                    addLog('Kontrol: Backend çalışıyor mu? Terminal\'de: curl http://localhost:4000/api/health', 'info');
+                    addLog(`Kontrol: Backend çalışıyor mu? Terminal'de: curl http://localhost:${window.DEFAULT_BACKEND_PORT || 3000}/api/health`, 'info');
                 } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('Network request failed')) {
                     updateConnectionStatus('error', 'Ağ Hatası');
                     errorMessage = 'Ağ hatası - Backend erişilemiyor. CORS veya network sorunu olabilir.';
                     addLog('❌ ' + errorMessage, 'error');
                     addLog(`Backend URL: ${API_BASE_URL}`, 'info');
                     addLog(`Sayfa URL: ${window.location.href}`, 'info');
-                    addLog('Kontrol: Backend çalışıyor mu? → curl http://localhost:4000/api/health', 'info');
+                    addLog(`Kontrol: Backend çalışıyor mu? → curl http://localhost:${window.DEFAULT_BACKEND_PORT || 3000}/api/health`, 'info');
                 } else {
                     updateConnectionStatus('error', 'Backend Bağlantı Hatası');
                     errorMessage = `Backend bağlantı hatası: ${error.message}`;
@@ -1176,7 +1179,8 @@
                         url: `${API_BASE_URL}/api/rooms/${roomId}/join`
                     });
                     addLog(`❌ Backend bağlantı hatası: ${err.message}`, 'error');
-                    throw new Error(`Backend'e bağlanılamadı: ${err.message}. Backend çalışıyor mu? → curl http://localhost:4000/api/health`);
+                    const defaultPort = window.DEFAULT_BACKEND_PORT || 3000;
+                    throw new Error(`Backend'e bağlanılamadı: ${err.message}. Backend çalışıyor mu? → curl http://localhost:${defaultPort}/api/health`);
                 });
                 
                 if (!joinResponse.ok) {
