@@ -32,19 +32,25 @@ class NotificationService {
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
-            // Kuyruktaki mesajları gönder (güvenli çağrı - sessiz)
-            // processMessageQueue yoksa atla (sessiz çalışma)
-            if (this.messageQueue && this.messageQueue.length > 0) {
-                if (typeof this.processMessageQueue === 'function') {
-                    try {
-                        this.processMessageQueue();
-                    } catch (queueError) {
-                        // Sessizce görmezden gel
+            // processMessageQueue metodunu kontrol et ve yoksa ekle (geriye uyumluluk)
+            if (typeof this.processMessageQueue !== 'function') {
+                this.processMessageQueue = function() {
+                    // Boş implementasyon (sessiz çalışma)
+                    if (this.messageQueue) {
+                        this.messageQueue = [];
                     }
-                }
-                // processMessageQueue yoksa, mesaj kuyruğunu temizle
-                else if (this.messageQueue) {
-                    this.messageQueue = [];
+                };
+            }
+            
+            // Kuyruktaki mesajları gönder (güvenli çağrı - sessiz)
+            if (this.messageQueue && this.messageQueue.length > 0) {
+                try {
+                    this.processMessageQueue();
+                } catch (queueError) {
+                    // Sessizce görmezden gel
+                    if (this.messageQueue) {
+                        this.messageQueue = [];
+                    }
                 }
             }
             
