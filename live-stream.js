@@ -33,6 +33,21 @@ const products = [
     { id: 4, name: "Demir 12mm", price: "5.200 ₺", unit: "ton" }
 ];
 
+// ✅ EN ÖNCELİK: Pre-stream setup'ı hemen gizle (Script yüklenmeden önce)
+(function() {
+    'use strict';
+    const preStreamSetup = document.getElementById('preStreamSetup');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (preStreamSetup) {
+        preStreamSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important; z-index: -9999 !important; pointer-events: none !important;';
+    }
+    
+    if (mainContent) {
+        mainContent.style.cssText = 'display: grid !important; visibility: visible !important; opacity: 1 !important;';
+    }
+})();
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎬 Live Stream JS başlatılıyor...');
@@ -43,19 +58,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     const mainContent = document.getElementById('mainContent');
     
     if (preStreamSetup) {
-        preStreamSetup.style.display = 'none';
+        preStreamSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important; z-index: -9999 !important; pointer-events: none !important;';
         preStreamSetup.classList.remove('active');
-        preStreamSetup.style.visibility = 'hidden';
-        preStreamSetup.style.opacity = '0';
-        preStreamSetup.style.height = '0';
-        preStreamSetup.style.overflow = 'hidden';
         console.log('✅ Pre-stream setup gizlendi');
     }
     
     if (mainContent) {
-        mainContent.style.display = 'grid';
-        mainContent.style.visibility = 'visible';
-        mainContent.style.opacity = '1';
+        mainContent.style.cssText = 'display: grid !important; visibility: visible !important; opacity: 1 !important;';
         console.log('✅ Ana içerik gösterildi');
     }
     
@@ -497,16 +506,11 @@ function loadStreamBalance() {
     const preStreamSetup = document.getElementById('preStreamSetup');
     
     if (mainContent) {
-        mainContent.style.display = 'grid';
-        mainContent.style.visibility = 'visible';
-        mainContent.style.opacity = '1';
+        mainContent.style.cssText = 'display: grid !important; visibility: visible !important; opacity: 1 !important;';
     }
     
     if (preStreamSetup) {
-        preStreamSetup.style.display = 'none';
-        preStreamSetup.style.visibility = 'hidden';
-        preStreamSetup.style.height = '0';
-        preStreamSetup.style.overflow = 'hidden';
+        preStreamSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important; z-index: -9999 !important; pointer-events: none !important;';
     }
 }
 
@@ -557,13 +561,12 @@ function hidePreStreamSetup() {
         
         if (preStreamSetup) {
             preStreamSetup.classList.remove('active');
-            preStreamSetup.style.display = 'none';
+            preStreamSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; width: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; top: -9999px !important; z-index: -9999 !important; pointer-events: none !important;';
             console.log('✅ Pre-stream setup gizlendi');
         }
         
         if (mainContent) {
-            mainContent.style.display = 'grid';
-            mainContent.style.visibility = 'visible';
+            mainContent.style.cssText = 'display: grid !important; visibility: visible !important; opacity: 1 !important;';
             console.log('✅ Ana içerik gösterildi');
         }
         
@@ -571,24 +574,32 @@ function hidePreStreamSetup() {
         const cameraBtn = document.getElementById('cameraAccessBtn');
         if (cameraBtn) {
             cameraBtn.disabled = false;
-            cameraBtn.style.opacity = '1';
-            cameraBtn.style.cursor = 'pointer';
-            cameraBtn.style.display = 'block';
-            cameraBtn.style.visibility = 'visible';
+            cameraBtn.style.cssText = 'opacity: 1 !important; cursor: pointer !important; display: block !important; visibility: visible !important;';
             console.log('✅ Kamera erişimi butonu aktif');
         }
         
         // Status info'yu göster
         const statusInfo = document.getElementById('statusInfo');
         if (statusInfo) {
-            statusInfo.style.display = 'block';
-            statusInfo.style.visibility = 'visible';
+            statusInfo.style.cssText = 'display: block !important; visibility: visible !important;';
             console.log('✅ Status info gösterildi');
         }
     } catch (error) {
         console.error('❌ hidePreStreamSetup() hatası:', error);
     }
 }
+
+// ✅ window.onload ile de kontrol et (ekstra güvence)
+window.addEventListener('load', function() {
+    console.log('✅ Window onload - Pre-stream setup kontrol ediliyor...');
+    hidePreStreamSetup();
+    
+    // 500ms sonra tekrar kontrol et
+    setTimeout(() => {
+        hidePreStreamSetup();
+        console.log('✅ Window onload - İkinci kontrol yapıldı');
+    }, 500);
+});
 
 // Show Buy Stream Time Modal
 function showBuyStreamTimeModal() {

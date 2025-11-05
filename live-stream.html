@@ -454,6 +454,27 @@
             display: flex;
             gap: 10px;
         }
+        /* ✅ PRE-STREAM SETUP TAMAMEN GİZLİ - CSS İLE */
+        #preStreamSetup {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            z-index: -9999 !important;
+            pointer-events: none !important;
+        }
+        
+        /* ✅ ANA İÇERİK HER ZAMAN GÖRÜNÜR */
+        #mainContent {
+            display: grid !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body>
@@ -640,7 +661,7 @@
     <!-- Agora SDK CDN -->
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <script src="script-loader.js?v=2"></script>
-    <script src="services/notification-service.js?v=3"></script>
+    <script src="services/notification-service.js?v=4"></script>
     <script>
         // Güvenilir script yükleme
         document.addEventListener('DOMContentLoaded', async function() {
