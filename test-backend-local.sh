@@ -14,8 +14,8 @@ if [ ! -f .env ]; then
 PORT=4000
 NODE_ENV=development
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=AKIAUY2LG7ZJ3IQTWA6C
-AWS_SECRET_ACCESS_KEY=0D4GzsP7LCB5Nu3Nq0CIcqg5I/SARxHOFLv5ckn7
+AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
 ADMIN_TOKEN=test-admin-token-123
 DYNAMODB_TABLE_USERS=basvideo-users
 DYNAMODB_TABLE_ROOMS=basvideo-rooms
