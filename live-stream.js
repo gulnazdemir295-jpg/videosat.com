@@ -84,25 +84,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Backend bağlantısını test et
         await testBackendConnection();
         
-        // ✅ Pre-stream setup'ı atla ve ana içeriği göster
+        // ✅ Pre-stream setup'ı atla ve ana içeriği göster (HİÇ BEKLEMEDEN)
+        console.log('✅ Sayfa yüklendi, ana içerik gösteriliyor...');
         hidePreStreamSetup();
         
-        // ✅ Ana içeriği göster (butonlar görünsün)
-        const mainContent = document.getElementById('mainContent');
-        if (mainContent) {
-            mainContent.style.display = 'grid';
-            console.log('✅ Ana içerik gösterildi');
-        }
-        
-        // ✅ Kamera erişimi butonunu aktif et
-        const cameraBtn = document.getElementById('cameraAccessBtn');
-        if (cameraBtn) {
-            cameraBtn.disabled = false;
-            cameraBtn.style.opacity = '1';
-            cameraBtn.style.cursor = 'pointer';
-            cameraBtn.style.display = 'block';
-            console.log('✅ Kamera erişimi butonu aktif edildi');
-        }
+        // Ekstra güvence: Tüm elementleri göster
+        setTimeout(() => {
+            hidePreStreamSetup();
+            console.log('✅ İkinci kez hidePreStreamSetup çağrıldı (güvence için)');
+        }, 100);
         
         // ✅ OTOMATİK KAMERA ERİŞİMİ - Sayfa yüklendiğinde otomatik aç (HER ZAMAN)
         console.log('✅ Otomatik kamera erişimi başlatılıyor...');
@@ -534,15 +524,36 @@ function hidePreStreamSetup() {
         
         if (preStreamSetup) {
             preStreamSetup.classList.remove('active');
-            console.log('Pre-stream setup gizlendi');
+            preStreamSetup.style.display = 'none';
+            console.log('✅ Pre-stream setup gizlendi');
         }
         
         if (mainContent) {
             mainContent.style.display = 'grid';
-            console.log('Ana içerik gösterildi');
+            mainContent.style.visibility = 'visible';
+            console.log('✅ Ana içerik gösterildi');
+        }
+        
+        // Kamera erişimi butonunu aktif et
+        const cameraBtn = document.getElementById('cameraAccessBtn');
+        if (cameraBtn) {
+            cameraBtn.disabled = false;
+            cameraBtn.style.opacity = '1';
+            cameraBtn.style.cursor = 'pointer';
+            cameraBtn.style.display = 'block';
+            cameraBtn.style.visibility = 'visible';
+            console.log('✅ Kamera erişimi butonu aktif');
+        }
+        
+        // Status info'yu göster
+        const statusInfo = document.getElementById('statusInfo');
+        if (statusInfo) {
+            statusInfo.style.display = 'block';
+            statusInfo.style.visibility = 'visible';
+            console.log('✅ Status info gösterildi');
         }
     } catch (error) {
-        console.error('hidePreStreamSetup() hatası:', error);
+        console.error('❌ hidePreStreamSetup() hatası:', error);
     }
 }
 
