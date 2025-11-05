@@ -13,8 +13,14 @@ let currentUser = null;
 let likeCount = 0;
 let isLiked = false;
 
-// API Base URL
+// API Base URL (Merkezi config kullanıyor)
 function getAPIBaseURL() {
+    // Önce merkezi config'i kontrol et
+    if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
+        return window.getAPIBaseURL();
+    }
+    
+    // Fallback: Hostname'e göre belirle
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     
@@ -23,14 +29,14 @@ function getAPIBaseURL() {
         return 'https://basvideo.com/api';
     }
     
-    // Local development - Backend port'u kontrol et
-    const backendPort = process.env.BACKEND_PORT || 3000;
+    // Local development - Merkezi default port
+    const DEFAULT_BACKEND_PORT = window.DEFAULT_BACKEND_PORT || 3000;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return `http://localhost:${backendPort}/api`;
+        return `http://localhost:${DEFAULT_BACKEND_PORT}/api`;
     }
     
     // Fallback: Mevcut origin + /api
-    return `${protocol}//${hostname}:${backendPort}/api`;
+    return `${protocol}//${hostname}:${DEFAULT_BACKEND_PORT}/api`;
 }
 
 // Initialize

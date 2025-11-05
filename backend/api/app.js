@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+
+// Merkezi backend yapılandırması
+const { getBackendConfig, DEFAULT_BACKEND_PORT, validatePort } = require('../../config/backend-config');
 const {
   IvsClient,
   CreateChannelCommand,
@@ -1178,7 +1181,9 @@ app.post('/api/livestream/claim-key', (req, res) => {
   res.json({ streamKey: cfg.streamKey, ttlSec: 60 });
 });
 
-const PORT = process.env.PORT || 3000;
+// Port yapılandırması (merkezi config'den)
+const backendConfig = getBackendConfig();
+const PORT = validatePort(process.env.PORT || backendConfig.defaultPort);
 const HOST = process.env.HOST || '0.0.0.0'; // Tüm network interface'lere bind
 
 // Yerel IP'yi algıla (gösterim için)

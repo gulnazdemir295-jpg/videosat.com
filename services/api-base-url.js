@@ -1,11 +1,19 @@
 /**
  * Merkezi API Base URL Fonksiyonu
  * Tüm servislerde kullanılacak tek bir fonksiyon
+ * Merkezi config dosyasını kullanır
  */
+
+// Merkezi config'i yükle (eğer varsa)
+let backendConfig = null;
+if (typeof window !== 'undefined') {
+    // Browser'da config script'i yüklenmeli
+    // window.BACKEND_CONFIG veya window.getAPIBaseURL kullanılacak
+}
 
 // Global API Base URL fonksiyonu
 function getAPIBaseURL() {
-    // Önce window.getAPIBaseURL varsa onu kullan
+    // Önce window.getAPIBaseURL varsa onu kullan (merkezi config'den gelir)
     if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
         return window.getAPIBaseURL();
     }
@@ -20,14 +28,14 @@ function getAPIBaseURL() {
             return 'https://basvideo.com/api';
         }
         
-        // Local development - Backend port'u kontrol et
-        const backendPort = process.env.BACKEND_PORT || 3000;
+        // Local development - Merkezi default port
+        const DEFAULT_BACKEND_PORT = window.DEFAULT_BACKEND_PORT || 3000;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return `http://localhost:${backendPort}/api`;
+            return `http://localhost:${DEFAULT_BACKEND_PORT}/api`;
         }
         
         // Fallback: mevcut origin + /api
-        return `${protocol}//${hostname}/api`;
+        return `${protocol}//${hostname}:${DEFAULT_BACKEND_PORT}/api`;
     }
     
     // Node.js environment (backend)

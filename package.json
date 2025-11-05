@@ -11,7 +11,9 @@
     "start:backend": "cd backend/api && npm start",
     "install:backend": "cd backend/api && npm install",
     "obfuscate": "node obfuscate.js",
-    "build": "npm run obfuscate"
+    "build": "npm run obfuscate",
+    "validate:port": "node scripts/validate-port-config.js",
+    "precommit": "npm run validate:port"
   },
   "dependencies": {
     "@aws-sdk/client-ivs": "^3.920.0",

@@ -53,7 +53,9 @@ else
 fi
 
 # Port kontrolü (backend app.js ile eşleşmeli)
-PORT=${PORT:-3000}
+# Merkezi default port: 3000
+DEFAULT_BACKEND_PORT=3000
+PORT=${PORT:-$DEFAULT_BACKEND_PORT}
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     echo "⚠️ Port $PORT zaten kullanımda!"
     echo "🔍 Kullanılan process:"
