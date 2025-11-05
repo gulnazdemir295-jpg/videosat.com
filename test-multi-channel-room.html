@@ -690,26 +690,89 @@
                 });
 
                 const data = await response.json();
+                console.log('📦 Backend response:', data);
+
+                // Backend response validation
+                if (!response.ok) {
+                    const errorText = data.detail || data.error || 'Bilinmeyen hata';
+                    console.error('❌ Backend hatası:', response.status, errorText);
+                    
+                    // AWS verification hatası kontrolü
+                    if (errorText.includes('pending verification') || errorText.includes('verification')) {
+                        throw new Error('AWS hesabı doğrulama bekliyor. Backend AGORA kullanıyor, lütfen sayfayı yenileyin veya backend\'in STREAM_PROVIDER=AGORA olduğundan emin olun.');
+                    }
+                    
+                    throw new Error(`Backend hatası (${response.status}): ${errorText}`);
+                }
 
                 if (data.ok) {
                     myChannelInfo = data;
-                    addLog(`Room'a katıldı! Channel ID: ${data.channelId}`, 'success');
-                    addLog(`Ingest: ${data.ingest}`, 'info');
-                    addLog(`Stream Key: ${data.streamKey.substring(0, 20)}...`, 'info');
-                    addLog(`Playback URL: ${data.playbackUrl}`, 'info');
                     
-                    // Stream key'i göster (OBS Studio için)
-                    showStreamKeyInfo(data);
+                    // Provider kontrolü
+                    if (data.provider === 'AGORA') {
+                        addLog(`✅ Room'a katıldı! (Agora.io)`, 'success');
+                        addLog(`Channel ID: ${data.channelId}`, 'info');
+                        addLog(`Channel Name: ${data.channelName}`, 'info');
+                        addLog(`App ID: ${data.appId}`, 'info');
+                        addLog(`RTMP URL: ${data.rtmpUrl || 'N/A'}`, 'info');
+                        addLog(`HLS URL: ${data.hlsUrl || 'N/A'}`, 'info');
+                        
+                        // Agora bilgilerini göster
+                        showAgoraInfo(data);
+                    } else if (data.provider === 'AWS_IVS') {
+                        addLog(`Room'a katıld! Channel ID: ${data.channelId}`, 'success');
+                        addLog(`Ingest: ${data.ingest}`, 'info');
+                        addLog(`Stream Key: ${data.streamKey ? data.streamKey.substring(0, 20) + '...' : 'N/A'}`, 'info');
+                        addLog(`Playback URL: ${data.playbackUrl}`, 'info');
+                        
+                        // Stream key'i göster (OBS Studio için)
+                        showStreamKeyInfo(data);
+                    } else {
+                        addLog(`Room'a katıldı! Channel ID: ${data.channelId}`, 'success');
+                        addLog(`Provider: ${data.provider || 'Unknown'}`, 'info');
+                    }
                     
                     // Channel listesini yenile
                     loadChannels();
                 } else {
-                    throw new Error(data.error || "Room'a katılamadı");
+                    throw new Error(data.error || data.detail || "Room'a katılamadı");
                 }
             } catch (error) {
+                console.error('❌ Join error:', error);
                 addLog(`Room'a katılma hatası: ${error.message}`, 'error');
-                alert('Hata: ' + error.message);
+                
+                // Detaylı hata mesajı
+                let errorMessage = error.message;
+                if (errorMessage.includes('pending verification')) {
+                    errorMessage += '\n\nÇözüm: Backend AGORA kullanıyor. Lütfen sayfayı yenileyin.';
+                }
+                
+                alert('Hata: ' + errorMessage);
             }
+        }
+
+        function showAgoraInfo(channelData) {
+            const info = `
+╔════════════════════════════════════════╗
+║   AGORA.IO YAYINCI BİLGİLERİ          ║
+╠════════════════════════════════════════╣
+║ Channel ID: ${channelData.channelId}
+║ Channel Name: ${channelData.channelName}
+║ App ID: ${channelData.appId}
+║ 
+║ WebRTC (Tarayıcı):
+║ ────────────────────
+║ Agora SDK ile tarayıcıdan yayın yapabilirsiniz
+║ 
+║ RTMP URL (OBS Studio):
+║ ${channelData.rtmpUrl || 'N/A'}
+║ 
+║ HLS Playback URL:
+║ ${channelData.hlsUrl || 'N/A'}
+╚════════════════════════════════════════╝
+            `;
+            console.log(info);
+            alert('Agora.io channel oluşturuldu! Console\'da detayları görebilirsiniz.\n\nTarayıcıdan yayın için "Tarayıcıdan Yayın Başlat" butonunu kullanın.\n\nOBS Studio için RTMP URL kullanılabilir (Agora Cloud Recording gerekli).');
         }
 
         function showStreamKeyInfo(channelData) {
@@ -1136,18 +1199,27 @@
                     throw new Error(joinData.error || "Room'a katılamadı");
                 }
                 
-                // Backend'den gelen verileri kontrol et
+                // Provider kontrolü
+                if (joinData.provider === 'AGORA') {
+                    // Agora.io kullan - tarayıcıdan yayın için Agora SDK gerekli
+                    console.log('✅ Agora provider tespit edildi');
+                    addLog('Agora.io ile yayın başlatılıyor...', 'info');
+                    
+                    // Agora için tarayıcı yayın başlatma fonksiyonu
+                    // NOT: Bu sayfada Agora SDK yok, sadece AWS IVS Broadcast SDK var
+                    // Agora için agora-frontend-example.html kullanılmalı
+                    throw new Error('Agora.io provider tespit edildi. Tarayıcıdan yayın için agora-frontend-example.html sayfasını kullanın. Bu sayfa AWS IVS Broadcast SDK için tasarlandı.');
+                }
+                
+                // AWS IVS kontrolü
                 if (!joinData.ingest) {
                     console.error('❌ Backend response eksik:', joinData);
-                    throw new Error('Backend\'den gerekli bilgiler alınamadı! ingest eksik.');
+                    throw new Error('Backend\'den gerekli bilgiler alınamadı! ingest eksik. Provider: ' + (joinData.provider || 'unknown'));
                 }
                 
                 // Eğer streamKey yoksa (mevcut channel durumunda), tekrar join isteği gönder
                 if (!joinData.streamKey) {
                     console.warn('⚠️ StreamKey yok, yeni channel oluşturuluyor...');
-                    // Bu durumda backend mevcut channel'ı döndürmüş olabilir
-                    // Tekrar join edip yeni channel oluşturmayı dene
-                    // VEYA backend'den streamKey'i ayrı bir endpoint ile al
                     throw new Error('StreamKey bulunamadı. Mevcut channel kullanılıyor olabilir. Lütfen farklı bir email ile deneyin veya yeni channel oluşturun.');
                 }
                 
