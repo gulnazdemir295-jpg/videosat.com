@@ -500,30 +500,13 @@ function redirectToDashboard() {
         return;
     }
     
-    const dashboardUrls = {
-        'hammaddeci': 'panels/hammaddeci.html',
-        'uretici': 'panels/uretici.html',
-        'toptanci': 'panels/toptanci.html',
-        'satici': 'panels/satici.html',
-        'musteri': 'panels/musteri.html',
-        'admin': 'panels/admin.html'
-    };
-    
-    const dashboardUrl = dashboardUrls[userRole];
-    if (!dashboardUrl) {
-        console.error('❌ Bilinmeyen rol:', userRole);
-        const basePath = getBasePath();
-        window.location.href = basePath + 'index.html';
-        return;
-    }
-    
-    // Path'i doğru oluştur
+    // Panels klasörü silindi, tüm kullanıcıları canlı yayın sayfasına yönlendir
     const basePath = getBasePath();
-    const fullUrl = basePath + dashboardUrl;
+    const liveStreamUrl = basePath + 'live-stream.html';
     
-    console.log('🎯 Yönlendiriliyor:', fullUrl);
+    console.log('🎯 Canlı yayın sayfasına yönlendiriliyor:', liveStreamUrl);
     console.log('📁 Base path:', basePath);
-    console.log('📄 Dashboard URL:', dashboardUrl);
+    console.log('👤 Kullanıcı rolü:', userRole);
     
     // Yönlendirme öncesi son kontrol
     if (window.loginLogger) {
@@ -535,8 +518,8 @@ function redirectToDashboard() {
         );
     }
     
-    // Yönlendir
-    window.location.href = fullUrl;
+    // Canlı yayın sayfasına yönlendir
+    window.location.href = liveStreamUrl;
 }
 
 // Base path'i doğru şekilde belirle
@@ -834,7 +817,7 @@ async function handleAdminLogin(e) {
             // Redirect to admin panel
             setTimeout(() => {
                 const basePath = getBasePath();
-                window.location.href = basePath + 'panels/admin.html';
+                window.location.href = basePath + 'live-stream.html';
             }, 1000);
             
         } else {
