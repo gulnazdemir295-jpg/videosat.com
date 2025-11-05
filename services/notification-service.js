@@ -31,14 +31,25 @@ class NotificationService {
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
-            // Kuyruktaki mesajları gönder
+            // Kuyruktaki mesajları gönder (güvenli çağrı)
             if (this.messageQueue && this.messageQueue.length > 0) {
-                this.processMessageQueue();
+                if (typeof this.processMessageQueue === 'function') {
+                    try {
+                        this.processMessageQueue();
+                    } catch (queueError) {
+                        console.warn('⚠️ Mesaj kuyruğu işleme hatası (görmezden geliniyor):', queueError);
+                    }
+                } else {
+                    console.warn('⚠️ processMessageQueue metodu henüz yüklenmedi, atlanıyor');
+                }
             }
             
         } catch (error) {
             console.error('❌ Notification Service bağlantı hatası:', error);
-            this.handleReconnect();
+            // Hata durumunda reconnect'i çağırma (sonsuz döngüye girmemek için)
+            if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                this.handleReconnect();
+            }
         }
     }
 
@@ -327,16 +338,22 @@ class NotificationService {
 
     // Bağlantı kesilirse yeniden bağlan
     handleReconnect() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`🔄 Yeniden bağlanma denemesi ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-            
-            setTimeout(() => {
-                this.connect();
-            }, this.reconnectDelay * this.reconnectAttempts);
-        } else {
-            console.error('❌ Maksimum yeniden bağlanma denemesi aşıldı');
+        // Reconnect'i sınırla (sonsuz döngüyü önle)
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            console.warn('⚠️ Maksimum yeniden bağlanma denemesi aşıldı, reconnect durduruldu');
+            return;
         }
+        
+        this.reconnectAttempts++;
+        console.log(`🔄 Yeniden bağlanma denemesi ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+        
+        setTimeout(() => {
+            try {
+                this.connect();
+            } catch (error) {
+                console.error('❌ Reconnect sırasında hata:', error);
+            }
+        }, this.reconnectDelay * this.reconnectAttempts);
     }
 
     // Bağlantıyı kapat
