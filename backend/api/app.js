@@ -382,7 +382,8 @@ app.post('/api/rooms/create', requireAdmin, async (req, res) => {
 });
 
 // Provider seçimi: AWS_IVS veya AGORA
-const STREAM_PROVIDER = process.env.STREAM_PROVIDER || 'AWS_IVS'; // Default: AWS_IVS
+// Default: AGORA (AWS IVS pending verification durumunda)
+const STREAM_PROVIDER = process.env.STREAM_PROVIDER || 'AGORA'; // Default: AGORA
 
 // Agora service (lazy load)
 let agoraService = null;
