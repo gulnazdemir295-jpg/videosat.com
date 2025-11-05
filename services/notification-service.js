@@ -366,12 +366,31 @@ class NotificationService {
     }
 }
 
-// Global instance oluştur
-window.notificationService = new NotificationService();
+// Global instance oluştur (güvenli başlatma)
+try {
+    window.notificationService = new NotificationService();
+    console.log('✅ Notification Service instance oluşturuldu');
+} catch (error) {
+    console.error('❌ Notification Service başlatma hatası:', error);
+    // Fallback: Boş bir obje oluştur
+    window.notificationService = {
+        isConnected: false,
+        connect: function() { console.warn('⚠️ Notification Service kullanılamıyor'); },
+        on: function() {},
+        emit: function() {},
+        joinLiveStream: function(streamId) { console.warn('⚠️ Notification Service kullanılamıyor, joinLiveStream çağrılamadı'); }
+    };
+}
 
 // Global fonksiyonlar
 window.joinLiveStream = function(streamId) {
-    window.notificationService.joinLiveStream(streamId);
+    if (window.notificationService && typeof window.notificationService.joinLiveStream === 'function') {
+        window.notificationService.joinLiveStream(streamId);
+    } else {
+        console.warn('⚠️ Notification Service joinLiveStream metodu kullanılamıyor');
+        // Fallback: Direkt sayfaya yönlendir
+        window.location.href = `live-stream.html?join=${streamId}`;
+    }
 };
 
 console.log('✅ Notification Service yüklendi');
