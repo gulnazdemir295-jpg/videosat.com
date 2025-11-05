@@ -135,9 +135,11 @@ jobs:
 
 ### Key Usage Status
 - **Key 1** (AKIAUY2LG7ZJ3IQTWA6C): Son kullanım - 3 saat önce ✅ (Aktif)
-- **Key 2** (AKIAUY2LG7ZJ4R6V3UEF): Son kullanım - 5 gün önce
+- **Key 2** (AKIAUY2LG7ZJ4R6V3UEF): Son kullanım - 5 gün önce ❌ (Devre Dışı)
 
-**Not:** Aktif olarak kullanılan key, Key 1'dir. Production ortamında bu key'in GitHub Secrets'ta güncel olduğundan emin olun.
+**Not:** 
+- Aktif olarak kullanılan key, Key 1'dir. Production ortamında bu key'in GitHub Secrets'ta güncel olduğundan emin olun.
+- Key 2 kullanılmayan erişim anahtarı olarak AWS IAM konsolundan devre dışı bırakıldı (güvenlik best practice).
 
 ### Key Rotation Recommendations
 - Düzenli olarak key'leri rotate edin (3-6 ayda bir)
