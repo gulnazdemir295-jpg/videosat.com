@@ -84,15 +84,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Backend bağlantısını test et
         await testBackendConnection();
         
+        // ✅ Pre-stream setup'ı atla ve ana içeriği göster
+        hidePreStreamSetup();
+        
+        // ✅ Ana içeriği göster (butonlar görünsün)
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.style.display = 'grid';
+            console.log('✅ Ana içerik gösterildi');
+        }
+        
+        // ✅ Kamera erişimi butonunu aktif et
+        const cameraBtn = document.getElementById('cameraAccessBtn');
+        if (cameraBtn) {
+            cameraBtn.disabled = false;
+            cameraBtn.style.opacity = '1';
+            cameraBtn.style.cursor = 'pointer';
+            cameraBtn.style.display = 'block';
+            console.log('✅ Kamera erişimi butonu aktif edildi');
+        }
+        
         // ✅ OTOMATİK KAMERA ERİŞİMİ - Sayfa yüklendiğinde otomatik aç (HER ZAMAN)
         console.log('✅ Otomatik kamera erişimi başlatılıyor...');
-        updateStatus('Kamera erişimi otomatik olarak isteniyor...');
+        updateStatus('Kamera erişimi için "Kamera Erişimi İste" butonuna tıklayın');
         
-        // 2 saniye bekle (sayfa tamamen yüklensin)
+        // 3 saniye bekle (sayfa tamamen yüklensin ve kullanıcı görebilsin)
         setTimeout(async () => {
             try {
                 if (!localStream) {
                     console.log('📹 Otomatik kamera erişimi isteniyor...');
+                    updateStatus('Kamera erişimi otomatik olarak isteniyor...');
                     await requestCameraAccess();
                     console.log('✅ Kamera erişimi otomatik olarak başarılı!');
                 }
@@ -100,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.warn('⚠️ Otomatik kamera erişimi başarısız, kullanıcı manuel yapabilir:', error);
                 updateStatus('⚠️ Kamera erişimi için "Kamera Erişimi İste" butonuna tıklayın');
             }
-        }, 2000);
+        }, 3000);
         
         // Auto-setup IVS playback for viewers
         (async () => {
@@ -450,11 +471,19 @@ function loadStreamBalance() {
         balanceDisplay.textContent = `Bakiye: ${hours}s ${minutes}dk`;
     }
     
-    // If balance is 0, show payment step
-    if (balance === 0 && isStreamer) {
-        document.getElementById('paymentStep').classList.add('active');
-    } else {
-        hidePreStreamSetup();
+    // Eğer bakiye yoksa test için bakiye ekle (otomatik)
+    if (balance === 0) {
+        localStorage.setItem('livestreamBalance', '120'); // 2 saat test bakiyesi
+        console.log('✅ Test bakiyesi eklendi: 120 dakika');
+    }
+    
+    // Pre-stream setup'ı her zaman gizle (ana içerik gösterilsin)
+    hidePreStreamSetup();
+    
+    // Ana içeriği göster
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) {
+        mainContent.style.display = 'grid';
     }
 }
 

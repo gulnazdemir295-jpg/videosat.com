@@ -497,13 +497,13 @@
 
         <div class="main-content" id="mainContent" style="display: none;">
             <div class="video-section">
-                <div class="status-info" id="statusInfo">
-                    <i class="fas fa-info-circle"></i> <span id="statusText">Kamera erişimi otomatik olarak isteniyor...</span>
-                    <button class="control-btn start" onclick="requestCameraAccess()" id="cameraAccessBtn" style="margin-top: 10px;">
+                <div class="status-info" id="statusInfo" style="display: block !important;">
+                    <i class="fas fa-info-circle"></i> <span id="statusText">Kamera erişimi için aşağıdaki butona tıklayın</span>
+                    <button class="control-btn start" onclick="requestCameraAccess()" id="cameraAccessBtn" style="margin-top: 15px; display: block !important; opacity: 1 !important; cursor: pointer !important;">
                         <i class="fas fa-camera"></i> Kamera Erişimi İste
                     </button>
-                    <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                        <i class="fas fa-exclamation-triangle"></i> Tarayıcıdan izin pop-up'ı geldiğinde "İzin Ver" veya "Allow" butonuna tıklayın
+                    <p style="margin-top: 15px; font-size: 13px; color: #dc2626; font-weight: bold;">
+                        <i class="fas fa-exclamation-triangle"></i> ÖNEMLİ: Butona tıkladığınızda tarayıcıdan izin pop-up'ı gelecek. "İzin Ver" veya "Allow" butonuna tıklayın!
                     </p>
                 </div>
 
