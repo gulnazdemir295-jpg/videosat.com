@@ -331,7 +331,7 @@ class NotificationService {
 
     // Canlı yayına katıl
     joinLiveStream(streamId) {
-        console.log('🎥 Canlı yayına katılıyor:', streamId);
+        // Sessizce yönlendir
         window.location.href = `../live-stream.html?join=${streamId}`;
     }
 
