@@ -1594,6 +1594,381 @@ app.put('/api/messages/:messageId/read', async (req, res) => {
 });
 
 // ============================================
+// PAYMENT API ENDPOINTS
+// ============================================
+
+// In-memory payment store (production'da DynamoDB kullanılmalı)
+const payments = new Map(); // paymentId -> paymentData
+const userPayments = new Map(); // userId -> [paymentIds]
+
+// Payment status enum
+const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  REFUNDED: 'refunded',
+  CANCELLED: 'cancelled'
+};
+
+// POST /api/payments/process - Ödeme işle
+app.post('/api/payments/process',
+  [
+    body('orderId')
+      .notEmpty()
+      .withMessage('Sipariş ID gerekli')
+      .trim(),
+    body('amount')
+      .isFloat({ min: 0.01 })
+      .withMessage('Geçerli bir tutar gerekli (min: 0.01)'),
+    body('method')
+      .isIn(['cash', 'card', 'online', 'installment', 'crypto', 'bank_transfer'])
+      .withMessage('Geçerli bir ödeme yöntemi gerekli'),
+    body('customer')
+      .optional()
+      .isObject()
+      .withMessage('Müşteri bilgileri obje olmalı'),
+    body('cardData')
+      .optional()
+      .isObject()
+      .withMessage('Kart bilgileri obje olmalı')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { orderId, amount, method, customer = {}, cardData = {}, metadata = {} } = req.body;
+      const userId = req.headers['x-user-id'] || req.query.userId || customer.email || 'anonymous';
+
+      // Güvenlik: Kart bilgilerini asla loglamayın veya saklamayın
+      // Sadece token veya masked card number kullanılmalı
+      const maskedCard = cardData.number ? `****${cardData.number.slice(-4)}` : null;
+
+      const paymentData = {
+        id: `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        orderId,
+        userId,
+        amount: parseFloat(amount),
+        currency: 'TRY',
+        method,
+        status: PAYMENT_STATUS.PENDING,
+        customer: {
+          email: customer.email || userId,
+          name: customer.name || 'Müşteri',
+          phone: customer.phone || null
+        },
+        cardData: maskedCard ? { last4: maskedCard.slice(-4), type: cardData.type || 'unknown' } : null,
+        metadata,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Ödeme işlemini simüle et (gerçek gateway entegrasyonu burada yapılacak)
+      paymentData.status = PAYMENT_STATUS.PROCESSING;
+      payments.set(paymentData.id, paymentData);
+
+      // Kullanıcı ödeme listesine ekle
+      if (!userPayments.has(userId)) {
+        userPayments.set(userId, []);
+      }
+      userPayments.get(userId).push(paymentData.id);
+
+      // Ödeme yöntemine göre işle
+      const result = await processPaymentByMethod(method, paymentData, cardData);
+
+      // Sonucu güncelle
+      paymentData.status = result.success ? PAYMENT_STATUS.COMPLETED : PAYMENT_STATUS.FAILED;
+      paymentData.reference = result.reference;
+      paymentData.gatewayResponse = result.gatewayResponse;
+      paymentData.updatedAt = new Date().toISOString();
+      payments.set(paymentData.id, paymentData);
+
+      // WebSocket ile bildir (varsa)
+      if (io) {
+        io.to(`user:${userId}`).emit('paymentStatus', {
+          paymentId: paymentData.id,
+          status: paymentData.status,
+          orderId: orderId
+        });
+      }
+
+      res.json({
+        success: result.success,
+        paymentId: paymentData.id,
+        status: paymentData.status,
+        reference: paymentData.reference,
+        message: result.message
+      });
+    } catch (error) {
+      console.error('Ödeme işleme hatası:', error);
+      res.status(500).json({ error: 'Ödeme işlenemedi', detail: error.message });
+    }
+  }
+);
+
+// Ödeme yöntemine göre işle (simülasyon)
+async function processPaymentByMethod(method, paymentData, cardData) {
+  // Simüle edilmiş gecikme
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  switch (method) {
+    case 'cash':
+      return {
+        success: true,
+        reference: `CASH-${paymentData.id}`,
+        message: 'Nakit ödeme alındı',
+        gatewayResponse: { method: 'cash', status: 'success' }
+      };
+
+    case 'card':
+      // Kart validasyonu simülasyonu
+      const isValid = Math.random() > 0.1; // 90% başarı oranı
+      if (!isValid) {
+        return {
+          success: false,
+          reference: null,
+          message: 'Kart bilgileri geçersiz veya limit yetersiz',
+          gatewayResponse: { method: 'card', status: 'failed', reason: 'validation_failed' }
+        };
+      }
+      return {
+        success: true,
+        reference: `CARD-${paymentData.id}-${Date.now()}`,
+        message: 'Kart ile ödeme başarılı',
+        gatewayResponse: { method: 'card', status: 'success', transactionId: `TXN-${Date.now()}` }
+      };
+
+    case 'online':
+      return {
+        success: true,
+        reference: `ONLINE-${paymentData.id}`,
+        message: 'Online ödeme başarılı',
+        gatewayResponse: { method: 'online', status: 'success' }
+      };
+
+    case 'installment':
+      return {
+        success: true,
+        reference: `INST-${paymentData.id}`,
+        message: 'Taksitli ödeme başarılı',
+        gatewayResponse: { method: 'installment', status: 'success' }
+      };
+
+    case 'crypto':
+      return {
+        success: true,
+        reference: `CRYPTO-${paymentData.id}`,
+        message: 'Kripto para ödemesi alındı',
+        gatewayResponse: { method: 'crypto', status: 'success' }
+      };
+
+    case 'bank_transfer':
+      return {
+        success: true,
+        reference: `BANK-${paymentData.id}`,
+        message: 'Banka transferi başlatıldı',
+        gatewayResponse: { method: 'bank_transfer', status: 'pending' }
+      };
+
+    default:
+      throw new Error('Geçersiz ödeme yöntemi');
+  }
+}
+
+// GET /api/payments/:paymentId - Ödeme durumu
+app.get('/api/payments/:paymentId', async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const userId = req.headers['x-user-id'] || req.query.userId;
+
+    const payment = payments.get(paymentId);
+    if (!payment) {
+      return res.status(404).json({ error: 'Ödeme bulunamadı' });
+    }
+
+    // Kullanıcı kontrolü (güvenlik)
+    if (userId && payment.userId !== userId) {
+      return res.status(403).json({ error: 'Bu ödemeye erişim yetkiniz yok' });
+    }
+
+    res.json({ success: true, payment });
+  } catch (error) {
+    console.error('Ödeme durumu alma hatası:', error);
+    res.status(500).json({ error: 'Ödeme durumu alınamadı', detail: error.message });
+  }
+});
+
+// GET /api/payments - Ödeme geçmişi
+app.get('/api/payments', async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+    const status = req.query.status;
+
+    let paymentIds = userPayments.get(userId) || [];
+    let userPaymentsList = paymentIds
+      .map(id => payments.get(id))
+      .filter(payment => payment);
+
+    // Status filtresi
+    if (status) {
+      userPaymentsList = userPaymentsList.filter(p => p.status === status);
+    }
+
+    // Tarihe göre sırala (yeni -> eski)
+    userPaymentsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Pagination
+    const total = userPaymentsList.length;
+    const paginatedPayments = userPaymentsList.slice(offset, offset + limit);
+
+    res.json({
+      success: true,
+      payments: paginatedPayments,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    });
+  } catch (error) {
+    console.error('Ödeme geçmişi alma hatası:', error);
+    res.status(500).json({ error: 'Ödeme geçmişi alınamadı', detail: error.message });
+  }
+});
+
+// POST /api/payments/:paymentId/refund - İade işlemi
+app.post('/api/payments/:paymentId/refund',
+  [
+    body('amount')
+      .optional()
+      .isFloat({ min: 0.01 })
+      .withMessage('Geçerli bir tutar gerekli'),
+    body('reason')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('İade nedeni maksimum 500 karakter olabilir')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { paymentId } = req.params;
+      const { amount, reason = 'İade talebi' } = req.body;
+      const userId = req.headers['x-user-id'] || req.query.userId;
+
+      const payment = payments.get(paymentId);
+      if (!payment) {
+        return res.status(404).json({ error: 'Ödeme bulunamadı' });
+      }
+
+      // Kullanıcı kontrolü
+      if (userId && payment.userId !== userId) {
+        return res.status(403).json({ error: 'Bu ödemeyi iade etme yetkiniz yok' });
+      }
+
+      // İade kontrolü
+      if (payment.status !== PAYMENT_STATUS.COMPLETED) {
+        return res.status(400).json({ error: 'Sadece tamamlanmış ödemeler iade edilebilir' });
+      }
+
+      if (payment.status === PAYMENT_STATUS.REFUNDED) {
+        return res.status(400).json({ error: 'Bu ödeme zaten iade edilmiş' });
+      }
+
+      const refundAmount = amount ? parseFloat(amount) : payment.amount;
+      if (refundAmount > payment.amount) {
+        return res.status(400).json({ error: 'İade tutarı ödeme tutarından fazla olamaz' });
+      }
+
+      // İade işlemi (simülasyon)
+      payment.status = PAYMENT_STATUS.REFUNDED;
+      payment.refundAmount = refundAmount;
+      payment.refundReason = reason;
+      payment.refundedAt = new Date().toISOString();
+      payment.updatedAt = new Date().toISOString();
+      payments.set(paymentId, payment);
+
+      // WebSocket ile bildir
+      if (io) {
+        io.to(`user:${payment.userId}`).emit('paymentRefunded', {
+          paymentId,
+          refundAmount,
+          reason
+        });
+      }
+
+      res.json({
+        success: true,
+        payment,
+        message: 'İade işlemi başarılı'
+      });
+    } catch (error) {
+      console.error('İade işleme hatası:', error);
+      res.status(500).json({ error: 'İade işlenemedi', detail: error.message });
+    }
+  }
+);
+
+// POST /api/payments/webhook - Webhook handler (gateway'lerden gelen bildirimler)
+app.post('/api/payments/webhook', async (req, res) => {
+  try {
+    const webhookData = req.body;
+    const signature = req.headers['x-webhook-signature'] || req.headers['x-signature'];
+
+    // Webhook imza doğrulama (güvenlik için gerekli)
+    // const isValid = verifyWebhookSignature(webhookData, signature);
+    // if (!isValid) {
+    //   return res.status(401).json({ error: 'Geçersiz webhook imzası' });
+    // }
+
+    // Webhook tipine göre işle
+    const { event, paymentId, status, data } = webhookData;
+
+    if (event === 'payment.completed' || event === 'payment.success') {
+      const payment = payments.get(paymentId);
+      if (payment) {
+        payment.status = PAYMENT_STATUS.COMPLETED;
+        payment.gatewayResponse = data;
+        payment.updatedAt = new Date().toISOString();
+        payments.set(paymentId, payment);
+
+        // WebSocket ile bildir
+        if (io) {
+          io.to(`user:${payment.userId}`).emit('paymentStatus', {
+            paymentId,
+            status: PAYMENT_STATUS.COMPLETED,
+            orderId: payment.orderId
+          });
+        }
+      }
+    } else if (event === 'payment.failed' || event === 'payment.error') {
+      const payment = payments.get(paymentId);
+      if (payment) {
+        payment.status = PAYMENT_STATUS.FAILED;
+        payment.gatewayResponse = data;
+        payment.updatedAt = new Date().toISOString();
+        payments.set(paymentId, payment);
+      }
+    }
+
+    res.json({ success: true, received: true });
+  } catch (error) {
+    console.error('Webhook işleme hatası:', error);
+    res.status(500).json({ error: 'Webhook işlenemedi', detail: error.message });
+  }
+});
+
+// ============================================
 // STREAM CHAT, LIKES, INVITATIONS
 // ============================================
 
