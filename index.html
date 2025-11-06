@@ -505,7 +505,11 @@
                     'services/analytics-service.js',
                     'services/messaging-service.js',
                     'services/push-notification-service.js',
-                    'cookie-consent.min.js'
+                    'cookie-consent.min.js',
+                    'agora-error-handler.js', // Agora error handler (must load before stream scripts)
+                    'yayin-baslatma-error-handler.js', // Stream start error handler (must load before live-stream.js)
+                    'live-stream-enhancements.js', // Agora enhancements
+                    'live-stream.js' // Main live stream script (must load last)
                 ], {
                     timeout: 10000,
                     continueOnError: true

@@ -252,47 +252,64 @@ async function requestCameraAccess() {
 
 // Start Stream
 async function startStream() {
-    // Kamera kontrolü
-    if (!localStream) {
-        const confirmResult = confirm('Kamera erişimi yok. Önce kamera erişimi isteyiniz!\n\nKamera erişimi iste butonuna tıklayın.');
-        if (confirmResult) {
-            await requestCameraAccess();
-        }
-        return;
-    }
-    
-    // Stream track'lerini kontrol et
-    const videoTracks = localStream.getVideoTracks();
-    const audioTracks = localStream.getAudioTracks();
-    
-    if (videoTracks.length === 0) {
-        alert('Video track bulunamadı. Lütfen kamera erişimini tekrar deneyin.');
-        await requestCameraAccess();
-        return;
-    }
-    
-    if (isStreaming) {
-        console.warn('Yayın zaten aktif');
-        updateStatus('Yayın zaten aktif!');
-        return;
-    }
-    
-    console.log('🎬 Yayın başlatılıyor...');
-    updateStatus('Yayın başlatılıyor...');
-    
-    // Butonu devre dışı bırak
-    const startBtn = document.getElementById('startStreamBtn');
-    if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Başlatılıyor...';
-    }
-    
     try {
-        // Backend'den channel bilgisi al
-        const roomId = 'main-room';
-        console.log('📡 Backend\'e istek gönderiliyor:', `${getAPIBaseURL()}/rooms/${roomId}/join`);
+        // Step 1: Pre-check - Kamera kontrolü
+        if (!localStream) {
+            const error = new Error('Kamera erişimi yok. Önce kamera erişimi isteyiniz!');
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(error, 'pre-check');
+                const confirmResult = confirm(errorResult.userMessage + '\n\n' + errorResult.solution);
+                if (confirmResult) {
+                    await requestCameraAccess();
+                }
+            } else {
+                const confirmResult = confirm('Kamera erişimi yok. Önce kamera erişimi isteyiniz!\n\nKamera erişimi iste butonuna tıklayın.');
+                if (confirmResult) {
+                    await requestCameraAccess();
+                }
+            }
+            return;
+        }
+    
+        // Step 2: Pre-check - Video track kontrolü
+        const videoTracks = localStream.getVideoTracks();
+        const audioTracks = localStream.getAudioTracks();
         
-        const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/join`, {
+        if (videoTracks.length === 0) {
+            const error = new Error('Video track bulunamadı');
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(error, 'pre-check');
+                alert(errorResult.userMessage + '\n\n' + errorResult.solution);
+            } else {
+                alert('Video track bulunamadı. Lütfen kamera erişimini tekrar deneyin.');
+            }
+            await requestCameraAccess();
+            return;
+        }
+        
+        // Step 3: Pre-check - Yayın durumu kontrolü
+        if (isStreaming) {
+            console.warn('Yayın zaten aktif');
+            updateStatus('Yayın zaten aktif!');
+            return;
+        }
+        
+        console.log('🎬 Yayın başlatılıyor...');
+        updateStatus('Yayın başlatılıyor...');
+        
+        // Butonu devre dışı bırak
+        const startBtn = document.getElementById('startStreamBtn');
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Başlatılıyor...';
+        }
+        
+        try {
+            // Step 4: Backend'den channel bilgisi al
+            const roomId = 'main-room';
+            console.log('📡 Backend\'e istek gönderiliyor:', `${getAPIBaseURL()}/rooms/${roomId}/join`);
+            
+            const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/join`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -307,36 +324,62 @@ async function startStream() {
 
         console.log('📡 Backend yanıtı:', response.status, response.statusText);
         
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Backend hatası:', errorText);
-            throw new Error(`Backend yanıt vermedi (${response.status}): ${errorText}`);
-        }
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Backend hatası:', errorText);
+                const error = new Error(`Backend yanıt vermedi (${response.status}): ${errorText}`);
+                
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(error, 'backend-request');
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw error;
+                }
+            }
 
-        const data = await response.json();
-        console.log('✅ Backend yanıtı:', data);
-        
-        if (!data.ok) {
-            throw new Error(data.error || 'Channel oluşturulamadı');
-        }
-        
-        if (!data.channelId) {
-            throw new Error('Channel ID alınamadı');
-        }
-        
-        currentChannelId = data.channelId;
-        currentChannelData = data; // Channel data'yı sakla (token yenileme için)
-        console.log('✅ Channel oluşturuldu:', currentChannelId);
-        console.log('📦 Provider:', data.provider);
-        
-        // Agora ile yayın başlat (AWS IVS artık kullanılmıyor)
-        if (data.provider === 'AGORA') {
+            const data = await response.json();
+            console.log('✅ Backend yanıtı:', data);
+            
+            // Step 5: Backend response validation
+            if (!data.ok) {
+                const error = new Error(data.error || 'Channel oluşturulamadı');
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(error, 'backend-request');
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw error;
+                }
+            }
+            
+            if (!data.channelId) {
+                const error = new Error('Channel ID alınamadı');
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(error, 'backend-request');
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw error;
+                }
+            }
+            
+            currentChannelId = data.channelId;
+            currentChannelData = data; // Channel data'yı sakla (token yenileme için)
+            console.log('✅ Channel oluşturuldu:', currentChannelId);
+            console.log('📦 Provider:', data.provider);
+            
+            // Step 6: Provider kontrolü
+            if (data.provider !== 'AGORA') {
+                const error = new Error(`Beklenmeyen provider: ${data.provider}. Backend AGORA kullanmalı.`);
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(error, 'backend-request');
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw error;
+                }
+            }
+            
+            // Step 7: Agora ile yayın başlat
             console.log('📡 Agora yayını başlatılıyor...');
             await startAgoraStream(data);
-        } else {
-            // Provider AGORA değilse hata ver
-            throw new Error(`Beklenmeyen provider: ${data.provider}. Backend AGORA kullanmalı. STREAM_PROVIDER=AGORA kontrol edin.`);
-        }
         
         isStreaming = true;
         updateLiveStatus('CANLI');
@@ -358,28 +401,55 @@ async function startStream() {
         // Başarı mesajı
         console.log('✅ Yayın başarıyla başlatıldı!');
         
+        } catch (error) {
+            console.error('❌ Yayın başlatma hatası:', error);
+            console.error('Hata detayı:', error.name, error.message, error.stack);
+            
+            // Determine step from error context
+            let errorStep = 'unknown';
+            if (error.message.includes('Backend') || error.message.includes('backend')) {
+                errorStep = 'backend-request';
+            } else if (error.message.includes('Agora') || error.message.includes('agora')) {
+                errorStep = 'agora-join';
+            } else if (error.message.includes('track') || error.message.includes('publish')) {
+                errorStep = 'publish';
+            }
+            
+            // Handle error with step context
+            let userMessage = error.message;
+            let solution = 'Lütfen konsolu kontrol edin (F12) ve destek ile iletişime geçin.';
+            
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(error, errorStep, {
+                    channelId: currentChannelId,
+                    provider: currentChannelData?.provider
+                });
+                userMessage = errorResult.userMessage;
+                solution = errorResult.solution;
+            } else if (window.agoraErrorHandler) {
+                const errorResult = window.agoraErrorHandler.handleError(error, {
+                    type: 'stream-start',
+                    source: 'stream-manager'
+                });
+                userMessage = errorResult.userMessage;
+            }
+            
+            updateStatus('❌ ' + userMessage);
+            
+            // Butonu tekrar aktif et
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Yayını Başlat';
+            }
+            
+            // Show error to user
+            alert('Yayın başlatılamadı:\n\n' + userMessage + '\n\n' + solution);
+        }
     } catch (error) {
-        console.error('❌ Yayın başlatma hatası:', error);
-        console.error('Hata detayı:', error.name, error.message, error.stack);
-        
-        updateStatus('❌ Yayın başlatma hatası: ' + error.message);
-        
-        // Butonu tekrar aktif et
-        if (startBtn) {
-            startBtn.disabled = false;
-            startBtn.innerHTML = '<i class="fas fa-play"></i> Yayını Başlat';
-        }
-        
-        // Use error handler if available for better error messages
-        if (window.agoraErrorHandler) {
-            const errorResult = window.agoraErrorHandler.handleError(error, {
-                type: 'stream-start',
-                source: 'stream-manager'
-            });
-            alert('Yayın başlatılamadı:\n\n' + errorResult.userMessage + '\n\nLütfen konsolu kontrol edin (F12).');
-        } else {
-            alert('Yayın başlatılamadı:\n\n' + error.message + '\n\nLütfen konsolu kontrol edin (F12).');
-        }
+        // Outer catch for any unexpected errors
+        console.error('❌ Unexpected error in startStream:', error);
+        updateStatus('❌ Beklenmeyen bir hata oluştu. Sayfayı yenileyin.');
+        alert('Yayın başlatılırken beklenmeyen bir hata oluştu. Lütfen sayfayı yenileyin.');
     }
 }
 
@@ -388,8 +458,15 @@ async function startAgoraStream(channelData) {
     console.log('📡 Agora yayını başlatılıyor...');
     
     try {
+        // Step 8: Agora SDK kontrolü
         if (!AgoraRTC) {
-            throw new Error('Agora SDK yüklenmedi');
+            const error = new Error('Agora SDK yüklenmedi');
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(error, 'agora-init');
+                throw new Error(errorResult.userMessage);
+            } else {
+                throw error;
+            }
         }
         
         // Eğer client zaten varsa, önce temizle
@@ -523,35 +600,54 @@ async function startAgoraStream(channelData) {
             uid: uid
         });
         
-        // App ID kontrolü
+        // Step 9: App ID kontrolü
         if (!channelData.appId || channelData.appId.length !== 32) {
-            throw new Error(`Geçersiz App ID: ${channelData.appId}. App ID 32 karakter olmalı.`);
+            const error = new Error(`Geçersiz App ID: ${channelData.appId}. App ID 32 karakter olmalı.`);
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(error, 'agora-join');
+                throw new Error(errorResult.userMessage);
+            } else {
+                throw error;
+            }
         }
         
-        // Token ile join (Agora resmi paket ile oluşturuldu)
-        // Agora'nın resmi token generator paketi kullanılıyor
+        // Step 10: Agora join
         let joinedUid;
         
-        if (token) {
-            // Token ile join (production - Agora resmi paket ile oluşturuldu)
-            console.log('🔑 Token ile join ediliyor (Agora resmi paket ile oluşturuldu)...');
-            joinedUid = await agoraClient.join(
-                channelData.appId,
-                channelData.channelName,
-                token,
-                uid || null
-            );
-            console.log('✅ Token ile join başarılı');
-        } else {
-            // Token yoksa development mode (sadece test için)
-            console.warn('⚠️ Token yok, development mode deneniyor...');
-            joinedUid = await agoraClient.join(
-                channelData.appId,
-                channelData.channelName,
-                null, // Token null (development mode)
-                uid || null
-            );
-            console.log('✅ Development mode başarılı (token olmadan)');
+        try {
+            if (token) {
+                // Token ile join (production)
+                console.log('🔑 Token ile join ediliyor...');
+                joinedUid = await agoraClient.join(
+                    channelData.appId,
+                    channelData.channelName,
+                    token,
+                    uid || null
+                );
+                console.log('✅ Token ile join başarılı');
+            } else {
+                // Token yoksa development mode (sadece test için)
+                console.warn('⚠️ Token yok, development mode deneniyor...');
+                joinedUid = await agoraClient.join(
+                    channelData.appId,
+                    channelData.channelName,
+                    null, // Token null (development mode)
+                    uid || null
+                );
+                console.log('✅ Development mode başarılı (token olmadan)');
+            }
+        } catch (joinError) {
+            // Join error handling
+            if (window.handleStreamStartError) {
+                const errorResult = window.handleStreamStartError(joinError, 'agora-join', {
+                    appId: channelData.appId,
+                    channelName: channelData.channelName,
+                    hasToken: !!token
+                });
+                throw new Error(errorResult.userMessage);
+            } else {
+                throw joinError;
+            }
         }
         
         localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)
@@ -573,7 +669,7 @@ async function startAgoraStream(channelData) {
         const videoTracks = localStream.getVideoTracks();
         const audioTracks = localStream.getAudioTracks();
         
-        // Video track yayınla
+        // Step 11: Video track oluştur ve yayınla
         if (videoTracks.length > 0) {
             const videoTrack = videoTracks[0];
             try {
@@ -591,14 +687,21 @@ async function startAgoraStream(channelData) {
                 }
             } catch (videoError) {
                 console.error('❌ Video track yayınlama hatası:', videoError);
-                // Fallback: direkt mediaStreamTrack kullan
-                throw new Error(`Video track yayınlanamadı: ${videoError.message}`);
+                // Error handling with step context
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(videoError, 'track-creation', {
+                        trackType: 'video'
+                    });
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw new Error(`Video track yayınlanamadı: ${videoError.message}`);
+                }
             }
-            } else {
+        } else {
             console.warn('⚠️ Video track bulunamadı');
         }
         
-        // Audio track yayınla
+        // Step 12: Audio track oluştur ve yayınla
         if (audioTracks.length > 0) {
             const audioTrack = audioTracks[0];
             try {
@@ -616,8 +719,15 @@ async function startAgoraStream(channelData) {
                 }
             } catch (audioError) {
                 console.error('❌ Audio track yayınlama hatası:', audioError);
-                // Fallback: direkt mediaStreamTrack kullan
-                throw new Error(`Audio track yayınlanamadı: ${audioError.message}`);
+                // Error handling with step context
+                if (window.handleStreamStartError) {
+                    const errorResult = window.handleStreamStartError(audioError, 'track-creation', {
+                        trackType: 'audio'
+                    });
+                    throw new Error(errorResult.userMessage);
+                } else {
+                    throw new Error(`Audio track yayınlanamadı: ${audioError.message}`);
+                }
             }
         } else {
             console.warn('⚠️ Audio track bulunamadı');
