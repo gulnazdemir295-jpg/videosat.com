@@ -476,12 +476,27 @@ async function startAgoraStream(channelData) {
         }
         
         // Token ile join (Certificate doğruysa çalışmalı)
-        const joinedUid = await agoraClient.join(
-            channelData.appId,
-            channelData.channelName,
-            token, // Token ile deneyin
-            uid || null // null = random UID
-        );
+        // Eğer token null ise, Agora development mode'da token olmadan çalışabilir
+        // Ama production'da token gerekli
+        let joinedUid;
+        if (token) {
+            // Token ile join (production)
+            joinedUid = await agoraClient.join(
+                channelData.appId,
+                channelData.channelName,
+                token,
+                uid || null
+            );
+        } else {
+            // Token olmadan join (development mode - sadece test için)
+            console.warn('⚠️ Token yok, development mode deneniyor...');
+            joinedUid = await agoraClient.join(
+                channelData.appId,
+                channelData.channelName,
+                null, // Token null
+                uid || null
+            );
+        }
         
         localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)
         console.log('✅ Agora channel\'a katıldı, UID:', localAgoraUid);
