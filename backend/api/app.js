@@ -432,6 +432,156 @@ app.get('/api/admin/payments', requireAdmin, (req, res) => {
   return res.json({ payments });
 });
 
+// Admin: payment statistics
+app.get('/api/admin/payments/stats', requireAdmin, (req, res) => {
+  try {
+    const total = payments.size;
+    const byStatus = {};
+    let totalAmount = 0;
+    
+    payments.forEach(payment => {
+      const status = payment.status || 'unknown';
+      byStatus[status] = (byStatus[status] || 0) + 1;
+      if (payment.amount) {
+        totalAmount += parseFloat(payment.amount);
+      }
+    });
+    
+    res.json({
+      ok: true,
+      total,
+      totalAmount,
+      byStatus
+    });
+  } catch (err) {
+    console.error('Payment stats error:', err);
+    res.status(500).json({ error: 'stats_failed', detail: String(err) });
+  }
+});
+
+// Admin: user statistics
+app.get('/api/admin/users/stats', requireAdmin, (req, res) => {
+  try {
+    // Get users from in-memory store or DynamoDB
+    const total = users.size;
+    const active = Array.from(users.values()).filter(u => u.hasTime).length;
+    
+    res.json({
+      ok: true,
+      total,
+      active,
+      inactive: total - active
+    });
+  } catch (err) {
+    console.error('User stats error:', err);
+    res.status(500).json({ error: 'stats_failed', detail: String(err) });
+  }
+});
+
+// Admin: get users list
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+    
+    const usersList = Array.from(users.values())
+      .slice(offset, offset + limit)
+      .map(u => ({
+        email: u.email,
+        role: 'user',
+        status: u.hasTime ? 'active' : 'inactive',
+        createdAt: u.createdAt || new Date().toISOString()
+      }));
+    
+    res.json({
+      ok: true,
+      users: usersList,
+      total: users.size,
+      limit,
+      offset
+    });
+  } catch (err) {
+    console.error('Get users error:', err);
+    res.status(500).json({ error: 'get_users_failed', detail: String(err) });
+  }
+});
+
+// Admin: stream statistics
+app.get('/api/admin/streams/stats', requireAdmin, (req, res) => {
+  try {
+    let totalStreams = 0;
+    let activeStreams = 0;
+    
+    rooms.forEach((room) => {
+      if (room.channels) {
+        totalStreams += room.channels.size;
+        room.channels.forEach((channel) => {
+          if (channel.status === 'active') {
+            activeStreams++;
+          }
+        });
+      }
+    });
+    
+    res.json({
+      ok: true,
+      total: totalStreams,
+      active: activeStreams,
+      inactive: totalStreams - activeStreams
+    });
+  } catch (err) {
+    console.error('Stream stats error:', err);
+    res.status(500).json({ error: 'stats_failed', detail: String(err) });
+  }
+});
+
+// Admin: export data
+app.get('/api/admin/export', requireAdmin, (req, res) => {
+  try {
+    const { type, format = 'json' } = req.query;
+    
+    let data = null;
+    
+    switch (type) {
+      case 'users':
+        data = Array.from(users.values());
+        break;
+      case 'payments':
+        data = Array.from(payments.values());
+        break;
+      case 'errors':
+        data = errorLogs;
+        break;
+      case 'performance':
+        data = performanceLogs;
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid type' });
+    }
+    
+    if (format === 'csv') {
+      // Convert to CSV
+      const headers = Object.keys(data[0] || {});
+      const csv = [
+        headers.join(','),
+        ...data.map(row => headers.map(h => JSON.stringify(row[h] || '')).join(','))
+      ].join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${type}-export.csv"`);
+      return res.send(csv);
+    } else {
+      // JSON format
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${type}-export.json"`);
+      return res.json(data);
+    }
+  } catch (err) {
+    console.error('Export error:', err);
+    res.status(500).json({ error: 'export_failed', detail: String(err) });
+  }
+});
+
 // Get streamer status
 app.get('/api/streamers/:email/status', (req, res) => {
   const s = streamers.get(req.params.email) || { email: req.params.email, minutesPurchased: 0, minutesUsed: 0 };
