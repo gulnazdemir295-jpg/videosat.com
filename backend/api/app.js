@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -1309,6 +1311,132 @@ const backendConfig = getBackendConfig();
 const PORT = validatePort(process.env.PORT || backendConfig.defaultPort);
 const HOST = process.env.HOST || '0.0.0.0'; // Tüm network interface'lere bind
 
+// HTTP Server oluştur (Socket.io için)
+const server = http.createServer(app);
+
+// Socket.io WebSocket Server
+const io = new Server(server, {
+  cors: {
+    origin: [
+      'https://basvideo.com',
+      'https://www.basvideo.com',
+      'http://localhost:3000',
+      'http://localhost:8080',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8080'
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
+
+// WebSocket bağlantı yönetimi
+const connectedUsers = new Map(); // socketId -> userId
+
+io.on('connection', (socket) => {
+  console.log(`✅ WebSocket bağlantısı: ${socket.id}`);
+
+  // Kullanıcı kimlik doğrulama
+  socket.on('authenticate', async (data) => {
+    try {
+      const { userId, email } = data;
+      if (userId || email) {
+        connectedUsers.set(socket.id, userId || email);
+        socket.userId = userId || email;
+        socket.join(`user:${userId || email}`);
+        console.log(`🔐 Kullanıcı kimlik doğrulandı: ${userId || email}`);
+        socket.emit('authenticated', { success: true });
+      }
+    } catch (error) {
+      console.error('Kimlik doğrulama hatası:', error);
+      socket.emit('authenticated', { success: false, error: error.message });
+    }
+  });
+
+  // Mesaj gönderme
+  socket.on('sendMessage', async (data) => {
+    try {
+      const { toUserId, message, type = 'text', metadata = {} } = data;
+      const fromUserId = socket.userId || connectedUsers.get(socket.id);
+
+      if (!fromUserId) {
+        socket.emit('error', { message: 'Kimlik doğrulaması gerekli' });
+        return;
+      }
+
+      if (!toUserId || !message) {
+        socket.emit('error', { message: 'Alıcı ve mesaj gerekli' });
+        return;
+      }
+
+      const messageData = {
+        id: Date.now() + Math.random(),
+        senderId: fromUserId,
+        receiverId: toUserId,
+        message: message.trim(),
+        type: type,
+        metadata: metadata,
+        timestamp: new Date().toISOString(),
+        read: false,
+        status: 'sent'
+      };
+
+      // Alıcıya mesaj gönder
+      io.to(`user:${toUserId}`).emit('message', messageData);
+      
+      // Gönderene onay gönder
+      socket.emit('messageSent', { ...messageData, status: 'sent' });
+
+      console.log(`📨 Mesaj gönderildi: ${fromUserId} -> ${toUserId}`);
+    } catch (error) {
+      console.error('Mesaj gönderme hatası:', error);
+      socket.emit('error', { message: 'Mesaj gönderilemedi', error: error.message });
+    }
+  });
+
+  // Mesaj okundu işaretleme
+  socket.on('markAsRead', async (data) => {
+    try {
+      const { messageId } = data;
+      const userId = socket.userId || connectedUsers.get(socket.id);
+
+      if (!userId) {
+        socket.emit('error', { message: 'Kimlik doğrulaması gerekli' });
+        return;
+      }
+
+      // Mesaj gönderenine okundu bildirimi gönder
+      // (Burada mesaj gönderenini bulmak için mesaj veritabanından sorgulanabilir)
+      socket.emit('messageRead', { messageId, readAt: new Date().toISOString() });
+
+      console.log(`✅ Mesaj okundu işaretlendi: ${messageId} by ${userId}`);
+    } catch (error) {
+      console.error('Okundu işaretleme hatası:', error);
+      socket.emit('error', { message: 'Okundu işaretlenemedi', error: error.message });
+    }
+  });
+
+  // Bağlantı kesilme
+  socket.on('disconnect', () => {
+    const userId = connectedUsers.get(socket.id);
+    if (userId) {
+      connectedUsers.delete(socket.id);
+      console.log(`🔌 Kullanıcı bağlantısı kesildi: ${userId}`);
+    } else {
+      console.log(`🔌 WebSocket bağlantısı kesildi: ${socket.id}`);
+    }
+  });
+
+  // Hata yönetimi
+  socket.on('error', (error) => {
+    console.error(`❌ Socket hatası (${socket.id}):`, error);
+  });
+});
+
+// Socket.io'yu global olarak erişilebilir yap
+app.io = io;
+
 // Yerel IP'yi algıla (gösterim için)
 const os = require('os');
 function getLocalIP() {
@@ -1323,6 +1451,147 @@ function getLocalIP() {
   }
   return 'localhost';
 }
+
+// ============================================
+// MESSAGING API ENDPOINTS
+// ============================================
+
+// In-memory message store (production'da DynamoDB kullanılmalı)
+const messages = new Map(); // messageId -> messageData
+const userMessages = new Map(); // userId -> [messageIds]
+
+// POST /api/messages - Mesaj gönder
+app.post('/api/messages', 
+  [
+    body('toUserId')
+      .notEmpty()
+      .withMessage('Alıcı ID gerekli')
+      .trim(),
+    body('message')
+      .notEmpty()
+      .withMessage('Mesaj gerekli')
+      .trim()
+      .isLength({ min: 1, max: 1000 })
+      .withMessage('Mesaj 1-1000 karakter arasında olmalı'),
+    body('type')
+      .optional()
+      .isIn(['text', 'image', 'file', 'system'])
+      .withMessage('Geçersiz mesaj tipi')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { toUserId, message, type = 'text', metadata = {} } = req.body;
+      const fromUserId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
+
+      const messageData = {
+        id: Date.now() + Math.random(),
+        senderId: fromUserId,
+        receiverId: toUserId,
+        message: message.trim(),
+        type: type,
+        metadata: metadata,
+        timestamp: new Date().toISOString(),
+        read: false,
+        status: 'sent'
+      };
+
+      // Mesajı sakla
+      messages.set(messageData.id, messageData);
+
+      // Kullanıcı mesaj listelerini güncelle
+      if (!userMessages.has(fromUserId)) {
+        userMessages.set(fromUserId, []);
+      }
+      if (!userMessages.has(toUserId)) {
+        userMessages.set(toUserId, []);
+      }
+      userMessages.get(fromUserId).push(messageData.id);
+      userMessages.get(toUserId).push(messageData.id);
+
+      // WebSocket ile alıcıya gönder
+      if (io) {
+        io.to(`user:${toUserId}`).emit('message', messageData);
+      }
+
+      res.json({ success: true, message: messageData });
+    } catch (error) {
+      console.error('Mesaj gönderme hatası:', error);
+      res.status(500).json({ error: 'Mesaj gönderilemedi', detail: error.message });
+    }
+  }
+);
+
+// GET /api/messages - Mesajları al
+app.get('/api/messages', async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
+    const otherUserId = req.query.otherUserId;
+    const limit = parseInt(req.query.limit) || 50;
+
+    let messageIds = [];
+    if (otherUserId) {
+      // Belirli bir kullanıcıyla olan mesajlar
+      messageIds = (userMessages.get(userId) || [])
+        .filter(id => {
+          const msg = messages.get(id);
+          return msg && (msg.senderId === otherUserId || msg.receiverId === otherUserId);
+        });
+    } else {
+      // Tüm mesajlar
+      messageIds = userMessages.get(userId) || [];
+    }
+
+    const userMessagesList = messageIds
+      .map(id => messages.get(id))
+      .filter(msg => msg)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+      .slice(-limit);
+
+    res.json({ success: true, messages: userMessagesList });
+  } catch (error) {
+    console.error('Mesaj alma hatası:', error);
+    res.status(500).json({ error: 'Mesajlar alınamadı', detail: error.message });
+  }
+});
+
+// PUT /api/messages/:messageId/read - Mesajı okundu işaretle
+app.put('/api/messages/:messageId/read', async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
+
+    const message = messages.get(parseFloat(messageId));
+    if (!message) {
+      return res.status(404).json({ error: 'Mesaj bulunamadı' });
+    }
+
+    if (message.receiverId !== userId) {
+      return res.status(403).json({ error: 'Bu mesajı okundu işaretleme yetkiniz yok' });
+    }
+
+    message.read = true;
+    message.readAt = new Date().toISOString();
+    messages.set(message.id, message);
+
+    // WebSocket ile gönderene bildir
+    if (io) {
+      io.to(`user:${message.senderId}`).emit('messageRead', {
+        messageId: message.id,
+        readAt: message.readAt
+      });
+    }
+
+    res.json({ success: true, message });
+  } catch (error) {
+    console.error('Okundu işaretleme hatası:', error);
+    res.status(500).json({ error: 'Okundu işaretlenemedi', detail: error.message });
+  }
+});
 
 // ============================================
 // STREAM CHAT, LIKES, INVITATIONS
@@ -1539,7 +1808,7 @@ app.get('/api/streams', async (req, res) => {
   }
 });
 
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   const localIP = getLocalIP();
   const config = getBackendConfig();
   console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
@@ -1547,6 +1816,7 @@ app.listen(PORT, HOST, () => {
   console.log(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
   console.log(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
   console.log(`💬 Chat, beğeni ve davet sistemi aktif`);
+  console.log(`🔌 WebSocket Server aktif (Socket.io)`);
   console.log(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
   console.log(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
   console.log(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);

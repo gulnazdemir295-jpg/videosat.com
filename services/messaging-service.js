@@ -39,49 +39,92 @@ class MessagingService {
     connectWebSocket() {
         try {
             const apiBaseURL = this.getAPIBaseURL();
-            const wsURL = apiBaseURL.replace('https://', 'wss://').replace('http://', 'ws://');
+            // Socket.io için base URL (port olmadan)
+            const wsBaseURL = apiBaseURL.replace('/api', '').replace('https://', 'https://').replace('http://', 'http://');
             
-            // Socket.io kullanılıyorsa
-            if (typeof io !== 'undefined') {
-                this.socket = io(wsURL, {
-                    transports: ['websocket', 'polling'],
-                    reconnection: true,
-                    reconnectionDelay: 1000,
-                    reconnectionAttempts: this.maxReconnectAttempts
-                });
-
-                this.socket.on('connect', () => {
-                    console.log('✅ WebSocket bağlantısı kuruldu');
-                    this.isConnected = true;
-                    this.reconnectAttempts = 0;
-                    this.notifyListeners('connected');
-                });
-
-                this.socket.on('disconnect', () => {
-                    console.log('⚠️ WebSocket bağlantısı kesildi');
-                    this.isConnected = false;
-                    this.notifyListeners('disconnected');
-                    this.attemptReconnect();
-                });
-
-                this.socket.on('message', (data) => {
-                    this.handleIncomingMessage(data);
-                });
-
-                this.socket.on('messageRead', (data) => {
-                    this.handleMessageRead(data);
-                });
-
-                this.socket.on('error', (error) => {
-                    console.error('❌ WebSocket hatası:', error);
-                    this.notifyListeners('error', error);
-                });
+            // Socket.io CDN'den yükle (eğer yoksa)
+            if (typeof io === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+                script.onload = () => {
+                    this.initializeSocketIO(wsBaseURL);
+                };
+                script.onerror = () => {
+                    console.warn('⚠️ Socket.io CDN yüklenemedi, LocalStorage kullanılacak');
+                    this.simulateWebSocket();
+                };
+                document.head.appendChild(script);
             } else {
-                console.warn('⚠️ Socket.io yüklenmedi, LocalStorage kullanılacak');
-                this.simulateWebSocket();
+                this.initializeSocketIO(wsBaseURL);
             }
         } catch (error) {
             console.error('❌ WebSocket bağlantı hatası:', error);
+            this.simulateWebSocket();
+        }
+    }
+
+    /**
+     * Socket.io bağlantısını başlat
+     */
+    initializeSocketIO(wsBaseURL) {
+        try {
+            this.socket = io(wsBaseURL, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: this.maxReconnectAttempts,
+                withCredentials: true
+            });
+
+            this.socket.on('connect', () => {
+                console.log('✅ WebSocket bağlantısı kuruldu');
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                
+                // Kullanıcı kimlik doğrulaması
+                const currentUserId = this.getCurrentUserId();
+                if (currentUserId) {
+                    this.socket.emit('authenticate', { userId: currentUserId, email: currentUserId });
+                }
+                
+                this.notifyListeners('connected');
+            });
+
+            this.socket.on('authenticated', (data) => {
+                if (data.success) {
+                    console.log('✅ WebSocket kimlik doğrulandı');
+                } else {
+                    console.warn('⚠️ WebSocket kimlik doğrulama başarısız:', data.error);
+                }
+            });
+
+            this.socket.on('disconnect', () => {
+                console.log('⚠️ WebSocket bağlantısı kesildi');
+                this.isConnected = false;
+                this.notifyListeners('disconnected');
+                this.attemptReconnect();
+            });
+
+            this.socket.on('message', (data) => {
+                this.handleIncomingMessage(data);
+            });
+
+            this.socket.on('messageSent', (data) => {
+                // Gönderilen mesajın onayı
+                this.updateMessage(data);
+                this.notifyListeners('messageSent', data);
+            });
+
+            this.socket.on('messageRead', (data) => {
+                this.handleMessageRead(data);
+            });
+
+            this.socket.on('error', (error) => {
+                console.error('❌ WebSocket hatası:', error);
+                this.notifyListeners('error', error);
+            });
+        } catch (error) {
+            console.error('❌ Socket.io başlatma hatası:', error);
             this.simulateWebSocket();
         }
     }
