@@ -4,6 +4,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 
 // Merkezi backend yapılandırması
 const { getBackendConfig, DEFAULT_BACKEND_PORT, validatePort } = require('../../config/backend-config');
@@ -40,6 +43,39 @@ const USE_DYNAMODB = process.env.USE_DYNAMODB !== 'false'; // Default: true in p
 
 const app = express();
 
+// Güvenlik: Helmet - HTTP headers güvenliği
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://download.agora.io"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.basvideo.com", "https://basvideo.com", "wss:", "https://*.agora.io"]
+    }
+  },
+  crossOriginEmbedderPolicy: false // Agora SDK için gerekli
+}));
+
+// Rate Limiting - API isteklerini sınırla
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 100, // Her IP için 15 dakikada maksimum 100 istek
+  message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.',
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 10, // Kritik endpoint'ler için daha sıkı limit
+  message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.'
+});
+
+// Tüm API endpoint'lerine rate limiting uygula
+app.use('/api/', apiLimiter);
+
 // CORS ayarları - Production için spesifik
 const corsOptions = {
   origin: function (origin, callback) {
@@ -71,7 +107,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' })); // Body size limit
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Static files serving (root directory - iki seviye yukarı)
@@ -284,11 +321,28 @@ app.get('/api/payments/status', async (req, res) => {
 });
 
 // Admin: assign IVS config to a user (manual enter from AWS IVS)
-app.post('/api/admin/ivs/assign', async (req, res) => {
+app.post('/api/admin/ivs/assign', 
+  requireAdmin,
+  strictLimiter,
+  [
+    body('userEmail')
+      .isEmail()
+      .withMessage('Geçerli bir email adresi gerekli')
+      .normalizeEmail(),
+    body('endpoint')
+      .isURL({ protocols: ['http', 'https', 'rtmp', 'rtmps'] })
+      .withMessage('Geçerli bir endpoint URL gerekli'),
+    body('playbackUrl')
+      .isURL({ protocols: ['http', 'https'] })
+      .withMessage('Geçerli bir playback URL gerekli'),
+    body('streamKey')
+      .trim()
+      .isLength({ min: 10, max: 500 })
+      .withMessage('Stream key 10-500 karakter arasında olmalı')
+  ],
+  validateInput,
+  async (req, res) => {
   const { userEmail, endpoint, playbackUrl, streamKey } = req.body || {};
-  if (!userEmail || !endpoint || !playbackUrl || !streamKey) {
-    return res.status(400).json({ error: 'userEmail, endpoint, playbackUrl, streamKey required' });
-  }
   ivsAssignments.set(userEmail, { endpoint, playbackUrl, streamKey });
   const existingUser = await getUser(userEmail);
   if (!existingUser) {
@@ -437,13 +491,45 @@ if (STREAM_PROVIDER === 'AGORA') {
 }
 
 // Yayıncı room'a katılır ve kendi channel'ını oluşturur
-app.post('/api/rooms/:roomId/join', async (req, res) => {
+// Input validation helper
+const validateInput = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      error: 'Validation failed', 
+      details: errors.array() 
+    });
+  }
+  next();
+};
+
+app.post('/api/rooms/:roomId/join', 
+  [
+    body('streamerEmail')
+      .isEmail()
+      .withMessage('Geçerli bir email adresi gerekli')
+      .normalizeEmail(),
+    body('streamerName')
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('İsim 1-100 karakter arasında olmalı'),
+    body('deviceInfo')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Cihaz bilgisi maksimum 500 karakter olabilir')
+  ],
+  validateInput,
+  strictLimiter, // Kritik endpoint için sıkı rate limit
+  async (req, res) => {
   try {
     const { roomId } = req.params;
     const { streamerEmail, streamerName, deviceInfo } = req.body || {};
     
-    if (!streamerEmail) {
-      return res.status(400).json({ error: 'streamerEmail required' });
+    // Room ID validation
+    if (!roomId || typeof roomId !== 'string' || roomId.length > 100) {
+      return res.status(400).json({ error: 'Geçersiz roomId' });
     }
     
     // Room var mı kontrol et, yoksa oluştur

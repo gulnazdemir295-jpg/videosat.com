@@ -37,7 +37,7 @@ class NotificationService {
                 try {
                     // processMessageQueue fonksiyonu class içinde tanımlı, güvenli çağrı
                     if (typeof this.processMessageQueue === 'function') {
-                        this.processMessageQueue();
+                    this.processMessageQueue();
                     } else {
                         // Fallback: Kuyruğu temizle
                         this.messageQueue = [];
