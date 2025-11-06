@@ -9,6 +9,9 @@ const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 // Merkezi backend yapılandırması
 const { getBackendConfig, DEFAULT_BACKEND_PORT, validatePort } = require('../../config/backend-config');
@@ -116,6 +119,55 @@ app.use(morgan('dev'));
 // Static files serving (root directory - iki seviye yukarı)
 const rootDir = path.join(__dirname, '../..');
 app.use(express.static(rootDir));
+
+// ============================================
+// FILE UPLOAD CONFIGURATION
+// ============================================
+// Upload directory
+const uploadDir = path.join(rootDir, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const folder = req.body.folder || 'general';
+    const folderPath = path.join(uploadDir, folder);
+    
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    
+    cb(null, folderPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    cb(null, `${name}-${uniqueSuffix}${ext}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp|pdf|doc|docx/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Geçersiz dosya tipi. Sadece görsel ve belge dosyaları yüklenebilir.'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: fileFilter
+});
 console.log('📁 Static files serving from:', rootDir);
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
