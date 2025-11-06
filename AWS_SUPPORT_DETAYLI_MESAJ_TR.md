@@ -193,3 +193,5 @@ AWS Support'tan beklenen yanıt:
 
 **📧 Türkçe mesaj hazır! AWS Support case'ine yanıt olarak gönderebilirsin!**
 
+
+

@@ -12,21 +12,17 @@ let currentChannelId = null;
 let currentUser = null;
 let likeCount = 0;
 let isLiked = false;
+let localAgoraUid = null; // Local Agora UID (sonsuz döngü önlemek için)
 
 // API Base URL (Merkezi config kullanıyor)
 function getAPIBaseURL() {
-    // Önce merkezi config'i kontrol et
-    if (typeof window !== 'undefined' && typeof window.getAPIBaseURL === 'function') {
-        return window.getAPIBaseURL();
-    }
-    
-    // Fallback: Hostname'e göre belirle
+    // Fallback: Hostname'e göre belirle (sonsuz döngü önlemek için direkt kontrol)
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     
-    // Production
+    // Production - Nginx ile backend api.basvideo.com'da
     if (hostname === 'basvideo.com' || hostname.includes('basvideo.com')) {
-        return 'https://basvideo.com/api';
+        return 'https://api.basvideo.com/api';  // Nginx backend URL
     }
     
     // Local development - Merkezi default port
@@ -43,6 +39,16 @@ function getAPIBaseURL() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎬 Canlı Yayın Sistemi Başlatılıyor...');
     
+    // Backend config kontrolü
+    try {
+        if (typeof window.getAPIBaseURL === 'undefined') {
+            console.warn('⚠️ Backend config yüklenmedi, fallback kullanılıyor');
+            // Fallback: getAPIBaseURL zaten tanımlı
+        }
+    } catch (error) {
+        console.warn('⚠️ Backend config kontrol hatası:', error);
+    }
+    
     // Agora SDK kontrolü
     try {
         // SDK yüklenene kadar bekle (max 5 saniye)
@@ -58,21 +64,34 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
         
-        checkAgoraSDK();
+        console.log('✅ Agora SDK yüklendi');
     } catch (error) {
         console.error('❌ Agora SDK kontrol hatası:', error);
+        updateStatus('Agora SDK yüklenirken hata oluştu. Sayfayı yenileyin.');
     }
     
     // Kullanıcı bilgisini yükle
-    loadUserData();
+    try {
+        loadUserData();
+    } catch (error) {
+        console.error('❌ Kullanıcı yükleme hatası:', error);
+    }
         
-        // Backend bağlantısını test et
+    // Backend bağlantısını test et
+    try {
         await testBackendConnection();
+    } catch (error) {
+        console.warn('⚠️ Backend bağlantı testi hatası:', error);
+    }
         
     // Pre-stream setup'ı gizle
-    const preStreamSetup = document.getElementById('preStreamSetup');
-    if (preStreamSetup) {
-        preStreamSetup.style.display = 'none';
+    try {
+        const preStreamSetup = document.getElementById('preStreamSetup');
+        if (preStreamSetup) {
+            preStreamSetup.style.display = 'none';
+        }
+    } catch (error) {
+        // Sessizce görmezden gel
     }
     
     console.log('✅ Sistem hazır');
@@ -107,7 +126,7 @@ function loadUserData() {
 // Test Backend Connection
 async function testBackendConnection() {
     try {
-        const response = await fetch(`${getAPIBaseURL()}/api/health`);
+        const response = await fetch(`${getAPIBaseURL()}/health`);
         if (response.ok) {
             console.log('✅ Backend bağlantısı başarılı');
             return true;
@@ -272,11 +291,12 @@ async function startStream() {
         const roomId = 'main-room';
         console.log('📡 Backend\'e istek gönderiliyor:', `${getAPIBaseURL()}/rooms/${roomId}/join`);
         
-        const response = await fetch(`${getAPIBaseURL()}/api/rooms/${roomId}/join`, {
+        const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/join`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include', // CORS için
             body: JSON.stringify({
                 streamerEmail: currentUser.email,
                 streamerName: currentUser.name || currentUser.email,
@@ -361,14 +381,40 @@ async function startAgoraStream(channelData) {
             throw new Error('Agora SDK yüklenmedi');
         }
         
+        // Eğer client zaten varsa, önce temizle
+        if (agoraClient) {
+            try {
+                await agoraClient.leave();
+                agoraClient.removeAllListeners();
+            } catch (e) {
+                console.warn('Önceki client temizlenirken hata:', e);
+            }
+            agoraClient = null;
+        }
+        
         // Agora Client oluştur
         agoraClient = AgoraRTC.createClient({ 
             mode: 'live', 
             codec: 'vp8' 
         });
         
-        // Event listeners ekle (remote user'lar için)
+        // Publish flag (sonsuz döngü önlemek için)
+        let isPublishing = false;
+        
+        // Event listeners ekle (remote user'lar için) - sadece bir kez
         agoraClient.on('user-published', async (user, mediaType) => {
+            // Kendi stream'imizi ignore et (sonsuz döngü önlemek için)
+            if (localAgoraUid !== null && user.uid === localAgoraUid) {
+                console.log('⚠️ Local user stream ignore edildi (kendi stream\'imiz), UID:', user.uid);
+                return;
+            }
+            
+            // Eğer şu anda publish işlemi yapıyorsak, ignore et
+            if (isPublishing) {
+                console.log('⚠️ Publish işlemi sırasında event ignore edildi');
+                return;
+            }
+            
             console.log('📡 Remote user published:', user.uid, mediaType);
             try {
                 // Remote user'ı subscribe et
@@ -377,7 +423,8 @@ async function startAgoraStream(channelData) {
                 if (mediaType === 'video') {
                     const remoteVideo = document.getElementById('remoteVideo');
                     if (remoteVideo && user.videoTrack) {
-                        user.videoTrack.play('remoteVideo');
+                        // play() metoduna DOM elementi verilmeli, string ID değil
+                        user.videoTrack.play(remoteVideo);
                         remoteVideo.style.display = 'block';
                         console.log('✅ Remote video oynatılıyor');
                     }
@@ -385,7 +432,7 @@ async function startAgoraStream(channelData) {
                 
                 if (mediaType === 'audio') {
                     if (user.audioTrack) {
-                        user.audioTrack.play();
+                        // Audio track için play() çağrısı gerekmez, otomatik oynatılır
                         console.log('✅ Remote audio oynatılıyor');
                     }
                 }
@@ -416,20 +463,31 @@ async function startAgoraStream(channelData) {
         
         console.log('📡 Agora join parametreleri:', {
             appId: channelData.appId,
+            appIdLength: channelData.appId?.length || 0,
             channelName: channelData.channelName,
             hasToken: !!token,
             tokenLength: token ? token.length : 0,
             uid: uid
         });
         
-        await agoraClient.join(
+        // App ID kontrolü
+        if (!channelData.appId || channelData.appId.length !== 32) {
+            throw new Error(`Geçersiz App ID: ${channelData.appId}. App ID 32 karakter olmalı.`);
+        }
+        
+        // Token ile join (Certificate doğruysa çalışmalı)
+        const joinedUid = await agoraClient.join(
             channelData.appId,
             channelData.channelName,
-            token,
+            token, // Token ile deneyin
             uid || null // null = random UID
         );
         
-        console.log('✅ Agora channel\'a katıldı');
+        localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)
+        console.log('✅ Agora channel\'a katıldı, UID:', localAgoraUid);
+        
+        // Kısa bir gecikme ekle (event listener'ların hazır olması için)
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Local stream'den track'leri al
         const videoTracks = localStream.getVideoTracks();
@@ -443,14 +501,20 @@ async function startAgoraStream(channelData) {
                 agoraTracks.videoTrack = await AgoraRTC.createCustomVideoTrack({
                     mediaStreamTrack: videoTrack
                 });
-                await agoraClient.publish([agoraTracks.videoTrack]);
-                console.log('✅ Video track yayınlandı:', videoTrack.label);
+                console.log('📤 Video track publish ediliyor...');
+                isPublishing = true; // Flag set et
+                try {
+                    await agoraClient.publish([agoraTracks.videoTrack]);
+                    console.log('✅ Video track yayınlandı:', videoTrack.label);
+                } finally {
+                    isPublishing = false; // Flag reset et (hata olsa bile)
+                }
             } catch (videoError) {
                 console.error('❌ Video track yayınlama hatası:', videoError);
                 // Fallback: direkt mediaStreamTrack kullan
                 throw new Error(`Video track yayınlanamadı: ${videoError.message}`);
             }
-    } else {
+            } else {
             console.warn('⚠️ Video track bulunamadı');
         }
         
@@ -462,8 +526,14 @@ async function startAgoraStream(channelData) {
                 agoraTracks.audioTrack = await AgoraRTC.createCustomAudioTrack({
                     mediaStreamTrack: audioTrack
                 });
-                await agoraClient.publish([agoraTracks.audioTrack]);
-                console.log('✅ Audio track yayınlandı:', audioTrack.label);
+                console.log('📤 Audio track publish ediliyor...');
+                isPublishing = true; // Flag set et
+                try {
+                    await agoraClient.publish([agoraTracks.audioTrack]);
+                    console.log('✅ Audio track yayınlandı:', audioTrack.label);
+                } finally {
+                    isPublishing = false; // Flag reset et (hata olsa bile)
+                }
             } catch (audioError) {
                 console.error('❌ Audio track yayınlama hatası:', audioError);
                 // Fallback: direkt mediaStreamTrack kullan
@@ -514,8 +584,12 @@ async function stopStream() {
         // Agora client'tan ayrıl
         if (agoraClient) {
             await agoraClient.leave();
+            agoraClient.removeAllListeners();
             agoraClient = null;
         }
+        
+        // Local UID'yi sıfırla
+        localAgoraUid = null;
         
         // Local stream'i kapat
     if (localStream) {
@@ -564,11 +638,12 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/chat`, {
+        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include', // CORS için
             body: JSON.stringify({
                 message: message,
                 userEmail: currentUser.email,
@@ -621,11 +696,12 @@ async function toggleLike() {
     }
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/like`, {
+        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include', // CORS için
             body: JSON.stringify({
                 userEmail: currentUser.email
             })
@@ -647,7 +723,9 @@ async function loadLikes() {
     if (!currentChannelId) return;
     
     try {
-        const response = await fetch(`${getAPIBaseURL()}/api/streams/${currentChannelId}/likes`);
+        const response = await fetch(`${getAPIBaseURL()}/streams/${currentChannelId}/likes`, {
+            credentials: 'include' // CORS için
+        });
         if (response.ok) {
             const data = await response.json();
             likeCount = data.likeCount || 0;

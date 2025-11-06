@@ -132,3 +132,5 @@ Bu **normal**! Room var ama henüz channel yok.
 **Console'da `loadChannels()` çalıştır ve sonucu paylaş! 🔍**
 
 
+
+

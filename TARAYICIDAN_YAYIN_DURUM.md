@@ -273,3 +273,5 @@ OBS Studio kullanın veya AWS hesabınızı doğrulatın.
 **🎥 Sistem hazır, sadece AWS IVS doğrulaması bekleniyor!**
 
 
+
+

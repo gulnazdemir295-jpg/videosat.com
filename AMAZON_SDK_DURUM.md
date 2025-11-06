@@ -274,3 +274,5 @@ window.addEventListener('load', () => {
 **📦 SDK'lar zaten kullanılıyor, sadece AWS IVS doğrulaması bekleniyor!**
 
 
+
+

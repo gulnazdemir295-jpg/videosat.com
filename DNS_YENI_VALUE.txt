@@ -1,0 +1,39 @@
+YENİ DNS TXT KAYDI - KOPYALA YAPIŞTIR
+========================================
+
+Certbot yeni bir value verdi! GoDaddy'de güncelleme yapın.
+
+Tür (Type):
+TXT
+
+Ad (Name):
+_acme-challenge.api
+
+Veri (Value):
+uoh1atcH0AKmYMbDQXtxKSW96aM4yn5Fqx6ZtE1_uxk
+
+TTL:
+600
+
+========================================
+KOPYALAMA TALİMATLARI:
+========================================
+
+1. GoDaddy DNS paneline gidin
+2. Eski TXT kaydını SİLİN (_acme-challenge.api)
+3. "Ekle" veya "+" butonuna tıklayın
+4. Tür: TXT seçin
+5. Ad: _acme-challenge.api (yukarıdan kopyala)
+6. Veri: uoh1atcH0AKmYMbDQXtxKSW96aM4yn5Fqx6ZtE1_uxk (yukarıdan kopyala)
+7. TTL: 600 (yukarıdan kopyala)
+8. "Kaydet" butonuna tıklayın
+9. 1-2 dakika bekleyin
+10. DNS kontrolü yapın
+11. EC2 terminal'inde Enter'a basın
+
+========================================
+DNS KONTROL LİNKİ:
+========================================
+https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.api.basvideo.com
+
+

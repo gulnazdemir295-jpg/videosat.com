@@ -216,3 +216,5 @@ Yanıt geldiğinde:
 **🎉 Sistem hazır, sadece AWS IVS doğrulaması bekleniyor!**
 
 
+
+

@@ -150,3 +150,5 @@ Eğer web formu yerine e-posta tercih edersen:
 **📞 Case açtıktan sonra case numarasını paylaş, takip edelim!** 💪
 
 
+
+

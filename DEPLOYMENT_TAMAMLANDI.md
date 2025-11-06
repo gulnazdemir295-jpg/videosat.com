@@ -132,3 +132,5 @@ Frontend production'da deploy edildi ve backend'e bağlandı! 🚀
 **Sonraki Adım:** Browser'da test et ve CloudFront cache temizle (opsiyonel).
 
 
+
+

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const path = require('path');
 
 // Merkezi backend yapılandırması
 const { getBackendConfig, DEFAULT_BACKEND_PORT, validatePort } = require('../../config/backend-config');
@@ -38,9 +39,45 @@ let dynamoClient = null;
 const USE_DYNAMODB = process.env.USE_DYNAMODB !== 'false'; // Default: true in production
 
 const app = express();
-app.use(cors());
+
+// CORS ayarları - Production için spesifik
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Production domain'ler
+    const allowedOrigins = [
+      'https://basvideo.com',
+      'https://www.basvideo.com',
+      'http://localhost:3000',
+      'http://localhost:8080',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8080'
+    ];
+    
+    // Origin yoksa (Postman, curl gibi) veya allowed list'te varsa izin ver
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // Development için tüm origin'lere izin ver
+      if (process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS policy: Not allowed origin'));
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+
+// Static files serving (root directory - iki seviye yukarı)
+const rootDir = path.join(__dirname, '../..');
+app.use(express.static(rootDir));
+console.log('📁 Static files serving from:', rootDir);
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 let CURRENT_REGION = process.env.IVS_REGION || process.env.AWS_REGION || 'us-east-1';

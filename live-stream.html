@@ -287,7 +287,24 @@
         </div>
     </div>
 
-    <script src="live-stream.min.js"></script>
+    <script src="live-stream.js"></script>
+    <script>
+        // Obfuscation sonrası window fonksiyonlarını kontrol et ve yeniden ata
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (typeof requestCameraAccess !== 'undefined' && !window.requestCameraAccess) {
+                    window.requestCameraAccess = requestCameraAccess;
+                }
+                if (typeof startStream !== 'undefined' && !window.startStream) {
+                    window.startStream = startStream;
+                }
+                if (typeof stopStream !== 'undefined' && !window.stopStream) {
+                    window.stopStream = stopStream;
+                }
+                console.log('✅ Global fonksiyonlar kontrol edildi');
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
 

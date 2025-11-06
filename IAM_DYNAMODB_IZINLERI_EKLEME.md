@@ -99,3 +99,5 @@ aws dynamodb list-tables --region us-east-1
 4. Frontend'i backend URL'e bağla: `http://107.23.178.153:4000`
 
 
+
+

@@ -147,3 +147,5 @@ aws ivs list-channels --region us-east-1 --max-results 10
 **Channel Sayısı:** 10+ (artmış!)
 
 
+
+

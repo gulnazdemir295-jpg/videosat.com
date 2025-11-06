@@ -126,3 +126,5 @@ AWS IVS Broadcast SDK hatası. Hesabınız WebRTC modunu desteklemiyor olabilir.
 **Şimdilik OBS Studio ile test edebilirsin, gerçek yayın için AWS hesap doğrulaması bekliyoruz! 📺**
 
 
+
+

@@ -183,3 +183,5 @@ Teşekkürler!
 
 **⏳ IVS servisi için doğrulama hala bekleniyor. Global Servis ekibinin yanıtını bekliyoruz!**
 
+
+

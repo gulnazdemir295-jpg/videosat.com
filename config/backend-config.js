@@ -7,13 +7,20 @@
 const DEFAULT_BACKEND_PORT = 3000;
 
 // Production ve Development ortamları
-const isProduction = process.env.NODE_ENV === 'production';
+// Frontend'de process.env yok, window.location kullan
+const isProduction = (typeof window !== 'undefined' && window.location.hostname === 'basvideo.com') || 
+                     (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production');
 const isDevelopment = !isProduction;
 
 // Backend URL yapılandırması
 const getBackendConfig = () => {
-  const port = process.env.PORT || DEFAULT_BACKEND_PORT;
-  const hostname = process.env.HOSTNAME || 'localhost';
+  // Frontend'de process.env yok, backend'de var
+  const port = (typeof process !== 'undefined' && process.env && process.env.PORT) 
+               ? process.env.PORT 
+               : DEFAULT_BACKEND_PORT;
+  const hostname = (typeof process !== 'undefined' && process.env && process.env.HOSTNAME)
+                   ? process.env.HOSTNAME
+                   : 'localhost';
   const protocol = isProduction ? 'https' : 'http';
   
   // Production domain
@@ -52,11 +59,11 @@ if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     const config = window.BACKEND_CONFIG || getBackendConfig();
     
-    // Production
+    // Production - Nginx ile backend api.basvideo.com'da
     if (hostname === config.productionDomain || hostname.includes(config.productionDomain)) {
       return config.productionDomain.includes('basvideo.com') 
-        ? 'https://basvideo.com/api'
-        : `${config.protocol}://${config.productionDomain}/api`;
+        ? 'https://api.basvideo.com/api'  // Nginx backend URL
+        : `${config.protocol}://api.${config.productionDomain}/api`;
     }
     
     // Development - Port'u config'den al

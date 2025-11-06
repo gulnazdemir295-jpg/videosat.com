@@ -14,3 +14,5 @@ Test Komutu (Doğrulama tamamlandığında):
 aws ivs create-channel --name test-verification-success-$(date +%s) --type BASIC --latency-mode LOW --region us-east-1
 
 
+
+

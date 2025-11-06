@@ -1,0 +1,15 @@
+YENİ DNS TXT VALUE (KOPYALA):
+-02yOWYNyaJ0k85VE3ZMhS6RLis2GZFLowuc_brMA3A
+
+
+GoDaddy DNS Kaydı Ekleme Talimatları:
+
+1. GoDaddy DNS Yönetimi sayfasına gidin
+2. Önceki TXT kaydını silin (_acme-challenge.api)
+3. Yeni kayıt ekle:
+   Type: TXT
+   Name: _acme-challenge.api
+   Value: -02yOWYNyaJ0k85VE3ZMhS6RLis2GZFLowuc_brMA3A
+   TTL: 300
+4. Kaydet
+

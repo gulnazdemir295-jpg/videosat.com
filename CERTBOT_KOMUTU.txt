@@ -1,0 +1,22 @@
+CERTBOT KOMUTU:
+
+sudo certbot certonly --manual --preferred-challenges dns -d api.basvideo.com
+
+
+Certbot size şunu soracak:
+- DNS TXT kaydı value'sunu sorabilir
+- VEYA direkt "Press Enter to Continue" diyebilir
+
+Eğer value sorarsa:
+- Mevcut value: -02yOWYNyaJ0k85VE3ZMhS6RLis2GZFLowuc_brMA3A
+- Bu value zaten DNS'de var, direkt Enter'a basın
+
+Eğer value sormazsa:
+- Direkt Enter'a basın
+
+Başarılı olursa:
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/api.basvideo.com/fullchain.pem
+
+
+

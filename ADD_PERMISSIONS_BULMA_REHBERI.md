@@ -94,3 +94,5 @@ Eğer buton çalışmazsa:
 **"Add permissions" butonunu buldun mu? Nerede görünüyor?**
 
 
+
+

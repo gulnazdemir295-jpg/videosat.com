@@ -217,3 +217,5 @@ pm2 logs basvideo-backend --lines 20
 **Kırmızı hata mesajının tam metnini paylaş, çözümü birlikte bulalım! 🔍**
 
 
+
+

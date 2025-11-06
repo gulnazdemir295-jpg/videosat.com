@@ -32,20 +32,16 @@ class NotificationService {
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
-            // processMessageQueue metodunu kontrol et ve yoksa ekle (geriye uyumluluk)
-            if (typeof this.processMessageQueue !== 'function') {
-                this.processMessageQueue = function() {
-                    // Boş implementasyon (sessiz çalışma)
-                    if (this.messageQueue) {
-                        this.messageQueue = [];
-                    }
-                };
-            }
-            
-            // Kuyruktaki mesajları gönder (güvenli çağrı - sessiz)
+            // Kuyruktaki mesajları gönder (güvenli çağrı - processMessageQueue her zaman mevcut)
             if (this.messageQueue && this.messageQueue.length > 0) {
                 try {
-                    this.processMessageQueue();
+                    // processMessageQueue fonksiyonu class içinde tanımlı, güvenli çağrı
+                    if (typeof this.processMessageQueue === 'function') {
+                        this.processMessageQueue();
+                    } else {
+                        // Fallback: Kuyruğu temizle
+                        this.messageQueue = [];
+                    }
                 } catch (queueError) {
                     // Sessizce görmezden gel
                     if (this.messageQueue) {
@@ -54,19 +50,13 @@ class NotificationService {
                 }
             }
             
+            console.log('✅ Notification Service bağlandı');
+            
         } catch (error) {
-            // Hata durumunda sessizce devam et (konsol mesajı yok)
-            // processMessageQueue hatası özel olarak yakalanıyor
-            if (error && error.message && error.message.includes('processMessageQueue')) {
-                // Bu hatayı sessizce görmezden gel
-                this.isConnected = true;
-                this.reconnectAttempts = 0;
-                return;
-            }
+            console.error('❌ Notification Service bağlantı hatası:', error);
             
             // Diğer hatalar için reconnect dene
             if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                // Reconnect'i sessizce dene
                 this.handleReconnect();
             }
         }

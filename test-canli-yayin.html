@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canlı Yayın Test Sayfası</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-item .status {
+            font-size: 1.5rem;
+        }
+        
+        .status.pending { color: #ffc107; }
+        .status.success { color: #28a745; }
+        .status.error { color: #dc3545; }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+        
+        .log-entry.success { color: #4ec9b0; }
+        .log-entry.error { color: #f48771; }
+        .log-entry.info { color: #569cd6; }
+        .log-entry.warning { color: #dcdcaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Canlı Yayın Test Sayfası</h1>
+        <p class="subtitle">"Yayını Başlat" butonu çalışıyor mu kontrol et!</p>
+        
+        <div class="test-section">
+            <h2>📋 Sistem Kontrolü</h2>
+            
+            <div class="test-item">
+                <div>
+                    <strong>Backend Bağlantısı</strong>
+                    <div id="backendStatus" class="status pending">⏳</div>
+                </div>
+                <div id="backendResult">Kontrol ediliyor...</div>
+            </div>
+            
+            <div class="test-item">
+                <div>
+                    <strong>Agora SDK</strong>
+                    <div id="agoraStatus" class="status pending">⏳</div>
+                </div>
+                <div id="agoraResult">Kontrol ediliyor...</div>
+            </div>
+            
+            <div class="test-item">
+                <div>
+                    <strong>Kamera Erişimi</strong>
+                    <div id="cameraStatus" class="status pending">⏳</div>
+                </div>
+                <div id="cameraResult">Kontrol ediliyor...</div>
+            </div>
+            
+            <div class="test-item">
+                <div>
+                    <strong>Agora Credentials</strong>
+                    <div id="credentialsStatus" class="status pending">⏳</div>
+                </div>
+                <div id="credentialsResult">Kontrol ediliyor...</div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="runAllTests()" id="testBtn">
+            🚀 Tüm Testleri Çalıştır
+        </button>
+        
+        <div class="log" id="log">
+            <div class="log-entry info">💡 Test butonuna tıklayarak başlayın...</div>
+        </div>
+    </div>
+    
+    <!-- Agora SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+    
+    <script>
+        let logContainer = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus(id, status, result, icon) {
+            const statusEl = document.getElementById(id + 'Status');
+            const resultEl = document.getElementById(id + 'Result');
+            
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = icon;
+            resultEl.textContent = result;
+        }
+        
+        async function testBackend() {
+            addLog('Backend bağlantısı test ediliyor...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/health');
+                const data = await response.json();
+                
+                if (data.ok) {
+                    updateStatus('backend', 'success', '✅ Çalışıyor', '✅');
+                    addLog('Backend çalışıyor!', 'success');
+                    return true;
+                } else {
+                    throw new Error('Backend yanıt vermedi');
+                }
+            } catch (error) {
+                updateStatus('backend', 'error', '❌ Çalışmıyor', '❌');
+                addLog(`Backend hatası: ${error.message}`, 'error');
+                addLog('💡 Çözüm: Backend\'i başlatın (cd backend/api && npm start)', 'warning');
+                return false;
+            }
+        }
+        
+        async function testAgoraSDK() {
+            addLog('Agora SDK kontrol ediliyor...', 'info');
+            
+            if (typeof AgoraRTC !== 'undefined') {
+                updateStatus('agora', 'success', '✅ Yüklü', '✅');
+                addLog('Agora SDK yüklü!', 'success');
+                return true;
+            } else {
+                updateStatus('agora', 'error', '❌ Yüklenmemiş', '❌');
+                addLog('Agora SDK yüklenmemiş!', 'error');
+                addLog('💡 Çözüm: Sayfayı yenileyin (F5)', 'warning');
+                return false;
+            }
+        }
+        
+        async function testCamera() {
+            addLog('Kamera erişimi test ediliyor...', 'info');
+            
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('WebRTC desteklenmiyor');
+                }
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                
+                stream.getTracks().forEach(track => track.stop());
+                
+                updateStatus('camera', 'success', '✅ Erişim var', '✅');
+                addLog('Kamera erişimi başarılı!', 'success');
+                return true;
+            } catch (error) {
+                updateStatus('camera', 'error', '❌ Erişim yok', '❌');
+                addLog(`Kamera hatası: ${error.message}`, 'error');
+                addLog('💡 Çözüm: Tarayıcı ayarlarından kamera izni verin', 'warning');
+                return false;
+            }
+        }
+        
+        async function testCredentials() {
+            addLog('Agora credentials kontrol ediliyor...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/rooms/test-room/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        streamerEmail: 'test@example.com',
+                        streamerName: 'Test',
+                        deviceInfo: 'Browser'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok && data.appId) {
+                    updateStatus('credentials', 'success', '✅ Ayarlı', '✅');
+                    addLog('Agora credentials ayarlı!', 'success');
+                    addLog(`App ID: ${data.appId.substring(0, 10)}...`, 'info');
+                    return true;
+                } else if (data.error && data.error.includes('agora')) {
+                    updateStatus('credentials', 'error', '❌ Ayarlı değil', '❌');
+                    addLog('Agora credentials ayarlı değil!', 'error');
+                    addLog('💡 Çözüm: .env dosyasına AGORA_APP_ID ve AGORA_APP_CERTIFICATE ekleyin', 'warning');
+                    return false;
+                } else {
+                    throw new Error('Beklenmeyen yanıt');
+                }
+            } catch (error) {
+                updateStatus('credentials', 'error', '❌ Test edilemedi', '❌');
+                addLog(`Credentials test hatası: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function runAllTests() {
+            const btn = document.getElementById('testBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Testler çalışıyor...';
+            
+            logContainer.innerHTML = '';
+            addLog('🚀 Testler başlıyor...', 'info');
+            
+            const results = {
+                backend: await testBackend(),
+                agora: testAgoraSDK(),
+                camera: await testCamera(),
+                credentials: await testCredentials()
+            };
+            
+            addLog('', 'info');
+            addLog('📊 Test Sonuçları:', 'info');
+            
+            const allPassed = results.backend && results.agora && results.camera && results.credentials;
+            
+            if (allPassed) {
+                addLog('✅ TÜM TESTLER BAŞARILI!', 'success');
+                addLog('🎉 "Yayını Başlat" butonu çalışmalı!', 'success');
+            } else {
+                addLog('❌ BAZI TESTLER BAŞARISIZ', 'error');
+                addLog('💡 Yukarıdaki çözüm önerilerini takip edin', 'warning');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔄 Testleri Tekrar Çalıştır';
+        }
+        
+        // Sayfa yüklendiğinde otomatik test
+        window.addEventListener('load', () => {
+            addLog('Sayfa yüklendi. Test butonuna tıklayın...', 'info');
+        });
+    </script>
+</body>
+</html>
+

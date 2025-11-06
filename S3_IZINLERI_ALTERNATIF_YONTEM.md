@@ -123,3 +123,5 @@ Başarılı olursa dosya listesi görünür! ✅
 Sadece gerekli bucket'a erişim verir.
 
 
+
+

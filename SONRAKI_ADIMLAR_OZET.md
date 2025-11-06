@@ -114,3 +114,5 @@ curl -X POST "http://107.23.178.153:4000/api/rooms/test-room/join" \
 **✅ Anlaşıldı: OBS gereksiz kalması için WebRTC gerekli. IVS onayı alınca test edeceğiz!**
 
 
+
+

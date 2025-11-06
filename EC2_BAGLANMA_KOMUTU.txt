@@ -1,0 +1,16 @@
+EC2'YE BAĞLANMA KOMUTU:
+
+ssh -i ~/Downloads/basvideo-backend-key.pem ubuntu@107.23.178.153
+
+
+Eğer "Permission denied" hatası alırsanız, önce şunu çalıştırın:
+
+chmod 400 ~/Downloads/basvideo-backend-key.pem
+ssh -i ~/Downloads/basvideo-backend-key.pem ubuntu@107.23.178.153
+
+
+Başarılı olursa şunu göreceksiniz:
+ubuntu@ip-172-31-31-180:~$
+
+
+

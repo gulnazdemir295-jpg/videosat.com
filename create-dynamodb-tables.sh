@@ -66,3 +66,5 @@ echo "🎉 Tüm tablolar oluşturuldu!"
 echo "📋 Tabloları kontrol etmek için: aws dynamodb list-tables --region $REGION"
 
 
+
+

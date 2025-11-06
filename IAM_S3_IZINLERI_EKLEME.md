@@ -87,3 +87,5 @@ aws s3 ls s3://dunyanin-en-acayip-sitesi-328185871955
 İzinleri ekledikten sonra bana haber ver, frontend'i deploy edelim! 🚀
 
 
+
+

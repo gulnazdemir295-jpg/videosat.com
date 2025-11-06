@@ -145,3 +145,5 @@ pm2 logs basvideo-backend --lines 20
 **Frontend'in backend'e bağlandığını doğrulamak için browser console'u kontrol et!**
 
 
+
+

@@ -159,3 +159,5 @@ Bu soruları cevapladıktan sonra:
 **📞 Soruları cevapladıktan sonra bana haber ver, sonraki adıma geçelim!** 💪
 
 
+
+

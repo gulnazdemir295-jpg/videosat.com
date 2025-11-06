@@ -66,3 +66,5 @@ echo "2. CloudFront cache temizle (distribution ID ile)"
 echo "3. Browser'da test et"
 
 
+
+

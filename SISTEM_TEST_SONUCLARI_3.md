@@ -130,3 +130,5 @@ aws ivs list-channels --region us-east-1 --max-results 5
 **Durum:** Hala aynı (okuma var, yazma yok)
 
 
+
+
