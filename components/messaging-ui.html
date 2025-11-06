@@ -1,0 +1,737 @@
+<!-- Messaging UI Component -->
+<!-- Kullanıcılar arası mesajlaşma arayüzü -->
+
+<div class="messaging-container" id="messagingContainer">
+    <!-- Mesajlaşma Sidebar -->
+    <div class="messaging-sidebar" id="messagingSidebar">
+        <div class="messaging-header">
+            <h2>
+                <i class="fas fa-comments"></i> Mesajlar
+            </h2>
+            <button class="btn-icon" id="newMessageBtn" title="Yeni Mesaj">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <!-- Arama -->
+        <div class="messaging-search">
+            <input type="text" id="conversationSearch" placeholder="Mesaj ara...">
+            <i class="fas fa-search"></i>
+        </div>
+
+        <!-- Conversation List -->
+        <div class="conversation-list" id="conversationList">
+            <!-- Conversation'lar buraya yüklenecek -->
+        </div>
+    </div>
+
+    <!-- Mesajlaşma Alanı -->
+    <div class="messaging-main" id="messagingMain">
+        <div class="messaging-empty" id="messagingEmpty">
+            <i class="fas fa-comments"></i>
+            <h3>Bir konuşma seçin</h3>
+            <p>Mesajlaşmak için sol taraftan bir konuşma seçin veya yeni mesaj oluşturun.</p>
+        </div>
+
+        <!-- Aktif Conversation -->
+        <div class="messaging-active" id="messagingActive" style="display: none;">
+            <!-- Conversation Header -->
+            <div class="conversation-header" id="conversationHeader">
+                <div class="conversation-user">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <h3 id="conversationUserName">Kullanıcı Adı</h3>
+                        <span class="user-status" id="conversationUserStatus">Çevrimiçi</span>
+                    </div>
+                </div>
+                <div class="conversation-actions">
+                    <button class="btn-icon" id="conversationInfoBtn" title="Bilgi">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="btn-icon" id="conversationDeleteBtn" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea">
+                <!-- Mesajlar buraya yüklenecek -->
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-area">
+                <button class="btn-icon" id="attachFileBtn" title="Dosya Ekle">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" id="messageInput" placeholder="Mesaj yazın..." autocomplete="off">
+                <button class="btn-send" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.messaging-container {
+    display: flex;
+    height: 600px;
+    background: #1a1a1a;
+    border: 1px solid #dc2626;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.messaging-sidebar {
+    width: 300px;
+    border-right: 1px solid #dc2626;
+    display: flex;
+    flex-direction: column;
+    background: #0f0f0f;
+}
+
+.messaging-header {
+    padding: 15px;
+    border-bottom: 1px solid #dc2626;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.messaging-header h2 {
+    color: #ffffff;
+    font-size: 1.25rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.messaging-header h2 i {
+    color: #dc2626;
+}
+
+.btn-icon {
+    background: transparent;
+    border: 1px solid #dc2626;
+    color: #dc2626;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.messaging-search {
+    padding: 15px;
+    position: relative;
+}
+
+.messaging-search input {
+    width: 100%;
+    padding: 10px 35px 10px 15px;
+    background: #1a1a1a;
+    border: 1px solid #dc2626;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+.messaging-search input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.messaging-search i {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+}
+
+.conversation-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.conversation-item {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+}
+
+.conversation-item:hover {
+    background: #1a1a1a;
+    border-color: #dc2626;
+}
+
+.conversation-item.active {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.conversation-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.conversation-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-name {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-time {
+    color: #6b7280;
+    font-size: 0.75rem;
+}
+
+.conversation-last-message {
+    color: #9ca3af;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.conversation-unread {
+    background: #dc2626;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.messaging-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a;
+}
+
+.messaging-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    padding: 40px;
+    text-align: center;
+}
+
+.messaging-empty i {
+    font-size: 4rem;
+    color: #dc2626;
+    margin-bottom: 20px;
+}
+
+.messaging-empty h3 {
+    color: #ffffff;
+    margin: 0 0 10px 0;
+}
+
+.messaging-active {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.conversation-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dc2626;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0f0f0f;
+}
+
+.conversation-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.25rem;
+}
+
+.user-info h3 {
+    color: #ffffff;
+    font-size: 1rem;
+    margin: 0 0 4px 0;
+}
+
+.user-status {
+    color: #22c55e;
+    font-size: 0.75rem;
+}
+
+.conversation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    display: flex;
+    gap: 10px;
+    max-width: 70%;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.message-content {
+    background: #0f0f0f;
+    border: 1px solid #dc2626;
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #ffffff;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.message.sent .message-content {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.message-time {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.message.sent .message-time {
+    text-align: right;
+}
+
+.message-input-area {
+    padding: 15px 20px;
+    border-top: 1px solid #dc2626;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #0f0f0f;
+}
+
+.message-input-area input {
+    flex: 1;
+    padding: 12px 15px;
+    background: #1a1a1a;
+    border: 1px solid #dc2626;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+.message-input-area input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.btn-send {
+    background: #dc2626;
+    border: none;
+    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-send:hover {
+    background: #b91c1c;
+}
+
+.btn-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .messaging-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 500px;
+    }
+
+    .messaging-sidebar {
+        width: 100%;
+        max-height: 300px;
+    }
+
+    .message {
+        max-width: 85%;
+    }
+}
+</style>
+
+<script>
+// Messaging UI Controller
+class MessagingUIController {
+    constructor() {
+        this.currentConversationId = null;
+        this.messagingService = null;
+        this.init();
+    }
+
+    init() {
+        // Messaging Service kontrolü
+        if (typeof window.messagingService === 'undefined') {
+            console.warn('Messaging Service yüklenmedi');
+            return;
+        }
+
+        this.messagingService = window.messagingService;
+        this.setupEventListeners();
+        this.loadConversations();
+        
+        // Messaging Service event listener'ları
+        this.messagingService.on('messageReceived', (message) => {
+            if (message.senderId === this.currentConversationId) {
+                this.addMessageToUI(message);
+            }
+            this.loadConversations();
+        });
+
+        this.messagingService.on('messageSent', (message) => {
+            this.addMessageToUI(message);
+        });
+    }
+
+    setupEventListeners() {
+        // Yeni mesaj butonu
+        document.getElementById('newMessageBtn')?.addEventListener('click', () => {
+            this.showNewMessageDialog();
+        });
+
+        // Mesaj gönderme
+        document.getElementById('sendMessageBtn')?.addEventListener('click', () => {
+            this.sendMessage();
+        });
+
+        document.getElementById('messageInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        });
+
+        // Conversation arama
+        document.getElementById('conversationSearch')?.addEventListener('input', (e) => {
+            this.searchConversations(e.target.value);
+        });
+    }
+
+    loadConversations() {
+        if (!this.messagingService) return;
+
+        const conversations = this.messagingService.getConversations();
+        const container = document.getElementById('conversationList');
+        if (!container) return;
+
+        if (conversations.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Henüz mesaj yok</div>';
+            return;
+        }
+
+        container.innerHTML = conversations.map(conv => {
+            const unreadBadge = conv.unreadCount > 0 
+                ? `<span class="conversation-unread">${conv.unreadCount}</span>`
+                : '';
+            
+            const lastMessageText = conv.lastMessage 
+                ? (conv.lastMessage.message.length > 30 
+                    ? conv.lastMessage.message.substring(0, 30) + '...' 
+                    : conv.lastMessage.message)
+                : 'Mesaj yok';
+            
+            const lastMessageTime = conv.lastMessage 
+                ? this.formatTime(conv.lastMessage.timestamp)
+                : '';
+
+            return `
+                <div class="conversation-item ${conv.userId === this.currentConversationId ? 'active' : ''}" 
+                     data-user-id="${conv.userId}">
+                    <div class="conversation-item-header">
+                        <div class="conversation-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">${conv.userName}</div>
+                            <div class="conversation-time">${lastMessageTime}</div>
+                        </div>
+                        ${unreadBadge}
+                    </div>
+                    <p class="conversation-last-message">${lastMessageText}</p>
+                </div>
+            `;
+        }).join('');
+
+        // Conversation item click event'leri
+        container.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const userId = item.dataset.userId;
+                this.openConversation(userId);
+            });
+        });
+    }
+
+    openConversation(userId) {
+        this.currentConversationId = userId;
+        this.loadConversations();
+        
+        const empty = document.getElementById('messagingEmpty');
+        const active = document.getElementById('messagingActive');
+        
+        if (empty) empty.style.display = 'none';
+        if (active) active.style.display = 'flex';
+
+        // Conversation header güncelle
+        const conversations = this.messagingService.getConversations();
+        const conversation = conversations.find(c => c.userId === userId);
+        
+        if (conversation) {
+            document.getElementById('conversationUserName').textContent = conversation.userName;
+        }
+
+        // Mesajları yükle
+        this.loadMessages(userId);
+    }
+
+    loadMessages(userId) {
+        if (!this.messagingService) return;
+
+        const messages = this.messagingService.getMessages(userId);
+        const container = document.getElementById('messagesArea');
+        if (!container) return;
+
+        const currentUserId = this.messagingService.getCurrentUserId();
+
+        container.innerHTML = messages.map(msg => {
+            const isSent = msg.senderId === currentUserId;
+            const time = this.formatTime(msg.timestamp);
+            const userName = isSent ? 'Sen' : this.messagingService.getUserName(msg.senderId);
+
+            return `
+                <div class="message ${isSent ? 'sent' : 'received'}">
+                    <div class="message-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div class="message-content">${this.escapeHtml(msg.message)}</div>
+                        <div class="message-time">${userName} • ${time}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+
+        // Okunmamış mesajları işaretle
+        messages.forEach(msg => {
+            if (!msg.read && msg.receiverId === currentUserId) {
+                this.messagingService.markAsRead(msg.id);
+            }
+        });
+    }
+
+    async sendMessage() {
+        if (!this.currentConversationId || !this.messagingService) return;
+
+        const input = document.getElementById('messageInput');
+        const message = input?.value.trim();
+        
+        if (!message) return;
+
+        const sendBtn = document.getElementById('sendMessageBtn');
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            await this.messagingService.sendMessage(this.currentConversationId, message);
+            if (input) input.value = '';
+        } catch (error) {
+            console.error('Mesaj gönderme hatası:', error);
+            alert('Mesaj gönderilemedi: ' + error.message);
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    }
+
+    addMessageToUI(message) {
+        if (message.senderId !== this.currentConversationId && 
+            message.receiverId !== this.currentConversationId) {
+            return; // Bu conversation'a ait değil
+        }
+
+        const container = document.getElementById('messagesArea');
+        if (!container) return;
+
+        const currentUserId = this.messagingService.getCurrentUserId();
+        const isSent = message.senderId === currentUserId;
+        const time = this.formatTime(message.timestamp);
+        const userName = isSent ? 'Sen' : this.messagingService.getUserName(message.senderId);
+
+        const messageHTML = `
+            <div class="message ${isSent ? 'sent' : 'received'}">
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="message-content">${this.escapeHtml(message.message)}</div>
+                    <div class="message-time">${userName} • ${time}</div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', messageHTML);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+
+        if (diff < 60000) return 'Şimdi';
+        if (diff < 3600000) return Math.floor(diff / 60000) + ' dk önce';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + ' saat önce';
+        if (diff < 604800000) return Math.floor(diff / 86400000) + ' gün önce';
+        
+        return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    searchConversations(query) {
+        // Basit filtreleme
+        const items = document.querySelectorAll('.conversation-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(query.toLowerCase()) ? 'block' : 'none';
+        });
+    }
+
+    showNewMessageDialog() {
+        // Basit prompt (ileride modal ile değiştirilebilir)
+        const userId = prompt('Mesaj göndermek istediğiniz kullanıcının email adresini girin:');
+        if (userId) {
+            this.openConversation(userId);
+        }
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('messagingContainer')) {
+        window.messagingUIController = new MessagingUIController();
+    }
+});
+</script>
+
