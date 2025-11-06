@@ -11,6 +11,8 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const fs = require('fs');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 // Merkezi backend yapılandırması
 const { getBackendConfig, DEFAULT_BACKEND_PORT, validatePort } = require('../../config/backend-config');
@@ -168,6 +170,76 @@ const upload = multer({
   fileFilter: fileFilter
 });
 console.log('📁 Static files serving from:', rootDir);
+
+// ============================================
+// SWAGGER/OPENAPI DOCUMENTATION
+// ============================================
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'VideoSat API',
+      version: '1.0.0',
+      description: 'VideoSat E-Ticaret ve Canlı Yayın Platformu API Dokümantasyonu',
+      contact: {
+        name: 'VideoSat Team',
+        email: 'support@basvideo.com'
+      },
+      license: {
+        name: 'ISC',
+        url: 'https://basvideo.com'
+      }
+    },
+    servers: [
+      {
+        url: 'https://api.basvideo.com/api',
+        description: 'Production server'
+      },
+      {
+        url: 'http://localhost:3000/api',
+        description: 'Development server'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        },
+        adminToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'x-admin-token'
+        }
+      }
+    },
+    tags: [
+      { name: 'Health', description: 'Health check endpoints' },
+      { name: 'Rooms', description: 'Room management endpoints' },
+      { name: 'Messages', description: 'Messaging endpoints' },
+      { name: 'Payments', description: 'Payment processing endpoints' },
+      { name: 'Push Notifications', description: 'Push notification endpoints' },
+      { name: 'Errors', description: 'Error tracking endpoints' },
+      { name: 'Performance', description: 'Performance monitoring endpoints' },
+      { name: 'Admin', description: 'Admin endpoints' },
+      { name: 'Upload', description: 'File upload endpoints' },
+      { name: 'Search', description: 'Search endpoints' },
+      { name: 'Streams', description: 'Stream management endpoints' }
+    ]
+  },
+  apis: ['./app.js'] // Path to the API files
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'VideoSat API Documentation'
+}));
+
+console.log('📚 Swagger API Documentation: /api-docs');
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 let CURRENT_REGION = process.env.IVS_REGION || process.env.AWS_REGION || 'us-east-1';
