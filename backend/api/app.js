@@ -142,8 +142,14 @@ if (process.env.NODE_ENV === 'production') {
 // Security Middleware
 const { sanitizeInputs, csrfToken } = require('./middleware/security-middleware');
 
+// Monitoring Middleware
+const { requestMetrics, getMetrics } = require('./middleware/monitoring-middleware');
+
 // Input sanitization (XSS protection)
 app.use(sanitizeInputs);
+
+// Request metrics
+app.use(requestMetrics);
 
 // CSRF Token (opsiyonel - sadece gerekli endpoint'lerde kullanılabilir)
 // app.use(csrfToken);
@@ -3174,12 +3180,54 @@ app.get('/api/performance/summary', (req, res) => {
 });
 
 // ============================================
-// PUSH NOTIFICATION ROUTES
+// API VERSIONING
 // ============================================
+// API v1 routes
+const v1Routes = require('./routes/v1');
+app.use('/api/v1', v1Routes);
+
+// Backward compatibility - v1 routes without version prefix
+// Bu satırlar gelecekte kaldırılabilir (deprecated)
 const pushRoutes = require('./routes/push-routes');
 const authRoutes = require('./routes/auth-routes');
 app.use('/api/push', pushRoutes);
 app.use('/api/auth', authRoutes);
+
+// ============================================
+// METRICS ENDPOINT
+// ============================================
+/**
+ * @swagger
+ * /api/metrics:
+ *   get:
+ *     summary: Get application metrics
+ *     tags: [Monitoring]
+ *     description: Uygulama metriklerini getirir (requests, performance, uptime)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Metrics başarıyla getirildi
+ *       401:
+ *         description: Unauthorized
+ */
+app.get('/api/metrics', authenticateToken, (req, res) => {
+  // Admin veya monitoring role kontrolü eklenebilir
+  try {
+    const metrics = getMetrics();
+    res.json({
+      success: true,
+      data: metrics,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Metrics endpoint error', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Metrics alınırken bir hata oluştu.'
+    });
+  }
+});
 
 // ============================================
 // HEALTH CHECK ENDPOINT

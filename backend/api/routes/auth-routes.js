@@ -668,4 +668,173 @@ router.get('/verify-reset-token', async (req, res) => {
   }
 });
 
+// In-memory verification token storage (production'da DynamoDB kullanılmalı)
+const verificationTokens = new Map(); // key: token, value: { email, expiresAt }
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   post:
+ *     summary: Email doğrulama
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email başarıyla doğrulandı
+ *       400:
+ *         description: Geçersiz token
+ *       404:
+ *         description: Token bulunamadı veya süresi dolmuş
+ */
+router.post('/verify-email',
+  [
+    body('token')
+      .notEmpty()
+      .withMessage('Token gerekli')
+  ],
+  validateInput,
+  async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      // Token'ı kontrol et
+      const tokenData = verificationTokens.get(token);
+      if (!tokenData) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Geçersiz veya süresi dolmuş token.'
+        });
+      }
+
+      // Token süresi kontrolü
+      if (new Date(tokenData.expiresAt) < new Date()) {
+        verificationTokens.delete(token);
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Token süresi dolmuş.'
+        });
+      }
+
+      // Kullanıcıyı bul ve email'i doğrula
+      const user = await userService.getUser(tokenData.email);
+      if (!user) {
+        verificationTokens.delete(token);
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Kullanıcı bulunamadı.'
+        });
+      }
+
+      // Email'i doğrula (user objesine emailVerified field'ı eklenebilir)
+      user.emailVerified = true;
+      user.updatedAt = new Date().toISOString();
+      await userService.saveUser(user);
+
+      // Token'ı sil
+      verificationTokens.delete(token);
+
+      res.json({
+        success: true,
+        message: 'Email adresiniz başarıyla doğrulandı.'
+      });
+    } catch (error) {
+      console.error('Verify email error:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Email doğrulama sırasında bir hata oluştu.'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Email doğrulama linki yeniden gönder
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Doğrulama email'i gönderildi
+ */
+router.post('/resend-verification',
+  authLimiter,
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Geçerli bir email adresi gerekli')
+      .normalizeEmail()
+  ],
+  validateInput,
+  async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      // Kullanıcıyı bul
+      const user = await userService.getUser(email);
+      if (!user) {
+        // Güvenlik için: Kullanıcı yoksa da başarılı mesaj döndür
+        return res.json({
+          success: true,
+          message: 'Eğer bu email adresi kayıtlıysa, doğrulama bağlantısı gönderildi.'
+        });
+      }
+
+      // Verification token oluştur
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 saat
+
+      // Token'ı sakla
+      verificationTokens.set(verificationToken, {
+        email: user.email,
+        expiresAt: expiresAt.toISOString()
+      });
+
+      // Verification URL oluştur
+      const verificationUrl = `${process.env.FRONTEND_URL || 'https://basvideo.com'}/verify-email.html?token=${verificationToken}`;
+
+      // Email gönder (email service'e verification email fonksiyonu eklenebilir)
+      try {
+        // await emailService.sendVerificationEmail(user.email, verificationToken, verificationUrl);
+        console.log('Verification email would be sent to:', user.email);
+      } catch (emailError) {
+        console.error('Email gönderme hatası:', emailError);
+      }
+
+      res.json({
+        success: true,
+        message: 'Eğer bu email adresi kayıtlıysa, doğrulama bağlantısı gönderildi.'
+      });
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Doğrulama email'i gönderilirken bir hata oluştu.'
+      });
+    }
+  }
+);
+
 module.exports = router;
