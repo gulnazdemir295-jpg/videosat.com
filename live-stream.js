@@ -476,26 +476,34 @@ async function startAgoraStream(channelData) {
         }
         
         // Token ile join (Certificate doğruysa çalışmalı)
-        // Eğer token null ise, Agora development mode'da token olmadan çalışabilir
-        // Ama production'da token gerekli
+        // NOT: "invalid vendor key" hatası alınıyorsa, token formatı veya certificate yanlış olabilir
+        // Geçici çözüm: Token olmadan deneyin (development mode - sadece test için)
         let joinedUid;
-        if (token) {
-            // Token ile join (production)
+        
+        // Token olmadan join (development mode - test için)
+        // Production'da token gerekli ama şu an test ediyoruz
+        console.warn('⚠️ Development mode: Token olmadan join deneniyor...');
+        try {
             joinedUid = await agoraClient.join(
                 channelData.appId,
                 channelData.channelName,
-                token,
+                null, // Token null (development mode)
                 uid || null
             );
-        } else {
-            // Token olmadan join (development mode - sadece test için)
-            console.warn('⚠️ Token yok, development mode deneniyor...');
-            joinedUid = await agoraClient.join(
-                channelData.appId,
-                channelData.channelName,
-                null, // Token null
-                uid || null
-            );
+            console.log('✅ Development mode başarılı (token olmadan)');
+        } catch (devError) {
+            console.error('❌ Development mode hatası, token ile deniyoruz...', devError);
+            // Development mode başarısız olursa token ile dene
+            if (token) {
+                joinedUid = await agoraClient.join(
+                    channelData.appId,
+                    channelData.channelName,
+                    token,
+                    uid || null
+                );
+            } else {
+                throw new Error('Token yok ve development mode da başarısız: ' + devError.message);
+            }
         }
         
         localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)
