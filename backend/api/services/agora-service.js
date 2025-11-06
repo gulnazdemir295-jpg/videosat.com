@@ -28,24 +28,24 @@ function generateRtcToken(channelName, uid = 0, role = 1) {
   // UID'yi number'a çevir
   const uidNumber = typeof uid === 'string' ? parseInt(uid) || 0 : uid;
 
-  // Token Version 2 formatı
-  // Message: appId + channelName + uid (32-bit) + expire (32-bit) + salt (32-bit) + role (32-bit)
-  const messageBuffer = Buffer.alloc(4 + AGORA_APP_ID.length + channelName.length + 4 + 4 + 4 + 4);
+  // Token Version 2 formatı (Agora resmi format)
+  // Message: appId (string) + channelName (string) + uid (32-bit) + expire (32-bit) + salt (32-bit) + role (32-bit)
+  const messageBuffer = Buffer.alloc(AGORA_APP_ID.length + channelName.length + 4 + 4 + 4 + 4);
   let offset = 0;
   
-  // App ID
+  // App ID (string, UTF-8)
   messageBuffer.write(AGORA_APP_ID, offset, 'utf8');
   offset += AGORA_APP_ID.length;
   
-  // Channel Name
+  // Channel Name (string, UTF-8)
   messageBuffer.write(channelName, offset, 'utf8');
   offset += channelName.length;
   
-  // UID (32-bit)
+  // UID (32-bit, big-endian)
   messageBuffer.writeUInt32BE(uidNumber, offset);
   offset += 4;
   
-  // Expire timestamp (32-bit)
+  // Expire timestamp (32-bit, big-endian)
   messageBuffer.writeUInt32BE(expireTimestamp, offset);
   offset += 4;
   
@@ -54,11 +54,13 @@ function generateRtcToken(channelName, uid = 0, role = 1) {
   salt.copy(messageBuffer, offset);
   offset += 4;
   
-  // Role (32-bit)
+  // Role (32-bit, big-endian)
   messageBuffer.writeUInt32BE(role, offset);
   
-  // HMAC SHA256 signature
-  const signature = crypto.createHmac('sha256', Buffer.from(AGORA_APP_CERTIFICATE, 'utf8'))
+  // HMAC SHA256 signature (certificate ile)
+  // Certificate hex string olarak kullanılmalı
+  const certBuffer = Buffer.from(AGORA_APP_CERTIFICATE, 'hex');
+  const signature = crypto.createHmac('sha256', certBuffer)
     .update(messageBuffer)
     .digest();
 
