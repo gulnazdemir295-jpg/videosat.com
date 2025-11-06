@@ -121,24 +121,128 @@ function setupEventListeners() {
 // Authentication Functions
 function showLoginModal() {
     closeModal('registerModal');
-    document.getElementById('loginModal').style.display = 'block';
+    closeModal('adminLoginModal');
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        // Focus trap
+        trapFocus(modal);
+        // Add ESC key listener
+        addModalListeners(modal);
+    }
 }
 
 function showRegisterModal() {
     closeModal('loginModal');
-    document.getElementById('registerModal').style.display = 'block';
+    closeModal('adminLoginModal');
+    const modal = document.getElementById('registerModal');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        // Focus trap
+        trapFocus(modal);
+        // Add ESC key listener
+        addModalListeners(modal);
+    }
+}
+
+function showAdminLoginModal() {
+    closeModal('loginModal');
+    closeModal('registerModal');
+    const modal = document.getElementById('adminLoginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        // Focus trap
+        trapFocus(modal);
+        // Add ESC key listener
+        addModalListeners(modal);
+    }
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        // Remove listeners
+        removeModalListeners(modal);
     } else {
         // Fallback: close all modals
         document.querySelectorAll('.modal').forEach(m => {
             m.style.display = 'none';
+            m.setAttribute('aria-hidden', 'true');
+            removeModalListeners(m);
         });
     }
+}
+
+// Modal event listeners
+function addModalListeners(modal) {
+    // ESC key handler
+    const escHandler = (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModal(modal.id);
+        }
+    };
+    
+    // Click outside to close
+    const clickHandler = (e) => {
+        if (e.target === modal) {
+            closeModal(modal.id);
+        }
+    };
+    
+    modal._escHandler = escHandler;
+    modal._clickHandler = clickHandler;
+    
+    document.addEventListener('keydown', escHandler);
+    modal.addEventListener('click', clickHandler);
+}
+
+function removeModalListeners(modal) {
+    if (modal._escHandler) {
+        document.removeEventListener('keydown', modal._escHandler);
+        delete modal._escHandler;
+    }
+    if (modal._clickHandler) {
+        modal.removeEventListener('click', modal._clickHandler);
+        delete modal._clickHandler;
+    }
+}
+
+// Focus trap for accessibility
+function trapFocus(modal) {
+    const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    if (firstElement) {
+        firstElement.focus();
+    }
+    
+    // Trap focus within modal
+    const trapHandler = (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        }
+    };
+    
+    modal._trapHandler = trapHandler;
+    modal.addEventListener('keydown', trapHandler);
 }
 
 // Handle Admin Login
@@ -856,12 +960,8 @@ class WebRTCManager {
 // Initialize WebRTC Manager
 const webRTCManager = new WebRTCManager();
 
-// Admin Login Functions
-function showAdminLoginModal() {
-    closeModal('loginModal');
-    closeModal('registerModal');
-    document.getElementById('adminLoginModal').style.display = 'block';
-}
+// Admin Login Functions - Updated to use new modal system
+// showAdminLoginModal is already defined above with new features
 
 function switchToNormalLogin() {
     closeModal('adminLoginModal');

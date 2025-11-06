@@ -77,8 +77,48 @@ app.use(helmet({
       connectSrc: ["'self'", "https://api.basvideo.com", "https://basvideo.com", "wss:", "https://*.agora.io"]
     }
   },
-  crossOriginEmbedderPolicy: false // Agora SDK için gerekli
+  crossOriginEmbedderPolicy: false, // Agora SDK için gerekli
+  hsts: {
+    maxAge: 31536000, // 1 yıl
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: {
+    action: 'deny' // Clickjacking koruması
+  },
+  noSniff: true, // MIME type sniffing koruması
+  xssFilter: true, // XSS koruması (eski tarayıcılar için)
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  },
+  permittedCrossDomainPolicies: false,
+  expectCt: {
+    maxAge: 86400, // 24 saat
+    enforce: true
+  }
 }));
+
+// Ek Security Headers
+app.use((req, res, next) => {
+  // X-Powered-By header'ını kaldır (güvenlik için)
+  res.removeHeader('X-Powered-By');
+  
+  // Permissions Policy (Feature Policy)
+  res.setHeader('Permissions-Policy', 
+    'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
+  );
+  
+  // X-DNS-Prefetch-Control
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  
+  // X-Download-Options (IE8+)
+  res.setHeader('X-Download-Options', 'noopen');
+  
+  // X-Permitted-Cross-Domain-Policies
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  
+  next();
+});
 
 // Rate Limiting - API isteklerini sınırla
 const apiLimiter = rateLimit({
@@ -591,7 +631,7 @@ app.get('/api/admin/aws/verify', requireAdmin, async (req, res) => {
 });
 
 // Admin: add/update streamer minutes
-app.post('/api/admin/streamers/add', requireAdmin, (req, res) => {
+app.post('/api/admin/streamers/add', requireAdmin, async (req, res) => {
   const { email, minutes } = req.body || {};
   if (!email || !Number.isFinite(minutes)) return res.status(400).json({ error: 'email and minutes required' });
   const s = streamers.get(email) || { email, minutesPurchased: 0, minutesUsed: 0 };
@@ -1176,6 +1216,51 @@ app.post('/api/rooms/:roomId/join',
     */
   } catch (err) {
     return res.status(500).json({ error: 'join_room_failed', detail: String(err && err.message || err) });
+  }
+});
+
+// Token yenileme endpoint'i
+app.post('/api/rooms/:roomId/channels/:channelId/renew-token', async (req, res) => {
+  try {
+    const { roomId, channelId } = req.params;
+    const room = rooms.get(roomId);
+    
+    if (!room) {
+      return res.status(404).json({ ok: false, error: 'Room not found' });
+    }
+    
+    const channelData = room.channels.get(channelId);
+    if (!channelData) {
+      return res.status(404).json({ ok: false, error: 'Channel not found' });
+    }
+    
+    // Agora token yenile
+    if (channelData.provider === 'AGORA' && agoraService) {
+      const userId = channelData.webrtc?.uid || '0';
+      const role = 1; // Publisher role
+      
+      const newToken = agoraService.refreshToken(
+        channelData.channelName,
+        userId,
+        role
+      );
+      
+      // Channel data'yı güncelle
+      channelData.publisherToken = newToken;
+      channelData.webrtc.token = newToken;
+      channelData.lastActiveAt = new Date().toISOString();
+      
+      return res.json({
+        ok: true,
+        token: newToken,
+        channelName: channelData.channelName
+      });
+    }
+    
+    return res.status(400).json({ ok: false, error: 'Token yenileme desteklenmiyor' });
+  } catch (err) {
+    console.error('Token yenileme hatası:', err);
+    return res.status(500).json({ ok: false, error: String(err && err.message || err) });
   }
 });
 
@@ -3189,7 +3274,7 @@ app.use('/api/v1', v1Routes);
 // Backward compatibility - v1 routes without version prefix
 // Bu satırlar gelecekte kaldırılabilir (deprecated)
 const pushRoutes = require('./routes/push-routes');
-const authRoutes = require('./routes/auth-routes');
+// authRoutes zaten yukarıda tanımlı (satır 526)
 app.use('/api/push', pushRoutes);
 app.use('/api/auth', authRoutes);
 

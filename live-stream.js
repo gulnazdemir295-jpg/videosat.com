@@ -9,6 +9,7 @@ let agoraTracks = {
 };
 let isStreaming = false;
 let currentChannelId = null;
+let currentChannelData = null; // Channel data'yı sakla (token yenileme için)
 let currentUser = null;
 let likeCount = 0;
 let isLiked = false;
@@ -324,6 +325,7 @@ async function startStream() {
         }
         
         currentChannelId = data.channelId;
+        currentChannelData = data; // Channel data'yı sakla (token yenileme için)
         console.log('✅ Channel oluşturuldu:', currentChannelId);
         console.log('📦 Provider:', data.provider);
         
@@ -453,6 +455,34 @@ async function startAgoraStream(channelData) {
         
         agoraClient.on('exception', (evt) => {
             console.error('❌ Agora exception:', evt);
+        });
+        
+        // Token expire olmadan önce yenile (Agora SDK event)
+        agoraClient.on('token-privilege-will-expire', async () => {
+            console.log('⚠️ Token süresi dolmak üzere, yenileniyor...');
+            try {
+                await renewAgoraToken();
+                console.log('✅ Token başarıyla yenilendi');
+            } catch (error) {
+                console.error('❌ Token yenileme hatası:', error);
+                updateStatus('Token yenilenemedi. Yayın kesilebilir.');
+            }
+        });
+        
+        // Token expire olduğunda (fallback)
+        agoraClient.on('token-privilege-did-expire', async () => {
+            console.error('❌ Token süresi doldu! Yenileniyor...');
+            try {
+                await renewAgoraToken();
+                console.log('✅ Token başarıyla yenilendi (expire sonrası)');
+            } catch (error) {
+                console.error('❌ Token yenileme hatası:', error);
+                updateStatus('Token yenilenemedi. Yayın kesildi. Lütfen sayfayı yenileyin.');
+                // Yayını durdur
+                if (isStreaming) {
+                    await stopStream();
+                }
+            }
         });
         
         console.log('✅ Agora client oluşturuldu ve event listener\'lar eklendi');
@@ -585,6 +615,51 @@ async function startAWSIVSStream(channelData) {
     throw new Error('AWS IVS artık desteklenmiyor. Backend AGORA provider kullanmalı.');
 }
 
+// Renew Agora Token
+async function renewAgoraToken() {
+    if (!currentChannelData || !agoraClient) {
+        throw new Error('Channel data veya Agora client bulunamadı');
+    }
+    
+    try {
+        console.log('🔄 Token yenileniyor...');
+        
+        // Backend'den yeni token al
+        const roomId = 'main-room';
+        const response = await fetch(`${getAPIBaseURL()}/rooms/${roomId}/channels/${currentChannelId}/renew-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Token yenileme hatası: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.ok || !data.token) {
+            throw new Error('Yeni token alınamadı');
+        }
+        
+        // Yeni token'ı Agora client'a set et
+        const newToken = data.token;
+        await agoraClient.renewToken(newToken);
+        
+        // Channel data'yı güncelle
+        currentChannelData.webrtc.token = newToken;
+        currentChannelData.publisherToken = newToken;
+        
+        console.log('✅ Token başarıyla yenilendi');
+        return newToken;
+    } catch (error) {
+        console.error('❌ Token yenileme hatası:', error);
+        throw error;
+    }
+}
+
 // Stop Stream
 async function stopStream() {
     if (!isStreaming) {
@@ -633,6 +708,7 @@ async function stopStream() {
         
         isStreaming = false;
         currentChannelId = null;
+        currentChannelData = null; // Channel data'yı temizle
         updateLiveStatus('HAZIRLANIYOR');
         updateStatus('Yayın durduruldu');
         
