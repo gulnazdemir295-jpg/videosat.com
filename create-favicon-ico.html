@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+// Basit ICO oluşturucu
+const canvas = document.createElement('canvas');
+canvas.width = 32;
+canvas.height = 32;
+const ctx = canvas.getContext('2d');
+
+// Kırmızı arka plan
+ctx.fillStyle = '#dc2626';
+ctx.fillRect(0, 0, 32, 32);
+
+// Beyaz play button (üçgen)
+ctx.fillStyle = 'white';
+ctx.beginPath();
+ctx.moveTo(8, 8);
+ctx.lineTo(8, 24);
+ctx.lineTo(20, 16);
+ctx.closePath();
+ctx.fill();
+
+// Circle outline
+ctx.strokeStyle = 'white';
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.arc(16, 16, 12, 0, 2 * Math.PI);
+ctx.stroke();
+
+// Canvas'ı ICO formatına çevir (basit PNG olarak kaydet)
+const dataURL = canvas.toDataURL('image/png');
+console.log('Favicon oluşturuldu');
+</script>
+</head>
+</html>
