@@ -1726,6 +1726,11 @@ function getLocalIP() {
 }
 
 // ============================================
+// EMAIL SERVICE
+// ============================================
+const emailService = require('./services/email-service');
+
+// ============================================
 // MESSAGING API ENDPOINTS
 // ============================================
 
@@ -2464,6 +2469,146 @@ app.get('/api/performance/stats', requireAdmin, (req, res) => {
   } catch (err) {
     console.error('Get performance stats error:', err);
     res.status(500).json({ error: 'get_stats_failed', detail: String(err) });
+  }
+});
+
+// ============================================
+// EMAIL API ENDPOINTS
+// ============================================
+
+// POST /api/email/send - Send email
+app.post('/api/email/send', 
+  [
+    body('to')
+      .notEmpty()
+      .withMessage('Alıcı email gerekli')
+      .isEmail()
+      .withMessage('Geçerli bir email adresi gerekli'),
+    body('subject')
+      .notEmpty()
+      .withMessage('Konu gerekli')
+      .trim(),
+    body('text')
+      .optional()
+      .trim(),
+    body('html')
+      .optional()
+      .trim()
+  ],
+  apiLimiter,
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { to, subject, text, html } = req.body;
+      
+      const result = await emailService.sendEmail({
+        to,
+        subject,
+        text,
+        html
+      });
+
+      if (result.success) {
+        res.json({ ok: true, messageId: result.messageId });
+      } else {
+        res.status(500).json({ error: 'email_send_failed', detail: result.error });
+      }
+    } catch (error) {
+      console.error('Email send error:', error);
+      res.status(500).json({ error: 'email_send_failed', detail: error.message });
+    }
+  }
+);
+
+// POST /api/email/welcome - Send welcome email
+app.post('/api/email/welcome', apiLimiter, async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email gerekli' });
+    }
+
+    const result = await emailService.sendWelcomeEmail(email, name);
+
+    if (result.success) {
+      res.json({ ok: true, messageId: result.messageId });
+    } else {
+      res.status(500).json({ error: 'email_send_failed', detail: result.error });
+    }
+  } catch (error) {
+    console.error('Welcome email error:', error);
+    res.status(500).json({ error: 'email_send_failed', detail: error.message });
+  }
+});
+
+// POST /api/email/password-reset - Send password reset email
+app.post('/api/email/password-reset', apiLimiter, async (req, res) => {
+  try {
+    const { email, token, resetUrl } = req.body;
+    
+    if (!email || !token) {
+      return res.status(400).json({ error: 'Email ve token gerekli' });
+    }
+
+    const result = await emailService.sendPasswordResetEmail(email, token, resetUrl);
+
+    if (result.success) {
+      res.json({ ok: true, messageId: result.messageId });
+    } else {
+      res.status(500).json({ error: 'email_send_failed', detail: result.error });
+    }
+  } catch (error) {
+    console.error('Password reset email error:', error);
+    res.status(500).json({ error: 'email_send_failed', detail: error.message });
+  }
+});
+
+// POST /api/email/order-confirmation - Send order confirmation email
+app.post('/api/email/order-confirmation', apiLimiter, async (req, res) => {
+  try {
+    const { email, orderData } = req.body;
+    
+    if (!email || !orderData) {
+      return res.status(400).json({ error: 'Email ve orderData gerekli' });
+    }
+
+    const result = await emailService.sendOrderConfirmationEmail(email, orderData);
+
+    if (result.success) {
+      res.json({ ok: true, messageId: result.messageId });
+    } else {
+      res.status(500).json({ error: 'email_send_failed', detail: result.error });
+    }
+  } catch (error) {
+    console.error('Order confirmation email error:', error);
+    res.status(500).json({ error: 'email_send_failed', detail: error.message });
+  }
+});
+
+// POST /api/email/notification - Send notification email
+app.post('/api/email/notification', apiLimiter, async (req, res) => {
+  try {
+    const { email, notification } = req.body;
+    
+    if (!email || !notification) {
+      return res.status(400).json({ error: 'Email ve notification gerekli' });
+    }
+
+    const result = await emailService.sendNotificationEmail(email, notification);
+
+    if (result.success) {
+      res.json({ ok: true, messageId: result.messageId });
+    } else {
+      res.status(500).json({ error: 'email_send_failed', detail: result.error });
+    }
+  } catch (error) {
+    console.error('Notification email error:', error);
+    res.status(500).json({ error: 'email_send_failed', detail: error.message });
   }
 });
 
