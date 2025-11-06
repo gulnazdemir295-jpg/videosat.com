@@ -1969,6 +1969,232 @@ app.post('/api/payments/webhook', async (req, res) => {
 });
 
 // ============================================
+// ERROR TRACKING API ENDPOINTS
+// ============================================
+// In-memory error store (should be DynamoDB in production)
+const errorLogs = []; // { id, timestamp, message, filename, lineno, colno, stack, type, url, userAgent, userId, ... }
+const performanceLogs = []; // { id, timestamp, url, dns, tcp, request, response, dom, load, ... }
+
+// Track error
+app.post('/api/errors/track', apiLimiter, (req, res) => {
+  try {
+    const error = {
+      id: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date().toISOString(),
+      ...req.body
+    };
+    
+    errorLogs.push(error);
+    
+    // Keep only last 1000 errors
+    if (errorLogs.length > 1000) {
+      errorLogs.shift();
+    }
+    
+    // Log to console in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('🔴 Error tracked:', error.message, error.filename, error.lineno);
+    }
+    
+    res.json({ ok: true, id: error.id });
+  } catch (err) {
+    console.error('Error tracking error:', err);
+    res.status(500).json({ error: 'tracking_failed', detail: String(err) });
+  }
+});
+
+// Batch track errors
+app.post('/api/errors/batch', apiLimiter, (req, res) => {
+  try {
+    const { errors } = req.body || {};
+    
+    if (!Array.isArray(errors)) {
+      return res.status(400).json({ error: 'errors array required' });
+    }
+    
+    errors.forEach(error => {
+      const errorLog = {
+        id: error.id || `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: error.timestamp || new Date().toISOString(),
+        ...error
+      };
+      
+      errorLogs.push(errorLog);
+    });
+    
+    // Keep only last 1000 errors
+    while (errorLogs.length > 1000) {
+      errorLogs.shift();
+    }
+    
+    res.json({ ok: true, count: errors.length });
+  } catch (err) {
+    console.error('Batch error tracking error:', err);
+    res.status(500).json({ error: 'batch_tracking_failed', detail: String(err) });
+  }
+});
+
+// Get errors (admin only)
+app.get('/api/errors', requireAdmin, (req, res) => {
+  try {
+    const { limit = 100, offset = 0, type, userId } = req.query;
+    
+    let filtered = [...errorLogs];
+    
+    if (type) {
+      filtered = filtered.filter(e => e.type === type);
+    }
+    
+    if (userId) {
+      filtered = filtered.filter(e => e.userId === userId);
+    }
+    
+    // Sort by timestamp (newest first)
+    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    const paginated = filtered.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+    
+    res.json({
+      ok: true,
+      errors: paginated,
+      total: filtered.length,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (err) {
+    console.error('Get errors error:', err);
+    res.status(500).json({ error: 'get_errors_failed', detail: String(err) });
+  }
+});
+
+// Get error statistics
+app.get('/api/errors/stats', requireAdmin, (req, res) => {
+  try {
+    const stats = {
+      total: errorLogs.length,
+      byType: {},
+      byFile: {},
+      recent: errorLogs.slice(-10).reverse()
+    };
+    
+    errorLogs.forEach(error => {
+      stats.byType[error.type || 'unknown'] = (stats.byType[error.type || 'unknown'] || 0) + 1;
+      stats.byFile[error.filename || 'unknown'] = (stats.byFile[error.filename || 'unknown'] || 0) + 1;
+    });
+    
+    res.json({ ok: true, stats });
+  } catch (err) {
+    console.error('Get error stats error:', err);
+    res.status(500).json({ error: 'get_stats_failed', detail: String(err) });
+  }
+});
+
+// ============================================
+// PERFORMANCE TRACKING API ENDPOINTS
+// ============================================
+
+// Track performance
+app.post('/api/performance/track', apiLimiter, (req, res) => {
+  try {
+    const metric = {
+      id: `perf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date().toISOString(),
+      ...req.body
+    };
+    
+    performanceLogs.push(metric);
+    
+    // Keep only last 500 metrics
+    if (performanceLogs.length > 500) {
+      performanceLogs.shift();
+    }
+    
+    res.json({ ok: true, id: metric.id });
+  } catch (err) {
+    console.error('Performance tracking error:', err);
+    res.status(500).json({ error: 'tracking_failed', detail: String(err) });
+  }
+});
+
+// Batch track performance
+app.post('/api/performance/batch', apiLimiter, (req, res) => {
+  try {
+    const { metrics } = req.body || {};
+    
+    if (!Array.isArray(metrics)) {
+      return res.status(400).json({ error: 'metrics array required' });
+    }
+    
+    metrics.forEach(metric => {
+      const perfLog = {
+        id: metric.id || `perf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: metric.timestamp || new Date().toISOString(),
+        ...metric
+      };
+      
+      performanceLogs.push(perfLog);
+    });
+    
+    // Keep only last 500 metrics
+    while (performanceLogs.length > 500) {
+      performanceLogs.shift();
+    }
+    
+    res.json({ ok: true, count: metrics.length });
+  } catch (err) {
+    console.error('Batch performance tracking error:', err);
+    res.status(500).json({ error: 'batch_tracking_failed', detail: String(err) });
+  }
+});
+
+// Get performance metrics (admin only)
+app.get('/api/performance', requireAdmin, (req, res) => {
+  try {
+    const { limit = 100, offset = 0 } = req.query;
+    
+    // Sort by timestamp (newest first)
+    const sorted = [...performanceLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    const paginated = sorted.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+    
+    res.json({
+      ok: true,
+      metrics: paginated,
+      total: performanceLogs.length,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (err) {
+    console.error('Get performance error:', err);
+    res.status(500).json({ error: 'get_performance_failed', detail: String(err) });
+  }
+});
+
+// Get performance statistics
+app.get('/api/performance/stats', requireAdmin, (req, res) => {
+  try {
+    const loadTimes = performanceLogs
+      .filter(m => m.load)
+      .map(m => m.load);
+    
+    const stats = {
+      total: performanceLogs.length,
+      averageLoadTime: loadTimes.length > 0 
+        ? loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length 
+        : 0,
+      minLoadTime: loadTimes.length > 0 ? Math.min(...loadTimes) : 0,
+      maxLoadTime: loadTimes.length > 0 ? Math.max(...loadTimes) : 0,
+      recent: performanceLogs.slice(-10).reverse()
+    };
+    
+    res.json({ ok: true, stats });
+  } catch (err) {
+    console.error('Get performance stats error:', err);
+    res.status(500).json({ error: 'get_stats_failed', detail: String(err) });
+  }
+});
+
+// ============================================
 // STREAM CHAT, LIKES, INVITATIONS
 // ============================================
 
