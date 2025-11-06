@@ -1,30 +1,31 @@
 /**
  * Jest Configuration
- * VideoSat Backend API Test Configuration
+ * Test yapılandırma dosyası
  */
 
 module.exports = {
   // Test environment
   testEnvironment: 'node',
 
-  // Test file patterns
+  // Test dosyalarını bul
   testMatch: [
     '**/tests/**/*.test.js',
     '**/__tests__/**/*.js'
   ],
 
-  // Coverage settings
-  collectCoverage: false, // Set to true when running with --coverage
+  // Coverage ayarları
+  collectCoverage: false, // Default: false, --coverage ile açılır
   collectCoverageFrom: [
     '**/*.js',
     '!**/node_modules/**',
     '!**/tests/**',
     '!**/coverage/**',
-    '!app.js', // Main entry point, test separately
-    '!jest.config.js'
+    '!**/jest.config.js',
+    '!app.js', // Main app file excluded
+    '!**/*.config.js'
   ],
 
-  // Coverage thresholds
+  // Coverage threshold
   coverageThreshold: {
     global: {
       branches: 50,
@@ -34,18 +35,20 @@ module.exports = {
     }
   },
 
-  // Coverage paths to ignore
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/tests/',
-    '/coverage/',
-    'app.js'
+  // Coverage rapor formatları
+  coverageReporters: [
+    'text',
+    'lcov',
+    'html'
   ],
 
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
 
-  // Test timeout (30 seconds)
+  // Module paths
+  moduleDirectories: ['node_modules', '<rootDir>'],
+
+  // Test timeout
   testTimeout: 30000,
 
   // Verbose output
@@ -60,12 +63,29 @@ module.exports = {
   // Restore mocks between tests
   restoreMocks: true,
 
-  // Module paths
-  moduleDirectories: ['node_modules', '<rootDir>'],
+  // Coverage path ignore patterns
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/',
+    '/coverage/',
+    '/.git/'
+  ],
 
   // Transform ignore patterns
   transformIgnorePatterns: [
     '/node_modules/'
-  ]
-};
+  ],
 
+  // Module file extensions
+  moduleFileExtensions: ['js', 'json'],
+
+  // Test results processor
+  // testResultsProcessor: undefined,
+
+  // Globals
+  globals: {
+    'ts-jest': {
+      useESM: true
+    }
+  }
+};

@@ -1,0 +1,94 @@
+name: Code Quality Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  check-code:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: backend/api/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./backend/api
+        run: npm ci
+      
+      - name: Check for console.log statements
+        run: |
+          echo "Checking for console.log statements..."
+          if grep -r "console.log" backend/api --exclude-dir=node_modules --exclude-dir=tests --exclude="*.test.js"; then
+            echo "⚠️ Warning: console.log statements found. Consider using a logger."
+            echo "This is not a failure, but should be reviewed."
+          else
+            echo "✅ No console.log statements found"
+          fi
+        continue-on-error: true
+      
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Checking for TODO/FIXME comments..."
+          if grep -r "TODO\|FIXME" backend/api --exclude-dir=node_modules --exclude-dir=tests; then
+            echo "ℹ️ TODO/FIXME comments found. Review recommended."
+          else
+            echo "✅ No TODO/FIXME comments found"
+          fi
+        continue-on-error: true
+      
+      - name: Check file sizes
+        run: |
+          echo "Checking for large files..."
+          find backend/api -type f -size +500k ! -path "*/node_modules/*" ! -path "*/coverage/*" | while read file; do
+            echo "⚠️ Large file detected: $file"
+          done
+        continue-on-error: true
+
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: backend/api/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./backend/api
+        run: npm ci
+      
+      - name: Run tests with coverage
+        working-directory: ./backend/api
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          PORT: 3001
+      
+      - name: Check coverage threshold
+        working-directory: ./backend/api
+        run: |
+          echo "Coverage report generated"
+          if [ -f "coverage/lcov-report/index.html" ]; then
+            echo "✅ Coverage report available"
+          else
+            echo "⚠️ Coverage report not found"
+          fi
+        continue-on-error: true
+

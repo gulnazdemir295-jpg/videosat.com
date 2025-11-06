@@ -3,16 +3,11 @@
  * Tüm hataları yakalar ve standart formatta döner
  */
 
+const logger = require('../utils/logger');
+
 const errorHandler = (err, req, res, next) => {
-  // Log error
-  console.error('🚨 Error:', {
-    message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-    url: req.originalUrl,
-    method: req.method,
-    ip: req.ip,
-    timestamp: new Date().toISOString()
-  });
+  // Log error with Winston
+  logger.logError(err, req);
 
   // Default error
   let statusCode = err.statusCode || err.status || 500;

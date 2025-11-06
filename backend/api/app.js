@@ -23,6 +23,7 @@ const morgan = require('morgan');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const logger = require('./utils/logger');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const fs = require('fs');
@@ -130,7 +131,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '10mb' })); // Body size limit
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan('dev'));
+
+// HTTP request logging - Winston ile entegre
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined', { stream: logger.stream }));
+} else {
+  app.use(morgan('dev', { stream: logger.stream }));
+}
+
+// Security Middleware
+const { sanitizeInputs, csrfToken } = require('./middleware/security-middleware');
+
+// Input sanitization (XSS protection)
+app.use(sanitizeInputs);
+
+// CSRF Token (opsiyonel - sadece gerekli endpoint'lerde kullanılabilir)
+// app.use(csrfToken);
 
 // Static files serving (root directory - iki seviye yukarı)
 const rootDir = path.join(__dirname, '../..');
@@ -3050,21 +3066,27 @@ app.get('/api/streams', async (req, res) => {
 server.listen(PORT, HOST, () => {
   const localIP = getLocalIP();
   const config = getBackendConfig();
-  console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
-  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
-  console.log(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
-  console.log(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
-  console.log(`💬 Chat, beğeni ve davet sistemi aktif`);
-  console.log(`🔌 WebSocket Server aktif (Socket.io)`);
-  console.log(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
-  console.log(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
-  console.log(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);
+  
+  // Winston logger ile loglama
+  logger.info(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
+  logger.info(`🌐 API Base URL: http://localhost:${PORT}/api`);
+  logger.info(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
+  logger.info(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
+  logger.info(`💬 Chat, beğeni ve davet sistemi aktif`);
+  logger.info(`🔌 WebSocket Server aktif (Socket.io)`);
+  logger.info(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
+  logger.info(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
+  logger.info(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);
   
   // Port validasyon uyarısı
   if (PORT !== DEFAULT_BACKEND_PORT) {
-    console.log(`⚠️  Port ${PORT} kullanılıyor (Default: ${DEFAULT_BACKEND_PORT})`);
-    console.log(`   Frontend'in bu port'u kullanacak şekilde yapılandırıldığından emin olun!`);
+    logger.warn(`⚠️  Port ${PORT} kullanılıyor (Default: ${DEFAULT_BACKEND_PORT})`);
+    logger.warn(`   Frontend'in bu port'u kullanacak şekilde yapılandırıldığından emin olun!`);
   }
+  
+  // Console'a da yaz (backward compatibility)
+  console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
+  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
 });
 
 
