@@ -1,0 +1,346 @@
+/**
+ * Agora Live Streaming Enhancements CSS
+ * Network quality, stream health, and error handling UI styles
+ */
+
+/* Network Quality Indicator */
+.network-quality-indicator {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.network-quality-indicator.good {
+    border-left: 4px solid #10b981;
+}
+
+.network-quality-indicator.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.network-quality-indicator.bad {
+    border-left: 4px solid #ef4444;
+}
+
+.network-quality {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.network-quality .rtt,
+.network-quality .packet-loss {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-left: 8px;
+}
+
+/* Stream Health Metrics */
+.stream-health-metrics {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 12px;
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.stream-health-metrics .metric {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.stream-health-metrics .metric:last-child {
+    margin-bottom: 0;
+}
+
+.stream-health-metrics .label {
+    opacity: 0.8;
+}
+
+.stream-health-metrics .value {
+    font-weight: bold;
+    color: #10b981;
+}
+
+/* Stream Quality Indicator */
+.stream-quality {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+.stream-quality.high {
+    background: #10b981;
+}
+
+.stream-quality.medium {
+    background: #f59e0b;
+}
+
+.stream-quality.low {
+    background: #ef4444;
+}
+
+.stream-quality.auto {
+    background: #3b82f6;
+}
+
+/* Connection State */
+.connection-state {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.connection-state.disconnected {
+    background: #6b7280;
+    color: white;
+}
+
+.connection-state.connecting {
+    background: #f59e0b;
+    color: white;
+}
+
+.connection-state.connected {
+    background: #10b981;
+    color: white;
+}
+
+.connection-state.reconnecting {
+    background: #f59e0b;
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+.connection-state.failed {
+    background: #ef4444;
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Reconnection UI */
+.reconnection-status {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    z-index: 2000;
+    min-width: 300px;
+}
+
+.reconnection-status i {
+    font-size: 32px;
+    margin-bottom: 15px;
+    color: #f59e0b;
+}
+
+.reconnection-status span {
+    display: block;
+    font-size: 16px;
+}
+
+/* Reconnect Button */
+#reconnectBtn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2000;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#reconnectBtn:hover {
+    background: #b91c1c;
+}
+
+#reconnectBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Notification Container */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.notification {
+    background: white;
+    color: #1f2937;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid #3b82f6;
+}
+
+.notification.error {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.notification.warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.notification.info {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.notification.success {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.notification i {
+    font-size: 20px;
+}
+
+.notification.error i {
+    color: #ef4444;
+}
+
+.notification.warning i {
+    color: #f59e0b;
+}
+
+.notification.info i {
+    color: #3b82f6;
+}
+
+.notification.success i {
+    color: #10b981;
+}
+
+.notification span {
+    flex: 1;
+    font-size: 14px;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.notification-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .network-quality-indicator {
+        top: 60px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+        min-width: 120px;
+    }
+
+    .stream-health-metrics {
+        bottom: 10px;
+        right: 10px;
+        font-size: 11px;
+        padding: 10px;
+        min-width: 150px;
+    }
+
+    .notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .reconnection-status {
+        left: 10px;
+        right: 10px;
+        transform: translateY(-50%);
+        min-width: auto;
+    }
+
+    #reconnectBtn {
+        left: 10px;
+        right: 10px;
+        transform: translateY(-50%);
+        width: calc(100% - 20px);
+    }
+}
+

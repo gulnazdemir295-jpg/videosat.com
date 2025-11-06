@@ -487,6 +487,13 @@ async function startAgoraStream(channelData) {
         
         console.log('✅ Agora client oluşturuldu ve event listener\'lar eklendi');
         
+        // Enhanced features setup
+        if (window.agoraEnhancements) {
+            window.agoraEnhancements.setupNetworkQualityMonitoring(agoraClient);
+            window.agoraEnhancements.setupStreamInterruptionRecovery(agoraClient);
+            window.agoraEnhancements.setupEnhancedErrorHandling(agoraClient);
+        }
+        
         // Channel'a katıl - webrtc token kullan
         const token = channelData.webrtc?.token || channelData.publisherToken || null;
         const uid = channelData.webrtc?.uid || null;
@@ -598,6 +605,15 @@ async function startAgoraStream(channelData) {
             }
         } else {
             console.warn('⚠️ Audio track bulunamadı');
+        }
+        
+        // Stream health monitoring setup
+        if (window.agoraEnhancements) {
+            window.agoraEnhancements.setupStreamHealthMonitoring(
+                agoraClient,
+                agoraTracks.videoTrack,
+                agoraTracks.audioTrack
+            );
         }
         
         console.log('✅ Agora yayını başarıyla başlatıldı');
