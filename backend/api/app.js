@@ -2206,6 +2206,88 @@ server.listen(PORT, HOST, () => {
 
 
 // ============================================
+// ERROR TRACKING API ENDPOINTS
+// ============================================
+app.post('/api/errors/track', (req, res) => {
+  try {
+    const errorData = req.body;
+    
+    // Validate error data
+    if (!errorData.message && !errorData.type) {
+      return res.status(400).json({ error: 'Invalid error data' });
+    }
+    
+    // Log error (in production, save to database)
+    console.error('🚨 Error tracked:', {
+      id: errorData.id,
+      message: errorData.message,
+      type: errorData.type,
+      url: errorData.url,
+      timestamp: errorData.timestamp,
+      userId: errorData.userId
+    });
+    
+    // In production, save to DynamoDB or logging service
+    // For now, just log to console
+    
+    res.json({ success: true, errorId: errorData.id });
+  } catch (error) {
+    console.error('Error tracking endpoint error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/errors', (req, res) => {
+  // Admin only - get error statistics
+  // In production, fetch from database
+  res.json({ 
+    message: 'Error statistics endpoint',
+    note: 'In production, fetch from database'
+  });
+});
+
+// ============================================
+// PERFORMANCE MONITORING API ENDPOINTS
+// ============================================
+app.post('/api/performance/track', (req, res) => {
+  try {
+    const metricData = req.body;
+    
+    // Validate metric data
+    if (!metricData.type) {
+      return res.status(400).json({ error: 'Invalid metric data' });
+    }
+    
+    // Log metric (in production, save to database)
+    if (metricData.type === 'longTask' || metricData.type === 'pageLoad') {
+      console.log('📊 Performance metric:', {
+        type: metricData.type,
+        duration: metricData.duration || metricData.totalTime,
+        url: metricData.url,
+        timestamp: metricData.timestamp
+      });
+    }
+    
+    // In production, save to DynamoDB or monitoring service
+    // For now, just log to console
+    
+    res.json({ success: true, metricId: metricData.id });
+  } catch (error) {
+    console.error('Performance tracking endpoint error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/performance/summary', (req, res) => {
+  // Get performance summary
+  // In production, fetch from database
+  res.json({ 
+    message: 'Performance summary endpoint',
+    note: 'In production, fetch from database'
+  });
+});
+
+// ============================================
 // PUSH NOTIFICATION ROUTES
 // ============================================
 const pushRoutes = require('./routes/push-routes');
