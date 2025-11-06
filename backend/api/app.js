@@ -2204,3 +2204,9 @@ server.listen(PORT, HOST, () => {
 });
 
 
+
+// ============================================
+// PUSH NOTIFICATION ROUTES
+// ============================================
+const pushRoutes = require('./routes/push-routes');
+app.use('/api/push', pushRoutes);
