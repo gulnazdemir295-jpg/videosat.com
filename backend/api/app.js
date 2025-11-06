@@ -2396,6 +2396,172 @@ app.get('/api/performance/stats', requireAdmin, (req, res) => {
 });
 
 // ============================================
+// SEARCH API ENDPOINTS
+// ============================================
+
+// GET /api/search - Global search
+app.get('/api/search', apiLimiter, async (req, res) => {
+  try {
+    const { q, type = 'all', limit = 20, offset = 0 } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+      return res.json({ results: [], total: 0, query: q });
+    }
+    
+    const query = q.trim().toLowerCase();
+    const results = [];
+    
+    // Search in different types
+    if (type === 'all' || type === 'products') {
+      // Search products (in-memory or DynamoDB)
+      // For now, return empty - should be implemented with DynamoDB
+    }
+    
+    if (type === 'all' || type === 'users') {
+      // Search users
+      const usersList = Array.from(users.values())
+        .filter(u => 
+          u.email?.toLowerCase().includes(query) ||
+          u.name?.toLowerCase().includes(query)
+        )
+        .slice(parseInt(offset), parseInt(offset) + parseInt(limit))
+        .map(u => ({
+          type: 'user',
+          id: u.email,
+          title: u.name || u.email,
+          description: u.email,
+          url: `/users/${u.email}`
+        }));
+      
+      results.push(...usersList);
+    }
+    
+    if (type === 'all' || type === 'orders') {
+      // Search orders (from payments)
+      const ordersList = Array.from(payments.values())
+        .filter(p => 
+          p.orderId?.toLowerCase().includes(query) ||
+          p.customer?.email?.toLowerCase().includes(query)
+        )
+        .slice(parseInt(offset), parseInt(offset) + parseInt(limit))
+        .map(p => ({
+          type: 'order',
+          id: p.orderId,
+          title: `Sipariş #${p.orderId}`,
+          description: `Tutar: ${p.amount} ${p.currency}`,
+          url: `/orders/${p.orderId}`
+        }));
+      
+      results.push(...ordersList);
+    }
+    
+    res.json({
+      ok: true,
+      results,
+      total: results.length,
+      query: q,
+      type
+    });
+  } catch (err) {
+    console.error('Search error:', err);
+    res.status(500).json({ error: 'search_failed', detail: String(err) });
+  }
+});
+
+// GET /api/search/advanced - Advanced search with filters
+app.get('/api/search/advanced', apiLimiter, async (req, res) => {
+  try {
+    const { 
+      q, 
+      type = 'all', 
+      category,
+      minPrice,
+      maxPrice,
+      dateFrom,
+      dateTo,
+      sortBy = 'relevance',
+      sortOrder = 'desc',
+      limit = 20,
+      offset = 0 
+    } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+      return res.json({ results: [], total: 0 });
+    }
+    
+    const query = q.trim().toLowerCase();
+    let results = [];
+    
+    // Basic search (same as /api/search)
+    // Apply filters
+    if (type === 'all' || type === 'products') {
+      // Filter by category, price, etc.
+      // For now, return empty - should be implemented with DynamoDB
+    }
+    
+    // Sort results
+    if (sortBy === 'date') {
+      results.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      });
+    } else if (sortBy === 'name') {
+      results.sort((a, b) => {
+        const nameA = (a.title || '').toLowerCase();
+        const nameB = (b.title || '').toLowerCase();
+        return sortOrder === 'asc' 
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      });
+    }
+    
+    res.json({
+      ok: true,
+      results: results.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
+      total: results.length,
+      query: q
+    });
+  } catch (err) {
+    console.error('Advanced search error:', err);
+    res.status(500).json({ error: 'advanced_search_failed', detail: String(err) });
+  }
+});
+
+// GET /api/search/suggestions - Search suggestions
+app.get('/api/search/suggestions', apiLimiter, async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length < 2) {
+      return res.json({ suggestions: [] });
+    }
+    
+    const query = q.trim().toLowerCase();
+    const suggestions = [];
+    
+    // Get suggestions from users
+    const userSuggestions = Array.from(users.values())
+      .filter(u => u.email?.toLowerCase().includes(query))
+      .slice(0, 5)
+      .map(u => ({
+        text: u.email,
+        type: 'user'
+      }));
+    
+    suggestions.push(...userSuggestions);
+    
+    res.json({
+      ok: true,
+      suggestions: suggestions.slice(0, 10)
+    });
+  } catch (err) {
+    console.error('Get suggestions error:', err);
+    res.status(500).json({ error: 'suggestions_failed', detail: String(err) });
+  }
+});
+
+// ============================================
 // STREAM CHAT, LIKES, INVITATIONS
 // ============================================
 
