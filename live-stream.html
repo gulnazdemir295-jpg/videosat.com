@@ -225,9 +225,135 @@
             cursor: pointer;
         }
 
+        /* Mobile Responsive Styles */
         @media (max-width: 1024px) {
             .main-content {
                 grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                margin-top: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .live-badge {
+                font-size: 0.875rem;
+                padding: 8px 16px;
+            }
+            
+            .video-container {
+                min-height: 300px;
+            }
+            
+            .video-container video {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls .btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .card h3 {
+                font-size: 1.125rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-group input {
+                width: 100%;
+            }
+            
+            .input-group button {
+                width: 100%;
+            }
+            
+            .messages {
+                max-height: 200px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .header h1 i {
+                font-size: 1.25rem;
+            }
+            
+            .live-badge {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            
+            .video-container {
+                min-height: 250px;
+            }
+            
+            .status-info {
+                padding: 15px;
+                font-size: 0.875rem;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .messages {
+                max-height: 150px;
+                font-size: 0.875rem;
+            }
+            
+            .btn {
+                font-size: 0.875rem;
+                padding: 10px;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px; /* iOS touch target size */
+                min-width: 44px;
+            }
+            
+            .input-group input {
+                min-height: 44px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .input-group button {
+                min-height: 44px;
             }
         }
     </style>
