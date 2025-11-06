@@ -501,6 +501,15 @@ async function startAgoraStream(channelData) {
         localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)
         console.log('✅ Agora channel\'a katıldı, UID:', localAgoraUid);
         
+        // Live mode için client role set et (yayıncı olarak 'host' role'ü)
+        // WebRTC uyumluluğu için gerekli
+        try {
+            await agoraClient.setClientRole('host');
+            console.log('✅ Client role set edildi: host (yayıncı)');
+        } catch (roleError) {
+            console.warn('⚠️ Client role set edilemedi (devam ediliyor):', roleError);
+        }
+        
         // Kısa bir gecikme ekle (event listener'ların hazır olması için)
         await new Promise(resolve => setTimeout(resolve, 100));
         
