@@ -370,7 +370,16 @@ async function startStream() {
             startBtn.innerHTML = '<i class="fas fa-play"></i> Yayını Başlat';
         }
         
-        alert('Yayın başlatılamadı:\n\n' + error.message + '\n\nLütfen konsolu kontrol edin (F12).');
+        // Use error handler if available for better error messages
+        if (window.agoraErrorHandler) {
+            const errorResult = window.agoraErrorHandler.handleError(error, {
+                type: 'stream-start',
+                source: 'stream-manager'
+            });
+            alert('Yayın başlatılamadı:\n\n' + errorResult.userMessage + '\n\nLütfen konsolu kontrol edin (F12).');
+        } else {
+            alert('Yayın başlatılamadı:\n\n' + error.message + '\n\nLütfen konsolu kontrol edin (F12).');
+        }
     }
 }
 
@@ -455,6 +464,13 @@ async function startAgoraStream(channelData) {
         
         agoraClient.on('exception', (evt) => {
             console.error('❌ Agora exception:', evt);
+            // Use error handler if available
+            if (window.agoraErrorHandler) {
+                window.agoraErrorHandler.handleError(evt, {
+                    type: 'exception',
+                    source: 'agora-client'
+                });
+            }
         });
         
         // Token expire olmadan önce yenile (Agora SDK event)
@@ -620,6 +636,13 @@ async function startAgoraStream(channelData) {
         
     } catch (error) {
         console.error('❌ Agora yayın hatası:', error);
+        // Use error handler if available
+        if (window.agoraErrorHandler) {
+            window.agoraErrorHandler.handleError(error, {
+                type: 'stream-start',
+                source: 'agora-stream'
+            });
+        }
         throw error;
     }
 }

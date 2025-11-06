@@ -494,14 +494,19 @@ function setupEnhancedErrorHandling(agoraClient) {
     agoraClient.on('exception', (evt) => {
         console.error('❌ Agora exception:', evt);
         
-        const errorMessage = getErrorMessage(evt);
-        streamHealthMetrics.lastError = errorMessage;
-
-        // Show user-friendly error
-        showErrorToUser(errorMessage, evt);
-
-        // Log error
-        logError('AgoraException', evt);
+        // Use error handler if available
+        if (window.agoraErrorHandler) {
+            window.agoraErrorHandler.handleError(evt, {
+                type: 'exception',
+                source: 'agora-client'
+            });
+        } else {
+            // Fallback to old method
+            const errorMessage = getErrorMessage(evt);
+            streamHealthMetrics.lastError = errorMessage;
+            showErrorToUser(errorMessage, evt);
+            logError('AgoraException', evt);
+        }
     });
 
     // Stream fallback
