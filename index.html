@@ -6,6 +6,12 @@
     <title>VideoSat - E-Ticaret Canlı Yayın Platformu</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VideoSat">
     <!-- Merkezi Backend Config -->
     <script src="config/backend-config.js"></script>
 </head>
@@ -34,6 +40,7 @@
                     'app.min.js',
                     'services/i18n-service.js',
                     'services/language-selector-loader.js',
+                    'services/pwa-service.js',
                     'services/payment-service.min.js',
                     'services/order-service.min.js',
                     'services/notification-service.js',
