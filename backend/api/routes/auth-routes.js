@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
+// Enhanced rate limiting (Redis-backed, distributed)
+const {
+  authLimiter: enhancedAuthLimiter
+} = require('../middleware/enhanced-rate-limiting');
 const {
   generateToken,
   generateRefreshToken,
@@ -15,13 +19,21 @@ const emailService = require('../services/email-service');
 const router = express.Router();
 
 // Rate limiting - Auth endpoint'leri için daha sıkı
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 dakika
-  max: 5, // Her IP için 15 dakikada maksimum 5 istek
-  message: 'Çok fazla giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.',
-  standardHeaders: true,
-  legacyHeaders: false
-});
+// Enhanced rate limiting kullan (Redis-backed), fallback olarak memory-based
+let authLimiter;
+try {
+  authLimiter = enhancedAuthLimiter;
+} catch (error) {
+  // Fallback: Memory-based rate limiting
+  authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 dakika
+    max: 5, // Her IP için 15 dakikada maksimum 5 istek
+    message: 'Çok fazla giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true // Başarılı login'leri sayma
+  });
+}
 
 // Input validation helper
 function validateInput(req, res, next) {

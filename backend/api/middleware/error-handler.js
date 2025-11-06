@@ -4,6 +4,7 @@
  */
 
 const logger = require('../utils/logger');
+const { sendErrorAlert, sendCriticalAlert } = require('./error-alerting');
 
 const errorHandler = (err, req, res, next) => {
   // Log error with Winston
@@ -13,6 +14,29 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal Server Error';
   let errors = err.errors || null;
+
+  // Production'da critical error'lar için alert gönder
+  if (process.env.NODE_ENV === 'production') {
+    // 500+ hatalar için critical alert
+    if (statusCode >= 500) {
+      sendCriticalAlert(err, {
+        method: req.method,
+        path: req.path,
+        query: req.query,
+        userId: req.user?.email || 'anonymous',
+        ip: req.ip || req.connection.remoteAddress
+      });
+    } else if (statusCode >= 400) {
+      // 400+ hatalar için normal alert (threshold ile)
+      sendErrorAlert(err, {
+        method: req.method,
+        path: req.path,
+        query: req.query,
+        userId: req.user?.email || 'anonymous',
+        ip: req.ip || req.connection.remoteAddress
+      });
+    }
+  }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {

@@ -23,6 +23,15 @@ const morgan = require('morgan');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+// Enhanced rate limiting (Redis-backed, distributed)
+const {
+  apiLimiter: enhancedApiLimiter,
+  strictLimiter: enhancedStrictLimiter,
+  authLimiter: enhancedAuthLimiter,
+  userLimiter: enhancedUserLimiter,
+  uploadLimiter: enhancedUploadLimiter,
+  searchLimiter: enhancedSearchLimiter
+} = require('./middleware/enhanced-rate-limiting');
 const logger = require('./utils/logger');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
@@ -120,20 +129,31 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate Limiting - API isteklerini sınırla
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 dakika
-  max: 100, // Her IP için 15 dakikada maksimum 100 istek
-  message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.',
-  standardHeaders: true,
-  legacyHeaders: false
-});
+// Rate Limiting - Enhanced rate limiting kullan (Redis-backed, distributed)
+// Fallback: Eğer enhanced rate limiting yüklenemezse eski versiyonu kullan
+let apiLimiter, strictLimiter;
 
-const strictLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 dakika
-  max: 10, // Kritik endpoint'ler için daha sıkı limit
-  message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.'
-});
+try {
+  // Enhanced rate limiting (Redis-backed, distributed)
+  apiLimiter = enhancedApiLimiter;
+  strictLimiter = enhancedStrictLimiter;
+  logger.info('✅ Enhanced rate limiting aktif (Redis-backed)');
+} catch (error) {
+  // Fallback: Memory-based rate limiting
+  logger.warn('⚠️  Enhanced rate limiting yüklenemedi, memory-based rate limiting kullanılıyor');
+  apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 dakika
+    max: 100, // Her IP için 15 dakikada maksimum 100 istek
+    message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.',
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+  strictLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 dakika
+    max: 10, // Kritik endpoint'ler için daha sıkı limit
+    message: 'Çok fazla istek gönderildi, lütfen daha sonra tekrar deneyin.'
+  });
+}
 
 // Tüm API endpoint'lerine rate limiting uygula
 app.use('/api/', apiLimiter);
@@ -2759,7 +2779,7 @@ app.post('/api/email/notification', apiLimiter, async (req, res) => {
 // ============================================
 
 // GET /api/search - Global search
-app.get('/api/search', apiLimiter, async (req, res) => {
+app.get('/api/search', enhancedSearchLimiter || apiLimiter, async (req, res) => {
   try {
     const { q, type = 'all', limit = 20, offset = 0 } = req.query;
     
@@ -2847,7 +2867,7 @@ app.get('/api/search', apiLimiter, async (req, res) => {
 });
 
 // GET /api/search/advanced - Advanced search with filters
-app.get('/api/search/advanced', apiLimiter, async (req, res) => {
+app.get('/api/search/advanced', enhancedSearchLimiter || apiLimiter, async (req, res) => {
   try {
     const { 
       q, 
@@ -2907,7 +2927,7 @@ app.get('/api/search/advanced', apiLimiter, async (req, res) => {
 });
 
 // GET /api/search/suggestions - Search suggestions
-app.get('/api/search/suggestions', apiLimiter, async (req, res) => {
+app.get('/api/search/suggestions', enhancedSearchLimiter || apiLimiter, async (req, res) => {
   try {
     const { q } = req.query;
     
