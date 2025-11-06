@@ -1275,12 +1275,8 @@ section {
     .btn {
         min-height: 44px; /* iOS touch target */
         padding: 0.75rem 1rem;
-    }
         font-size: 1rem;
     }
-    
-    .nav-logo i {
-        font-size: 1.25rem;
     }
     
     .hero {
