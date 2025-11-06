@@ -10,7 +10,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 
 // Merkezi backend yapılandırması
