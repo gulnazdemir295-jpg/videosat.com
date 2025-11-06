@@ -1277,7 +1277,6 @@ section {
         padding: 0.75rem 1rem;
         font-size: 1rem;
     }
-    }
     
     .hero {
         padding: 5rem 0 2rem;
@@ -1460,4 +1459,25 @@ section {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark); /* Koyu kırmızı hover */
+}
+/* Touch-friendly improvements for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+    .btn { min-height: 44px; min-width: 44px; }
+    .nav-link { min-height: 44px; display: flex; align-items: center; }
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], textarea, select { font-size: 16px !important; }
+    .card { padding: 1.25rem; }
+    a, button { -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3); }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero { padding: 2rem 1rem; }
+    .modal-content { max-height: 85vh; }
+    .video-container { max-height: 50vh; }
+}
+
+/* Print styles */
+@media print {
+    .navbar, .footer, .btn, .modal { display: none !important; }
+    body { background: white; color: black; }
 }
