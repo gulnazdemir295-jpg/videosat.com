@@ -53,13 +53,54 @@ echo "✅ basvideo-channels tablosu oluşturuldu"
 # Payments Table
 aws dynamodb create-table \
   --table-name basvideo-payments \
-  --attribute-definitions AttributeName=paymentId,AttributeType=S \
+  --attribute-definitions AttributeName=paymentId,AttributeType=S AttributeName=userId,AttributeType=S AttributeName=status,AttributeType=S \
   --key-schema AttributeName=paymentId,KeyType=HASH \
+  --global-secondary-indexes \
+    "[{
+      \"IndexName\": \"userId-index\",
+      \"KeySchema\": [
+        {\"AttributeName\": \"userId\", \"KeyType\": \"HASH\"}
+      ],
+      \"Projection\": {
+        \"ProjectionType\": \"ALL\"
+      }
+    }, {
+      \"IndexName\": \"userId-status-index\",
+      \"KeySchema\": [
+        {\"AttributeName\": \"userId\", \"KeyType\": \"HASH\"},
+        {\"AttributeName\": \"status\", \"KeyType\": \"RANGE\"}
+      ],
+      \"Projection\": {
+        \"ProjectionType\": \"ALL\"
+      }
+    }]" \
   --billing-mode PAY_PER_REQUEST \
   --region $REGION \
   --no-cli-pager
 
 echo "✅ basvideo-payments tablosu oluşturuldu"
+
+# Messages Table
+aws dynamodb create-table \
+  --table-name basvideo-messages \
+  --attribute-definitions AttributeName=messageId,AttributeType=S AttributeName=senderId,AttributeType=S AttributeName=receiverId,AttributeType=S \
+  --key-schema AttributeName=messageId,KeyType=HASH \
+  --global-secondary-indexes \
+    "[{
+      \"IndexName\": \"senderId-receiverId-index\",
+      \"KeySchema\": [
+        {\"AttributeName\": \"senderId\", \"KeyType\": \"HASH\"},
+        {\"AttributeName\": \"receiverId\", \"KeyType\": \"RANGE\"}
+      ],
+      \"Projection\": {
+        \"ProjectionType\": \"ALL\"
+      }
+    }]" \
+  --billing-mode PAY_PER_REQUEST \
+  --region $REGION \
+  --no-cli-pager
+
+echo "✅ basvideo-messages tablosu oluşturuldu"
 
 echo ""
 echo "🎉 Tüm tablolar oluşturuldu!"

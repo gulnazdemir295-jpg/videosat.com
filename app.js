@@ -11,16 +11,43 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Initialize Application
-function initializeApp() {
+async function initializeApp() {
     console.log('VideoSat Platform Initialized');
     
-    // Check if user is logged in from localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        isLoggedIn = true;
-        userRole = currentUser.role;
-        updateUIForLoggedInUser();
+    // Check if user is logged in using new auth service
+    if (window.authService) {
+        const verifyResult = await authService.verifyToken();
+        if (verifyResult.authenticated && verifyResult.user) {
+            currentUser = verifyResult.user;
+            isLoggedIn = true;
+            userRole = verifyResult.user.role;
+            updateUIForLoggedInUser();
+            console.log('✅ Kullanıcı oturumu doğrulandı:', currentUser.email);
+        } else {
+            // Eski sistem uyumluluğu - localStorage'dan kontrol et
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    currentUser = user;
+                    isLoggedIn = true;
+                    userRole = user.role;
+                    updateUIForLoggedInUser();
+                    console.log('⚠️ Eski sistem kullanıcı bilgisi yüklendi:', user.email);
+                } catch (e) {
+                    console.error('Eski kullanıcı bilgisi parse edilemedi:', e);
+                }
+            }
+        }
+    } else {
+        // Auth service henüz yüklenmemiş, eski sistemi kullan
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            isLoggedIn = true;
+            userRole = currentUser.role;
+            updateUIForLoggedInUser();
+        }
     }
 }
 
@@ -262,46 +289,74 @@ async function handleLogin(e) {
     try {
         console.log(`🔐 Giriş denemesi: ${email}`);
         
-        // Şifreyi hash'le
-        const passwordHash = await sha256(password);
-        console.log(`🔑 Şifre hash'lendi: ${passwordHash.substring(0, 10)}...`);
-        
-        // User veritabanını al
-        let users = JSON.parse(localStorage.getItem('users') || '[]');
-        console.log(`👥 Toplam kullanıcı sayısı: ${users.length}`);
-        
-        // Kullanıcıyı bul
-        const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
-        
-        if (!user) {
-            errorMessage = 'E-posta ya da şifre hatalı!';
-            console.log(`❌ Kullanıcı bulunamadı: ${email}`);
+        // Yeni auth service ile giriş yap
+        if (window.authService) {
+            const result = await authService.login(email, password);
             
-            // Debug: Kullanıcıları listele
-            console.log('📋 Mevcut kullanıcılar:', users.map(u => ({ email: u.email, role: u.role })));
+            if (result.success) {
+                // Kullanıcı bilgilerini ayarla
+                currentUser = result.user;
+                isLoggedIn = true;
+                userRole = result.user.role;
+                
+                // Eski sistem uyumluluğu için localStorage'a da kaydet
+                localStorage.setItem('currentUser', JSON.stringify({
+                    ...result.user,
+                    email: result.user.email,
+                    role: result.user.role,
+                    companyName: result.user.companyName
+                }));
+                
+                loginSuccess = true;
+                
+                // Close modal and redirect to dashboard
+                closeModal('loginModal');
+                showAlert('Başarıyla giriş yaptınız!', 'success');
+                
+                // Redirect to appropriate dashboard
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+            } else {
+                errorMessage = result.message || 'E-posta ya da şifre hatalı!';
+                showAlert(errorMessage, 'error');
+            }
+        } else {
+            // Fallback: Eski sistem (localStorage)
+            console.warn('⚠️ Auth service bulunamadı, eski sistem kullanılıyor');
             
-            showAlert(errorMessage, 'error');
-            return;
+            // Şifreyi hash'le
+            const passwordHash = await sha256(password);
+            
+            // User veritabanını al
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            // Kullanıcıyı bul
+            const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
+            
+            if (!user) {
+                errorMessage = 'E-posta ya da şifre hatalı!';
+                showAlert(errorMessage, 'error');
+                return;
+            }
+            
+            // currentUser olarak ayarla
+            currentUser = user;
+            isLoggedIn = true;
+            userRole = user.role;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            loginSuccess = true;
+            
+            // Close modal and redirect to dashboard
+            closeModal('loginModal');
+            showAlert('Başarıyla giriş yaptınız!', 'success');
+            
+            // Redirect to appropriate dashboard
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
         }
-        
-        console.log(`✅ Kullanıcı bulundu: ${user.email} (${user.role})`);
-        
-        // currentUser olarak ayarla
-        currentUser = user;
-        isLoggedIn = true;
-        userRole = user.role;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        loginSuccess = true;
-        
-        // Close modal and redirect to dashboard
-        closeModal('loginModal');
-        showAlert('Başarıyla giriş yaptınız!', 'success');
-        
-        // Redirect to appropriate dashboard
-        setTimeout(() => {
-            redirectToDashboard();
-        }, 1000);
         
     } catch(err) {
         errorMessage = 'Giriş sırasında bir hata oluştu: ' + err.message;
@@ -324,20 +379,10 @@ async function handleRegister(e) {
     
     const role = document.getElementById('userRole').value;
     const companyName = document.getElementById('companyName').value;
-    const email = document.getElementById('registerEmail').value;
+    const email = document.getElementById('registerEmail').value.trim().toLowerCase();
     const phone = document.getElementById('phone').value;
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    // Generate member number
-    const generateMemberNumber = () => {
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-        return `${timestamp}-${random}`;
-    };
-    
-    // Şifreyi hash'le
-    const passwordHash = await sha256(password);
     
     // Validation
     if (!role || !companyName || !email || !phone || !password || !confirmPassword) {
@@ -362,49 +407,110 @@ async function handleRegister(e) {
     submitBtn.disabled = true;
     
     try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Create new user
-        const newUser = {
-            id: Date.now(),
-            email: email,
-            role: role,
-            companyName: companyName,
-            phone: phone,
-            memberNumber: generateMemberNumber(),
-            createdAt: new Date().toISOString(),
-            isActive: true,
-            passwordHash // Sadece hash kaydet
-        };
-        
-        // Ayrıca tüm kullanıcıları 'users' altında tutarak sonraki girişte hash kontrolü yapabilmek için:
-        let users = JSON.parse(localStorage.getItem('users')||'[]');
-        users = users.filter(u => u.email !== newUser.email).concat([newUser]);
-        localStorage.setItem('users', JSON.stringify(users));
-        
-        // Save user data
-        currentUser = newUser;
-        isLoggedIn = true;
-        userRole = newUser.role;
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-        
-        // Close modal and redirect to dashboard
-        closeModal('registerModal');
-        showAlert('Başarıyla kayıt oldunuz!', 'success');
-        
-        // Redirect to appropriate dashboard
-        setTimeout(() => {
-            redirectToDashboard();
-        }, 1000);
+        // Yeni auth service ile kayıt yap
+        if (window.authService) {
+            const result = await authService.register({
+                email,
+                password,
+                companyName,
+                role,
+                phone,
+                address: '' // Address field yoksa boş bırak
+            });
+            
+            if (result.success) {
+                // Kullanıcı bilgilerini ayarla
+                currentUser = result.user;
+                isLoggedIn = true;
+                userRole = result.user.role;
+                
+                // Eski sistem uyumluluğu için localStorage'a da kaydet
+                localStorage.setItem('currentUser', JSON.stringify({
+                    ...result.user,
+                    email: result.user.email,
+                    role: result.user.role,
+                    companyName: result.user.companyName,
+                    phone: phone,
+                    id: Date.now(),
+                    memberNumber: generateMemberNumber(),
+                    createdAt: new Date().toISOString(),
+                    isActive: true
+                }));
+                
+                // Close modal and redirect to dashboard
+                closeModal('registerModal');
+                showAlert('Başarıyla kayıt oldunuz!', 'success');
+                
+                // Redirect to appropriate dashboard
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+            } else {
+                showAlert(result.message || 'Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+            }
+        } else {
+            // Fallback: Eski sistem (localStorage)
+            console.warn('⚠️ Auth service bulunamadı, eski sistem kullanılıyor');
+            
+            // Generate member number
+            const generateMemberNumber = () => {
+                const timestamp = Date.now().toString(36).toUpperCase();
+                const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+                return `${timestamp}-${random}`;
+            };
+            
+            // Şifreyi hash'le
+            const passwordHash = await sha256(password);
+            
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                email: email,
+                role: role,
+                companyName: companyName,
+                phone: phone,
+                memberNumber: generateMemberNumber(),
+                createdAt: new Date().toISOString(),
+                isActive: true,
+                passwordHash // Sadece hash kaydet
+            };
+            
+            // Ayrıca tüm kullanıcıları 'users' altında tutarak sonraki girişte hash kontrolü yapabilmek için:
+            let users = JSON.parse(localStorage.getItem('users')||'[]');
+            users = users.filter(u => u.email !== newUser.email).concat([newUser]);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Save user data
+            currentUser = newUser;
+            isLoggedIn = true;
+            userRole = newUser.role;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            
+            // Close modal and redirect to dashboard
+            closeModal('registerModal');
+            showAlert('Başarıyla kayıt oldunuz!', 'success');
+            
+            // Redirect to appropriate dashboard
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
+        }
         
     } catch (error) {
+        console.error('Register error:', error);
         showAlert('Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.', 'error');
     } finally {
         // Reset button state
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     }
+}
+
+// Generate member number helper
+function generateMemberNumber() {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${timestamp}-${random}`;
 }
 
 // Handle Contact Form
@@ -558,7 +664,13 @@ function updateUIForLoggedInUser() {
     }
 }
 
-function logout() {
+async function logout() {
+    // Yeni auth service ile çıkış yap
+    if (window.authService) {
+        await authService.logout();
+    }
+    
+    // Local state'i temizle
     currentUser = null;
     isLoggedIn = false;
     userRole = null;

@@ -134,3 +134,4 @@ Bu **normal**! Room var ama henüz channel yok.
 
 
 
+

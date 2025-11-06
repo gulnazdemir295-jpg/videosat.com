@@ -39,6 +39,7 @@
                 // Script'leri sırayla yükle
                 await window.scriptLoader.loadScripts([
                     'modules/module-loader.min.js',
+                    'services/auth-service.js', // JWT Auth Service - ÖNCE YÜKLENMELİ
                     'create-test-user.js',
                     'login-logger.min.js',
                     'setup-test-users.js',

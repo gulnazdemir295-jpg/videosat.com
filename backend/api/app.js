@@ -1,4 +1,19 @@
 require('dotenv').config();
+
+// Environment validation - uygulama başlamadan önce kontrol et
+const { validateEnvironment, logEnvironment } = require('./middleware/env-validator');
+try {
+  validateEnvironment();
+  logEnvironment();
+} catch (error) {
+  console.error('❌ Environment validation failed:', error.message);
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1); // Production'da eksik env varsa çık
+  } else {
+    console.warn('⚠️  Development modunda devam ediliyor...');
+  }
+}
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -429,6 +444,26 @@ async function getChannelsByRoom(roomId) {
 // Seed: sample user with payment time
 saveUser({ email: 'hammaddeci.videosat.com', hasTime: true });
 
+// Initialize Services
+const userService = require('./services/user-service');
+userService.initializeUserService(dynamoClient, users);
+
+// Initialize Message Service
+const messageService = require('./services/message-service');
+const messages = new Map(); // In-memory fallback
+const userMessages = new Map(); // In-memory fallback
+messageService.initializeMessageService(dynamoClient, messages, userMessages);
+
+// Initialize Payment Service
+const paymentService = require('./services/payment-service');
+const payments = new Map(); // In-memory fallback
+const userPayments = new Map(); // In-memory fallback
+paymentService.initializePaymentService(dynamoClient, payments, userPayments);
+
+// Auth Routes
+const authRoutes = require('./routes/auth-routes');
+app.use('/api/auth', authRoutes);
+
 // Health
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
@@ -476,11 +511,10 @@ app.post('/api/admin/ivs/assign',
   res.json({ ok: true });
 });
 
-// --- Streamers and payments (POC) ---
+// --- Streamers (POC) ---
 // streamerEmail -> { email, minutesPurchased: number, minutesUsed: number }
 const streamers = new Map();
-// simple payments log
-const payments = [];
+// Note: payments artık paymentService üzerinden yönetiliyor
 
 // Admin: set shared streamKey (quota limit nedeniyle)
 app.post('/api/admin/stream-key/set', requireAdmin, (req, res) => {
@@ -541,7 +575,22 @@ app.post('/api/admin/streamers/add', requireAdmin, (req, res) => {
   const s = streamers.get(email) || { email, minutesPurchased: 0, minutesUsed: 0 };
   s.minutesPurchased += Math.max(0, Math.floor(minutes));
   streamers.set(email, s);
-  payments.push({ id: Date.now(), email, minutes: Math.floor(minutes), at: new Date().toISOString() });
+  
+  // Payment service ile kaydet
+  await paymentService.savePayment({
+    id: `STREAM-${Date.now()}`,
+    orderId: `STREAM-${email}-${Date.now()}`,
+    userId: email,
+    amount: 0, // Stream minutes için ödeme tutarı yok
+    currency: 'TRY',
+    method: 'stream_minutes',
+    status: 'completed',
+    customer: { email },
+    metadata: { minutes: Math.floor(minutes), type: 'stream_minutes' },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+  
   return res.json({ ok: true, streamer: s });
 });
 
@@ -551,18 +600,47 @@ app.get('/api/admin/streamers', requireAdmin, (req, res) => {
 });
 
 // Admin: list payments
-app.get('/api/admin/payments', requireAdmin, (req, res) => {
-  return res.json({ payments });
+app.get('/api/admin/payments', requireAdmin, async (req, res) => {
+  try {
+    // Tüm ödemeleri getir (DynamoDB veya in-memory)
+    if (USE_DYNAMODB && dynamoClient) {
+      // DynamoDB'den tüm ödemeleri scan et (admin için)
+      const result = await dynamoClient.send(new ScanCommand({
+        TableName: PAYMENTS_TABLE,
+        Limit: 1000
+      }));
+      return res.json({ payments: result.Items || [] });
+    } else {
+      // In-memory fallback
+      return res.json({ payments: Array.from(payments.values()) });
+    }
+  } catch (error) {
+    console.error('Get payments error:', error);
+    return res.json({ payments: Array.from(payments.values()) }); // Fallback
+  }
 });
 
 // Admin: payment statistics
-app.get('/api/admin/payments/stats', requireAdmin, (req, res) => {
+app.get('/api/admin/payments/stats', requireAdmin, async (req, res) => {
   try {
-    const total = payments.size;
+    let allPayments = [];
+    
+    if (USE_DYNAMODB && dynamoClient) {
+      // DynamoDB'den tüm ödemeleri getir
+      const result = await dynamoClient.send(new ScanCommand({
+        TableName: PAYMENTS_TABLE
+      }));
+      allPayments = result.Items || [];
+    } else {
+      // In-memory fallback
+      allPayments = Array.from(payments.values());
+    }
+    
+    const total = allPayments.length;
     const byStatus = {};
     let totalAmount = 0;
     
-    payments.forEach(payment => {
+    allPayments.forEach(payment => {
       const status = payment.status || 'unknown';
       byStatus[status] = (byStatus[status] || 0) + 1;
       if (payment.amount) {
@@ -659,7 +737,7 @@ app.get('/api/admin/streams/stats', requireAdmin, (req, res) => {
 });
 
 // Admin: export data
-app.get('/api/admin/export', requireAdmin, (req, res) => {
+app.get('/api/admin/export', requireAdmin, async (req, res) => {
   try {
     const { type, format = 'json' } = req.query;
     
@@ -670,7 +748,14 @@ app.get('/api/admin/export', requireAdmin, (req, res) => {
         data = Array.from(users.values());
         break;
       case 'payments':
-        data = Array.from(payments.values());
+        if (USE_DYNAMODB && dynamoClient) {
+          const result = await dynamoClient.send(new ScanCommand({
+            TableName: PAYMENTS_TABLE
+          }));
+          data = result.Items || [];
+        } else {
+          data = Array.from(payments.values());
+        }
         break;
       case 'errors':
         data = errorLogs;
@@ -1733,10 +1818,7 @@ const emailService = require('./services/email-service');
 // ============================================
 // MESSAGING API ENDPOINTS
 // ============================================
-
-// In-memory message store (production'da DynamoDB kullanılmalı)
-const messages = new Map(); // messageId -> messageData
-const userMessages = new Map(); // userId -> [messageIds]
+// Note: messages ve userMessages artık messageService üzerinden yönetiliyor
 
 // POST /api/messages - Mesaj gönder
 app.post('/api/messages', 
@@ -1778,18 +1860,8 @@ app.post('/api/messages',
         status: 'sent'
       };
 
-      // Mesajı sakla
-      messages.set(messageData.id, messageData);
-
-      // Kullanıcı mesaj listelerini güncelle
-      if (!userMessages.has(fromUserId)) {
-        userMessages.set(fromUserId, []);
-      }
-      if (!userMessages.has(toUserId)) {
-        userMessages.set(toUserId, []);
-      }
-      userMessages.get(fromUserId).push(messageData.id);
-      userMessages.get(toUserId).push(messageData.id);
+      // Mesajı service ile sakla
+      await messageService.saveMessage(messageData);
 
       // WebSocket ile alıcıya gönder
       if (io) {
@@ -1811,24 +1883,8 @@ app.get('/api/messages', async (req, res) => {
     const otherUserId = req.query.otherUserId;
     const limit = parseInt(req.query.limit) || 50;
 
-    let messageIds = [];
-    if (otherUserId) {
-      // Belirli bir kullanıcıyla olan mesajlar
-      messageIds = (userMessages.get(userId) || [])
-        .filter(id => {
-          const msg = messages.get(id);
-          return msg && (msg.senderId === otherUserId || msg.receiverId === otherUserId);
-        });
-    } else {
-      // Tüm mesajlar
-      messageIds = userMessages.get(userId) || [];
-    }
-
-    const userMessagesList = messageIds
-      .map(id => messages.get(id))
-      .filter(msg => msg)
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-      .slice(-limit);
+    // Message service ile mesajları getir
+    const userMessagesList = await messageService.getUserMessages(userId, otherUserId, limit);
 
     res.json({ success: true, messages: userMessagesList });
   } catch (error) {
@@ -1843,18 +1899,11 @@ app.put('/api/messages/:messageId/read', async (req, res) => {
     const { messageId } = req.params;
     const userId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
 
-    const message = messages.get(parseFloat(messageId));
+    // Message service ile okundu işaretle
+    const message = await messageService.markMessageAsRead(messageId, userId);
     if (!message) {
-      return res.status(404).json({ error: 'Mesaj bulunamadı' });
+      return res.status(404).json({ error: 'Mesaj bulunamadı veya yetkiniz yok' });
     }
-
-    if (message.receiverId !== userId) {
-      return res.status(403).json({ error: 'Bu mesajı okundu işaretleme yetkiniz yok' });
-    }
-
-    message.read = true;
-    message.readAt = new Date().toISOString();
-    messages.set(message.id, message);
 
     // WebSocket ile gönderene bildir
     if (io) {
@@ -1874,10 +1923,7 @@ app.put('/api/messages/:messageId/read', async (req, res) => {
 // ============================================
 // PAYMENT API ENDPOINTS
 // ============================================
-
-// In-memory payment store (production'da DynamoDB kullanılmalı)
-const payments = new Map(); // paymentId -> paymentData
-const userPayments = new Map(); // userId -> [paymentIds]
+// Note: payments ve userPayments artık paymentService üzerinden yönetiliyor
 
 // Payment status enum
 const PAYMENT_STATUS = {
@@ -1946,13 +1992,9 @@ app.post('/api/payments/process',
 
       // Ödeme işlemini simüle et (gerçek gateway entegrasyonu burada yapılacak)
       paymentData.status = PAYMENT_STATUS.PROCESSING;
-      payments.set(paymentData.id, paymentData);
-
-      // Kullanıcı ödeme listesine ekle
-      if (!userPayments.has(userId)) {
-        userPayments.set(userId, []);
-      }
-      userPayments.get(userId).push(paymentData.id);
+      
+      // Payment service ile kaydet
+      await paymentService.savePayment(paymentData);
 
       // Ödeme yöntemine göre işle
       const result = await processPaymentByMethod(method, paymentData, cardData);
@@ -1962,7 +2004,13 @@ app.post('/api/payments/process',
       paymentData.reference = result.reference;
       paymentData.gatewayResponse = result.gatewayResponse;
       paymentData.updatedAt = new Date().toISOString();
-      payments.set(paymentData.id, paymentData);
+      
+      // Payment service ile güncelle
+      await paymentService.updatePayment(paymentData.id, {
+        status: paymentData.status,
+        reference: paymentData.reference,
+        gatewayResponse: paymentData.gatewayResponse
+      });
 
       // WebSocket ile bildir (varsa)
       if (io) {
@@ -2062,7 +2110,8 @@ app.get('/api/payments/:paymentId', async (req, res) => {
     const { paymentId } = req.params;
     const userId = req.headers['x-user-id'] || req.query.userId;
 
-    const payment = payments.get(paymentId);
+    // Payment service ile ödemeyi getir
+    const payment = await paymentService.getPayment(paymentId);
     if (!payment) {
       return res.status(404).json({ error: 'Ödeme bulunamadı' });
     }
@@ -2087,32 +2136,17 @@ app.get('/api/payments', async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
     const status = req.query.status;
 
-    let paymentIds = userPayments.get(userId) || [];
-    let userPaymentsList = paymentIds
-      .map(id => payments.get(id))
-      .filter(payment => payment);
-
-    // Status filtresi
-    if (status) {
-      userPaymentsList = userPaymentsList.filter(p => p.status === status);
-    }
-
-    // Tarihe göre sırala (yeni -> eski)
-    userPaymentsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    // Pagination
-    const total = userPaymentsList.length;
-    const paginatedPayments = userPaymentsList.slice(offset, offset + limit);
+    // Payment service ile ödemeleri getir
+    const result = await paymentService.getUserPayments(userId, {
+      limit,
+      offset,
+      status
+    });
 
     res.json({
       success: true,
-      payments: paginatedPayments,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total
-      }
+      payments: result.payments,
+      pagination: result.pagination
     });
   } catch (error) {
     console.error('Ödeme geçmişi alma hatası:', error);
@@ -2144,7 +2178,8 @@ app.post('/api/payments/:paymentId/refund',
       const { amount, reason = 'İade talebi' } = req.body;
       const userId = req.headers['x-user-id'] || req.query.userId;
 
-      const payment = payments.get(paymentId);
+      // Payment service ile ödemeyi getir
+      const payment = await paymentService.getPayment(paymentId);
       if (!payment) {
         return res.status(404).json({ error: 'Ödeme bulunamadı' });
       }
@@ -2168,13 +2203,13 @@ app.post('/api/payments/:paymentId/refund',
         return res.status(400).json({ error: 'İade tutarı ödeme tutarından fazla olamaz' });
       }
 
-      // İade işlemi (simülasyon)
-      payment.status = PAYMENT_STATUS.REFUNDED;
-      payment.refundAmount = refundAmount;
-      payment.refundReason = reason;
-      payment.refundedAt = new Date().toISOString();
-      payment.updatedAt = new Date().toISOString();
-      payments.set(paymentId, payment);
+      // İade işlemi - Payment service ile güncelle
+      const updatedPayment = await paymentService.updatePayment(paymentId, {
+        status: PAYMENT_STATUS.REFUNDED,
+        refundAmount: refundAmount,
+        refundReason: reason,
+        refundedAt: new Date().toISOString()
+      });
 
       // WebSocket ile bildir
       if (io) {
@@ -2187,7 +2222,7 @@ app.post('/api/payments/:paymentId/refund',
 
       res.json({
         success: true,
-        payment,
+        payment: updatedPayment || payment,
         message: 'İade işlemi başarılı'
       });
     } catch (error) {
@@ -2213,12 +2248,12 @@ app.post('/api/payments/webhook', async (req, res) => {
     const { event, paymentId, status, data } = webhookData;
 
     if (event === 'payment.completed' || event === 'payment.success') {
-      const payment = payments.get(paymentId);
+      const payment = await paymentService.getPayment(paymentId);
       if (payment) {
-        payment.status = PAYMENT_STATUS.COMPLETED;
-        payment.gatewayResponse = data;
-        payment.updatedAt = new Date().toISOString();
-        payments.set(paymentId, payment);
+        await paymentService.updatePayment(paymentId, {
+          status: PAYMENT_STATUS.COMPLETED,
+          gatewayResponse: data
+        });
 
         // WebSocket ile bildir
         if (io) {
@@ -2230,12 +2265,12 @@ app.post('/api/payments/webhook', async (req, res) => {
         }
       }
     } else if (event === 'payment.failed' || event === 'payment.error') {
-      const payment = payments.get(paymentId);
+      const payment = await paymentService.getPayment(paymentId);
       if (payment) {
-        payment.status = PAYMENT_STATUS.FAILED;
-        payment.gatewayResponse = data;
-        payment.updatedAt = new Date().toISOString();
-        payments.set(paymentId, payment);
+        await paymentService.updatePayment(paymentId, {
+          status: PAYMENT_STATUS.FAILED,
+          gatewayResponse: data
+        });
       }
     }
 
@@ -2654,8 +2689,27 @@ app.get('/api/search', apiLimiter, async (req, res) => {
     }
     
     if (type === 'all' || type === 'orders') {
-      // Search orders (from payments)
-      const ordersList = Array.from(payments.values())
+      // Search orders (from payments) - DynamoDB veya in-memory
+      let allPayments = [];
+      if (USE_DYNAMODB && dynamoClient) {
+        try {
+          const result = await dynamoClient.send(new ScanCommand({
+            TableName: PAYMENTS_TABLE,
+            FilterExpression: 'contains(orderId, :query) OR contains(customer.email, :query)',
+            ExpressionAttributeValues: {
+              ':query': query
+            }
+          }));
+          allPayments = result.Items || [];
+        } catch (error) {
+          console.error('Search payments error:', error);
+          allPayments = Array.from(payments.values());
+        }
+      } else {
+        allPayments = Array.from(payments.values());
+      }
+      
+      const ordersList = allPayments
         .filter(p => 
           p.orderId?.toLowerCase().includes(query) ||
           p.customer?.email?.toLowerCase().includes(query)
@@ -3101,4 +3155,93 @@ app.get('/api/performance/summary', (req, res) => {
 // PUSH NOTIFICATION ROUTES
 // ============================================
 const pushRoutes = require('./routes/push-routes');
+const authRoutes = require('./routes/auth-routes');
 app.use('/api/push', pushRoutes);
+app.use('/api/auth', authRoutes);
+
+// ============================================
+// HEALTH CHECK ENDPOINT
+// ============================================
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Health]
+ *     description: Sistem sağlık durumunu kontrol eder
+ *     responses:
+ *       200:
+ *         description: Sistem sağlıklı
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2024-01-15T10:30:00.000Z"
+ *                 uptime:
+ *                   type: number
+ *                   example: 3600
+ *                 environment:
+ *                   type: string
+ *                   example: production
+ *                 services:
+ *                   type: object
+ *                   properties:
+ *                     database:
+ *                       type: string
+ *                       example: connected
+ *                     aws:
+ *                       type: string
+ *                       example: configured
+ */
+app.get('/api/health', async (req, res) => {
+  try {
+    const healthStatus = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      services: {
+        database: USE_DYNAMODB && dynamoClient ? 'connected' : 'in-memory',
+        aws: CURRENT_CREDS ? 'configured' : 'not-configured'
+      },
+      version: '1.0.0'
+    };
+
+    // DynamoDB bağlantı kontrolü
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        // Basit bir test query (opsiyonel)
+        healthStatus.services.database = 'connected';
+      } catch (error) {
+        healthStatus.services.database = 'error';
+        healthStatus.status = 'degraded';
+      }
+    }
+
+    res.status(200).json(healthStatus);
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      message: 'Health check failed',
+      error: error.message
+    });
+  }
+});
+
+// ============================================
+// ERROR HANDLING MIDDLEWARE
+// ============================================
+const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
+
+// 404 handler - tüm route'lardan sonra, error handler'dan önce
+app.use(notFoundHandler);
+
+// Error handler - en sonda olmalı
+app.use(errorHandler);
