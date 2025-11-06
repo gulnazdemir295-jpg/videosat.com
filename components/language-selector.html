@@ -1,0 +1,202 @@
+<!-- Language Selector Component -->
+<!-- Dil seçici komponenti -->
+
+<div class="language-selector" id="languageSelector">
+    <button class="language-btn" id="languageBtn" title="Dil Seç">
+        <i class="fas fa-globe"></i>
+        <span id="currentLanguageDisplay">TR</span>
+    </button>
+    
+    <div class="language-dropdown" id="languageDropdown" style="display: none;">
+        <div class="language-option" data-lang="tr">
+            <span class="flag">🇹🇷</span>
+            <span class="name">Türkçe</span>
+            <i class="fas fa-check" style="display: none;"></i>
+        </div>
+        <div class="language-option" data-lang="en">
+            <span class="flag">🇬🇧</span>
+            <span class="name">English</span>
+            <i class="fas fa-check" style="display: none;"></i>
+        </div>
+    </div>
+</div>
+
+<style>
+.language-selector {
+    position: relative;
+    display: inline-block;
+}
+
+.language-btn {
+    background: transparent;
+    border: 1px solid #dc2626;
+    color: #dc2626;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.language-btn:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.language-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: #1a1a1a;
+    border: 1px solid #dc2626;
+    border-radius: 8px;
+    min-width: 150px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.language-option {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.language-option:last-child {
+    border-bottom: none;
+}
+
+.language-option:hover {
+    background: #2a2a2a;
+}
+
+.language-option.active {
+    background: #dc2626;
+}
+
+.language-option .flag {
+    font-size: 1.25rem;
+}
+
+.language-option .name {
+    flex: 1;
+    color: #ffffff;
+    font-size: 0.875rem;
+}
+
+.language-option .fa-check {
+    color: #22c55e;
+    margin-left: auto;
+}
+
+.language-option.active .fa-check {
+    display: inline-block !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .language-dropdown {
+        right: 0;
+        left: auto;
+    }
+}
+</style>
+
+<script>
+// Language Selector Controller
+class LanguageSelectorController {
+    constructor() {
+        this.i18nService = null;
+        this.init();
+    }
+
+    init() {
+        // i18n Service kontrolü
+        if (typeof window.i18nService === 'undefined') {
+            console.warn('i18n Service yüklenmedi');
+            return;
+        }
+
+        this.i18nService = window.i18nService;
+        this.setupEventListeners();
+        this.updateDisplay();
+    }
+
+    setupEventListeners() {
+        const btn = document.getElementById('languageBtn');
+        const dropdown = document.getElementById('languageDropdown');
+        const options = dropdown.querySelectorAll('.language-option');
+
+        // Buton click
+        btn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Option click
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                const lang = option.dataset.lang;
+                this.changeLanguage(lang);
+                dropdown.style.display = 'none';
+            });
+        });
+
+        // Dışarı tıklanınca kapat
+        document.addEventListener('click', (e) => {
+            if (!btn?.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // i18n Service event listener
+        this.i18nService.on('languageChanged', (lang) => {
+            this.updateDisplay();
+        });
+    }
+
+    changeLanguage(lang) {
+        if (this.i18nService) {
+            this.i18nService.setLanguage(lang);
+        }
+    }
+
+    updateDisplay() {
+        if (!this.i18nService) return;
+
+        const currentLang = this.i18nService.getCurrentLanguage();
+        const display = document.getElementById('currentLanguageDisplay');
+        const options = document.querySelectorAll('.language-option');
+
+        // Display güncelle
+        if (display) {
+            display.textContent = currentLang.toUpperCase();
+        }
+
+        // Active state güncelle
+        options.forEach(option => {
+            if (option.dataset.lang === currentLang) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('languageSelector')) {
+        window.languageSelectorController = new LanguageSelectorController();
+    }
+});
+</script>
+
