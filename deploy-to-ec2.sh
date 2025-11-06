@@ -1,116 +1,88 @@
 #!/bin/bash
 
-# Backend EC2 Deployment Script
-# BasVideo.com Production Deployment
+# 🚀 EC2'ye Deploy Script
+# Kullanım: ./deploy-to-ec2.sh
 
 set -e
 
-EC2_IP="18.138.240.4"
-KEY_FILE=""
-EC2_USER="ubuntu"
+KEY_PATH="$HOME/Downloads/basvideo-backend-key.pem"
+EC2_HOST="ubuntu@107.23.178.153"
+EC2_PATH="/home/ubuntu/api"
+LOCAL_PATH="backend/api"
 
-echo "🚀 BasVideo.com Backend EC2 Deployment"
-echo "📍 EC2 IP: $EC2_IP"
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║        🚀 EC2'ye Deploy Başlatılıyor...                      ║"
+echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Key dosyasını bul
-if [ -f ~/Downloads/basvideo-backend-key.pem ]; then
-  KEY_FILE=~/Downloads/basvideo-backend-key.pem
-elif [ -f ~/.ssh/basvideo-backend-key.pem ]; then
-  KEY_FILE=~/.ssh/basvideo-backend-key.pem
-elif [ -f ~/basvideo-backend-key.pem ]; then
-  KEY_FILE=~/basvideo-backend-key.pem
-else
-  echo "❌ Key dosyası bulunamadı!"
-  echo "Lütfen key dosyasının yerini belirtin:"
-  echo "  ~/Downloads/basvideo-backend-key.pem"
-  echo "  ~/.ssh/basvideo-backend-key.pem"
-  echo "  veya başka bir yer"
-  exit 1
+# Key dosyası kontrolü
+if [ ! -f "$KEY_PATH" ]; then
+    echo "❌ Key dosyası bulunamadı: $KEY_PATH"
+    exit 1
 fi
-
-echo "✅ Key dosyası bulundu: $KEY_FILE"
-echo ""
 
 # Key permissions
-echo "🔐 Key permissions ayarlanıyor..."
-chmod 400 "$KEY_FILE"
-echo "✅ Key permissions: $(ls -l "$KEY_FILE" | awk '{print $1}')"
-echo ""
+chmod 400 "$KEY_PATH" 2>/dev/null || true
 
-# SSH bağlantı testi
-echo "🔌 SSH bağlantısı test ediliyor..."
-if ssh -i "$KEY_FILE" -o StrictHostKeyChecking=no -o ConnectTimeout=5 "$EC2_USER@$EC2_IP" "echo 'SSH OK'" 2>/dev/null; then
-  echo "✅ SSH bağlantısı başarılı!"
-else
-  echo "⚠️  SSH bağlantısı test edilemedi (normal, ilk kez bağlanıyorsun)"
-fi
-echo ""
-
-echo "📦 Backend kodu EC2'ye kopyalanıyor..."
-cd /Users/gulnazdemir/Desktop/DENEME
-
-# Backend kodunu kopyala
-scp -i "$KEY_FILE" -r backend/api "$EC2_USER@$EC2_IP:/home/$EC2_USER/" || {
-  echo "❌ SCP hatası! Manuel olarak yapmalısın:"
-  echo ""
-  echo "scp -i $KEY_FILE -r backend/api $EC2_USER@$EC2_IP:/home/$EC2_USER/"
-  exit 1
+# 1. Package.json kopyala
+echo "📦 1. package.json kopyalanıyor..."
+scp -i "$KEY_PATH" \
+    "$LOCAL_PATH/package.json" \
+    "$EC2_HOST:$EC2_PATH/" || {
+    echo "❌ package.json kopyalanamadı"
+    exit 1
 }
+echo "✅ package.json kopyalandı"
 
-echo "✅ Backend kodu kopyalandı!"
-echo ""
-echo "📋 Sonraki Adımlar (EC2'de SSH ile):"
-echo ""
-echo "1. SSH ile bağlan:"
-echo "   ssh -i $KEY_FILE $EC2_USER@$EC2_IP"
-echo ""
-echo "2. EC2'de kurulum komutlarını çalıştır (aşağıdaki komutları kopyala-yapıştır):"
-echo ""
-cat << 'DEPLOY_COMMANDS'
-# Node.js kur
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# 2. App.js kopyala
+echo "📄 2. app.js kopyalanıyor..."
+scp -i "$KEY_PATH" \
+    "$LOCAL_PATH/app.js" \
+    "$EC2_HOST:$EC2_PATH/" || {
+    echo "❌ app.js kopyalanamadı"
+    exit 1
+}
+echo "✅ app.js kopyalandı"
 
-# PM2 kur
-sudo npm install -g pm2
+# 3. Test dosyalarını kopyala
+echo "🧪 3. Test dosyaları kopyalanıyor..."
+scp -i "$KEY_PATH" \
+    -r "$LOCAL_PATH/tests" \
+    "$EC2_HOST:$EC2_PATH/" 2>/dev/null || {
+    echo "⚠️ Test dosyaları kopyalanamadı (opsiyonel)"
+}
+echo "✅ Test dosyaları kopyalandı"
 
-# Backend dizinine git
+# 4. EC2'de npm install
+echo "📥 4. NPM install çalıştırılıyor..."
+ssh -i "$KEY_PATH" "$EC2_HOST" << 'ENDSSH'
 cd /home/ubuntu/api
+echo "📦 Yeni paketler yükleniyor..."
+npm install 2>&1 | tail -10
+echo ""
+echo "✅ NPM install tamamlandı"
+ENDSSH
 
-# Dependencies kur
-npm install
-
-# .env dosyası oluştur
-nano .env
-# (Aşağıdaki içeriği yapıştır, Ctrl+X → Y → Enter)
-
-# PM2 ile başlat
-pm2 start app.js --name basvideo-backend
-pm2 startup
-pm2 save
-
-# Test et
-curl http://localhost:4000/api/health
-DEPLOY_COMMANDS
+# 5. Backend restart
+echo "🔄 5. Backend restart ediliyor..."
+ssh -i "$KEY_PATH" "$EC2_HOST" << 'ENDSSH'
+cd /home/ubuntu/api
+pm2 restart basvideo-backend
+echo ""
+echo "📋 PM2 durumu:"
+pm2 status
+echo ""
+echo "📊 Son log'lar:"
+pm2 logs basvideo-backend --lines 10 --nostream
+ENDSSH
 
 echo ""
-echo "📝 .env dosyası içeriği (nano .env içine yapıştır):"
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║        ✅ DEPLOY TAMAMLANDI!                                   ║"
+echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
-cat << 'ENV_CONTENT'
-PORT=4000
-NODE_ENV=production
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
-ADMIN_TOKEN=basvideo-admin-token-2024-secure
-DYNAMODB_TABLE_USERS=basvideo-users
-DYNAMODB_TABLE_ROOMS=basvideo-rooms
-DYNAMODB_TABLE_CHANNELS=basvideo-channels
-DYNAMODB_TABLE_PAYMENTS=basvideo-payments
-USE_DYNAMODB=true
-ENV_CONTENT
-
-echo ""
-echo "✅ Deployment script tamamlandı!"
+echo "🧪 Test etmek için:"
+echo "   ssh -i $KEY_PATH $EC2_HOST"
+echo "   cd /home/ubuntu/api"
+echo "   npm test"
 echo ""
