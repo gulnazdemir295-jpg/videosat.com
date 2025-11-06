@@ -475,15 +475,23 @@ async function startAgoraStream(channelData) {
             throw new Error(`Geçersiz App ID: ${channelData.appId}. App ID 32 karakter olmalı.`);
         }
         
-        // Token ile join (Certificate doğruysa çalışmalı)
-        // NOT: "invalid vendor key" hatası alınıyorsa, token formatı veya certificate yanlış olabilir
-        // Geçici çözüm: Token olmadan deneyin (development mode - sadece test için)
+        // Token ile join (Agora resmi paket ile oluşturuldu)
+        // Agora'nın resmi token generator paketi kullanılıyor
         let joinedUid;
         
-        // Token olmadan join (development mode - test için)
-        // Production'da token gerekli ama şu an test ediyoruz
-        console.warn('⚠️ Development mode: Token olmadan join deneniyor...');
-        try {
+        if (token) {
+            // Token ile join (production - Agora resmi paket ile oluşturuldu)
+            console.log('🔑 Token ile join ediliyor (Agora resmi paket ile oluşturuldu)...');
+            joinedUid = await agoraClient.join(
+                channelData.appId,
+                channelData.channelName,
+                token,
+                uid || null
+            );
+            console.log('✅ Token ile join başarılı');
+        } else {
+            // Token yoksa development mode (sadece test için)
+            console.warn('⚠️ Token yok, development mode deneniyor...');
             joinedUid = await agoraClient.join(
                 channelData.appId,
                 channelData.channelName,
@@ -491,19 +499,6 @@ async function startAgoraStream(channelData) {
                 uid || null
             );
             console.log('✅ Development mode başarılı (token olmadan)');
-        } catch (devError) {
-            console.error('❌ Development mode hatası, token ile deniyoruz...', devError);
-            // Development mode başarısız olursa token ile dene
-            if (token) {
-                joinedUid = await agoraClient.join(
-                    channelData.appId,
-                    channelData.channelName,
-                    token,
-                    uid || null
-                );
-            } else {
-                throw new Error('Token yok ve development mode da başarısız: ' + devError.message);
-            }
         }
         
         localAgoraUid = joinedUid; // Local UID'yi global değişkene sakla (sonsuz döngü önlemek için)

@@ -3,6 +3,16 @@
  * AWS IVS alternatifi olarak Agora.io entegrasyonu
  */
 
+// Agora'nın resmi token generator paketini kullan
+let RtcTokenBuilder;
+try {
+  RtcTokenBuilder = require('agora-access-token').RtcTokenBuilder;
+  console.log('✅ Agora resmi token generator paketi yüklendi');
+} catch (error) {
+  console.warn('⚠️ agora-access-token paketi yüklenemedi, fallback kullanılıyor:', error.message);
+  RtcTokenBuilder = null;
+}
+
 const crypto = require('crypto');
 
 // Agora Configuration
@@ -11,7 +21,7 @@ const AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE || '';
 const AGORA_EXPIRE_TIME = 3600; // 1 saat (token süresi)
 
 /**
- * Agora RTC Token oluştur (Version 2)
+ * Agora RTC Token oluştur (Agora resmi paket ile)
  * @param {string} channelName - Channel adı
  * @param {string|number} uid - User ID (0 = random)
  * @param {number} role - 1 = publisher, 2 = subscriber
@@ -22,6 +32,31 @@ function generateRtcToken(channelName, uid = 0, role = 1) {
     throw new Error('Agora App ID ve App Certificate gerekli');
   }
 
+  // Agora'nın resmi paketini kullan (varsa)
+  if (RtcTokenBuilder) {
+    try {
+      const uidNumber = typeof uid === 'string' ? parseInt(uid) || 0 : uid;
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const expireTimestamp = currentTimestamp + AGORA_EXPIRE_TIME;
+      
+      // Agora resmi token builder kullan
+      const token = RtcTokenBuilder.buildTokenWithUid(
+        AGORA_APP_ID,
+        AGORA_APP_CERTIFICATE,
+        channelName,
+        uidNumber,
+        role, // 1 = publisher, 2 = subscriber
+        expireTimestamp
+      );
+      
+      return token;
+    } catch (error) {
+      console.error('❌ Agora resmi token builder hatası, fallback kullanılıyor:', error);
+      // Fallback'e düş
+    }
+  }
+
+  // Fallback: Manuel token oluşturma (eski kod)
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const expireTimestamp = currentTimestamp + AGORA_EXPIRE_TIME;
   
