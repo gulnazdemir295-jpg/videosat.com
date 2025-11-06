@@ -21,7 +21,422 @@
     <script src="config/backend-config.js"></script>
 </head>
 <body>
-    <!-- ... existing code ... -->
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-video"></i>
+                <span>VideoSat</span>
+            </a>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link">Ana Sayfa</a>
+                <a href="#features" class="nav-link">Özellikler</a>
+                <a href="#pricing" class="nav-link">Fiyatlandırma</a>
+                <a href="#contact" class="nav-link">İletişim</a>
+            </div>
+            <div class="nav-auth">
+                <button class="btn btn-outline" onclick="showLoginModal()">
+                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                </button>
+                <button class="btn btn-primary" onclick="showRegisterModal()">
+                    <i class="fas fa-user-plus"></i> Kayıt Ol
+                </button>
+                <div class="hamburger" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div>
+                <h1 class="hero-title">
+                    E-Ticaret ve <span class="gradient-text">Canlı Yayın</span> Platformu
+                </h1>
+                <p class="hero-description">
+                    Ürünlerinizi canlı yayında tanıtın, satışlarınızı artırın. VideoSat ile e-ticaret ve canlı yayın deneyimini bir araya getirin.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large" onclick="showRegisterModal()">
+                        <i class="fas fa-rocket"></i> Hemen Başla
+                    </button>
+                    <button class="btn btn-outline btn-large" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">
+                        <i class="fas fa-info-circle"></i> Daha Fazla Bilgi
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-card">
+                    <i class="fas fa-video"></i>
+                    <h3>Canlı Yayın</h3>
+                    <p>Gerçek zamanlı yayın</p>
+                </div>
+                <div class="floating-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>E-Ticaret</h3>
+                    <p>Anında satış</p>
+                </div>
+                <div class="floating-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Analitik</h3>
+                    <p>Detaylı raporlar</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Özellikler</h2>
+                <p class="section-description">
+                    VideoSat ile e-ticaret ve canlı yayın platformunuzun tüm gücünü keşfedin.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>Canlı Yayın</h3>
+                    <p>Ürünlerinizi gerçek zamanlı olarak canlı yayında tanıtın ve satış yapın.</p>
+                    <ul>
+                        <li>HD kalitede yayın</li>
+                        <li>Çoklu kanal desteği</li>
+                        <li>İnteraktif sohbet</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>E-Ticaret Entegrasyonu</h3>
+                    <p>Canlı yayın sırasında ürünlerinizi satın ve siparişleri anında alın.</p>
+                    <ul>
+                        <li>Sepet yönetimi</li>
+                        <li>Ödeme entegrasyonu</li>
+                        <li>Sipariş takibi</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Analitik ve Raporlama</h3>
+                    <p>Detaylı analitik verilerle işinizi büyütün ve kararlarınızı veriye dayalı alın.</p>
+                    <ul>
+                        <li>Gerçek zamanlı istatistikler</li>
+                        <li>Satış raporları</li>
+                        <li>Kullanıcı davranış analizi</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Mobil Uyumlu</h3>
+                    <p>Her cihazdan erişilebilir, responsive tasarım ile müşterilerinize ulaşın.</p>
+                    <ul>
+                        <li>Responsive tasarım</li>
+                        <li>Mobil uygulama desteği</li>
+                        <li>PWA özellikleri</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Güvenlik</h3>
+                    <p>Verileriniz ve ödemeleriniz en yüksek güvenlik standartlarıyla korunur.</p>
+                    <ul>
+                        <li>SSL şifreleme</li>
+                        <li>Güvenli ödeme</li>
+                        <li>Veri koruma</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>7/24 Destek</h3>
+                    <p>Her zaman yanınızdayız. Sorularınız için profesyonel destek ekibimiz hazır.</p>
+                    <ul>
+                        <li>Canlı destek</li>
+                        <li>E-posta desteği</li>
+                        <li>Dokümantasyon</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Fiyatlandırma</h2>
+                <p class="section-description">
+                    İhtiyacınıza uygun planı seçin ve hemen başlayın.
+                </p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Başlangıç</h3>
+                    <div class="price">
+                        <span class="currency">₺</span>
+                        <span class="amount">99</span>
+                        <span class="period">/ay</span>
+                    </div>
+                    <ul>
+                        <li>✓ 10 saat canlı yayın</li>
+                        <li>✓ 100 ürün</li>
+                        <li>✓ Temel analitik</li>
+                        <li>✓ E-posta desteği</li>
+                    </ul>
+                    <button class="btn btn-outline btn-block" onclick="showRegisterModal()">Başla</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="badge">Popüler</div>
+                    <h3>Profesyonel</h3>
+                    <div class="price">
+                        <span class="currency">₺</span>
+                        <span class="amount">299</span>
+                        <span class="period">/ay</span>
+                    </div>
+                    <ul>
+                        <li>✓ Sınırsız canlı yayın</li>
+                        <li>✓ Sınırsız ürün</li>
+                        <li>✓ Gelişmiş analitik</li>
+                        <li>✓ Öncelikli destek</li>
+                        <li>✓ Özel entegrasyonlar</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block" onclick="showRegisterModal()">Başla</button>
+                </div>
+                <div class="pricing-card">
+                    <h3>Kurumsal</h3>
+                    <div class="price">
+                        <span class="currency">₺</span>
+                        <span class="amount">Özel</span>
+                    </div>
+                    <ul>
+                        <li>✓ Tüm özellikler</li>
+                        <li>✓ Özel çözümler</li>
+                        <li>✓ 7/24 destek</li>
+                        <li>✓ Özel eğitim</li>
+                        <li>✓ SLA garantisi</li>
+                    </ul>
+                    <button class="btn btn-outline btn-block" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">İletişime Geç</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">İletişim</h2>
+                <p class="section-description">
+                    Sorularınız mı var? Bizimle iletişime geçin.
+                </p>
+            </div>
+            <div class="contact-content">
+                <div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>E-posta</h4>
+                            <p>info@basvideo.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Telefon</h4>
+                            <p>+90 (212) 555 0000</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Adres</h4>
+                            <p>İstanbul, Türkiye</p>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form" onsubmit="handleContactForm(event)">
+                    <div class="form-group">
+                        <label for="contactName">Ad Soyad</label>
+                        <input type="text" id="contactName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">E-posta</label>
+                        <input type="email" id="contactEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMessage">Mesaj</label>
+                        <textarea id="contactMessage" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-paper-plane"></i> Gönder
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>VideoSat</h3>
+                    <p>E-ticaret ve canlı yayın platformu</p>
+                </div>
+                <div>
+                    <h4>Hızlı Linkler</h4>
+                    <ul>
+                        <li><a href="#home">Ana Sayfa</a></li>
+                        <li><a href="#features">Özellikler</a></li>
+                        <li><a href="#pricing">Fiyatlandırma</a></li>
+                        <li><a href="#contact">İletişim</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Yasal</h4>
+                    <ul>
+                        <li><a href="privacy-policy.html">Gizlilik Politikası</a></li>
+                        <li><a href="terms.html">Kullanım Şartları</a></li>
+                        <li><a href="cookie-policy.html">Çerez Politikası</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Sosyal Medya</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 VideoSat. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" role="dialog" aria-labelledby="loginModalTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="loginModalTitle">Giriş Yap</h2>
+                <span class="close" onclick="closeModal('loginModal')" aria-label="Kapat">&times;</span>
+            </div>
+            <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">E-posta</label>
+                    <input type="email" id="loginEmail" name="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Şifre</label>
+                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <a href="forgot-password.html" class="forgot-password-link" style="color: var(--primary-color); text-decoration: none; font-size: 0.875rem;">
+                        <i class="fas fa-question-circle"></i> Şifremi Unuttum
+                    </a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                </button>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="color: var(--text-secondary);">Hesabınız yok mu? 
+                        <a href="#" onclick="closeModal('loginModal'); showRegisterModal(); return false;" style="color: var(--primary-color);">Kayıt Ol</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal" role="dialog" aria-labelledby="registerModalTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="registerModalTitle">Kayıt Ol</h2>
+                <span class="close" onclick="closeModal('registerModal')" aria-label="Kapat">&times;</span>
+            </div>
+            <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="userRole">Rol</label>
+                    <select id="userRole" name="role" required>
+                        <option value="">Seçiniz</option>
+                        <option value="seller">Satıcı</option>
+                        <option value="buyer">Alıcı</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="companyName">Şirket Adı</label>
+                    <input type="text" id="companyName" name="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">E-posta</label>
+                    <input type="email" id="registerEmail" name="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Telefon</label>
+                    <input type="tel" id="phone" name="phone" required autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Şifre</label>
+                    <input type="password" id="registerPassword" name="password" required autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Şifre Tekrar</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-user-plus"></i> Kayıt Ol
+                </button>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="color: var(--text-secondary);">Zaten hesabınız var mı? 
+                        <a href="#" onclick="closeModal('registerModal'); showLoginModal(); return false;" style="color: var(--primary-color);">Giriş Yap</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal" role="dialog" aria-labelledby="adminLoginModalTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="adminLoginModalTitle">Admin Girişi</h2>
+                <span class="close" onclick="closeModal('adminLoginModal')" aria-label="Kapat">&times;</span>
+            </div>
+            <form id="adminLoginForm" class="auth-form" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label for="adminUsername">Admin E-posta</label>
+                    <input type="email" id="adminUsername" name="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Şifre</label>
+                    <input type="password" id="adminPassword" name="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-shield-alt"></i> Admin Girişi
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 80px; right: 20px; z-index: 3000;"></div>
     
     <script src="script-loader.min.js"></script>
     <script>
