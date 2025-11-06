@@ -1,0 +1,342 @@
+<!-- Dashboard Analytics Widgets -->
+<!-- Bu dosya dashboard sayfalarına include edilebilir -->
+
+<div class="dashboard-widgets" id="dashboardWidgets">
+    <!-- Satış Widget'ları -->
+    <div class="widget-grid">
+        <!-- Bugünkü Satış -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Bugünkü Satış</h3>
+                <p class="widget-value" id="salesToday">₺0</p>
+                <span class="widget-change" id="salesTodayChange">
+                    <i class="fas fa-arrow-up"></i> 0%
+                </span>
+            </div>
+        </div>
+
+        <!-- Bu Hafta Satış -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Bu Hafta</h3>
+                <p class="widget-value" id="salesWeek">₺0</p>
+                <span class="widget-change" id="salesWeekChange">
+                    <i class="fas fa-arrow-up"></i> 0%
+                </span>
+            </div>
+        </div>
+
+        <!-- Bu Ay Satış -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Bu Ay</h3>
+                <p class="widget-value" id="salesMonth">₺0</p>
+                <span class="widget-change" id="salesMonthChange">
+                    <i class="fas fa-arrow-up"></i> 0%
+                </span>
+            </div>
+        </div>
+
+        <!-- Toplam Satış -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Toplam Satış</h3>
+                <p class="widget-value" id="salesTotal">₺0</p>
+                <span class="widget-change">Tüm Zamanlar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sipariş Widget'ları -->
+    <div class="widget-grid">
+        <!-- Toplam Sipariş -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Toplam Sipariş</h3>
+                <p class="widget-value" id="ordersTotal">0</p>
+                <span class="widget-subtitle" id="ordersStatus">
+                    Beklemede: 0 | Tamamlanan: 0
+                </span>
+            </div>
+        </div>
+
+        <!-- Bugünkü Siparişler -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Bugünkü Siparişler</h3>
+                <p class="widget-value" id="ordersToday">0</p>
+                <span class="widget-subtitle">Yeni siparişler</span>
+            </div>
+        </div>
+
+        <!-- Bekleyen Siparişler -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Bekleyen Siparişler</h3>
+                <p class="widget-value" id="ordersPending">0</p>
+                <span class="widget-subtitle">Onay bekliyor</span>
+            </div>
+        </div>
+
+        <!-- Tamamlanan Siparişler -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Tamamlanan</h3>
+                <p class="widget-value" id="ordersCompleted">0</p>
+                <span class="widget-subtitle">Başarılı siparişler</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ürün ve Müşteri Widget'ları -->
+    <div class="widget-grid">
+        <!-- Toplam Ürün -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Toplam Ürün</h3>
+                <p class="widget-value" id="productsTotal">0</p>
+                <span class="widget-subtitle" id="productsStock">
+                    Düşük stok: 0 | Tükendi: 0
+                </span>
+            </div>
+        </div>
+
+        <!-- Toplam Müşteri -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Toplam Müşteri</h3>
+                <p class="widget-value" id="customersTotal">0</p>
+                <span class="widget-subtitle" id="customersActive">
+                    Aktif: 0 | Yeni (Bugün): 0
+                </span>
+            </div>
+        </div>
+
+        <!-- Canlı Yayın İstatistikleri -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Canlı Yayınlar</h3>
+                <p class="widget-value" id="livestreamTotal">0</p>
+                <span class="widget-subtitle" id="livestreamStats">
+                    Toplam İzleyici: 0 | Beğeni: 0
+                </span>
+            </div>
+        </div>
+
+        <!-- Ortalama Sepet Tutarı -->
+        <div class="widget-card">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="widget-content">
+                <h3 class="widget-label">Ortalama Sepet</h3>
+                <p class="widget-value" id="averageCart">₺0</p>
+                <span class="widget-subtitle">Ortalama sipariş tutarı</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-widgets {
+    padding: 20px;
+}
+
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.widget-card {
+    background: #1a1a1a;
+    border: 1px solid #dc2626;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.widget-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.widget-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.widget-content {
+    flex: 1;
+}
+
+.widget-label {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.widget-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+}
+
+.widget-change {
+    font-size: 0.75rem;
+    color: #22c55e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.widget-subtitle {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: block;
+    margin-top: 4px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .widget-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .widget-card {
+        padding: 15px;
+    }
+    
+    .widget-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .widget-value {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+// Dashboard Widget'larını güncelle
+function updateDashboardWidgets() {
+    if (typeof window.analyticsService === 'undefined') {
+        console.warn('Analytics Service yüklenmedi');
+        return;
+    }
+
+    const stats = window.analyticsService.getStats();
+
+    // Satış widget'ları
+    document.getElementById('salesToday').textContent = formatCurrency(stats.sales.today);
+    document.getElementById('salesWeek').textContent = formatCurrency(stats.sales.week);
+    document.getElementById('salesMonth').textContent = formatCurrency(stats.sales.month);
+    document.getElementById('salesTotal').textContent = formatCurrency(stats.sales.total);
+
+    // Sipariş widget'ları
+    document.getElementById('ordersTotal').textContent = stats.orders.total;
+    document.getElementById('ordersToday').textContent = stats.orders.today;
+    document.getElementById('ordersPending').textContent = stats.orders.pending;
+    document.getElementById('ordersCompleted').textContent = stats.orders.completed;
+    document.getElementById('ordersStatus').textContent = 
+        `Beklemede: ${stats.orders.pending} | Tamamlanan: ${stats.orders.completed}`;
+
+    // Ürün widget'ları
+    document.getElementById('productsTotal').textContent = stats.products.total;
+    document.getElementById('productsStock').textContent = 
+        `Düşük stok: ${stats.products.lowStock} | Tükendi: ${stats.products.outOfStock}`;
+
+    // Müşteri widget'ları
+    document.getElementById('customersTotal').textContent = stats.customers.total;
+    document.getElementById('customersActive').textContent = 
+        `Aktif: ${stats.customers.active} | Yeni (Bugün): ${stats.customers.newToday}`;
+
+    // Canlı yayın widget'ları
+    document.getElementById('livestreamTotal').textContent = stats.livestream.totalStreams;
+    document.getElementById('livestreamStats').textContent = 
+        `Toplam İzleyici: ${stats.livestream.totalViewers} | Beğeni: ${stats.livestream.totalLikes}`;
+
+    // Ortalama sepet tutarı
+    const avgCart = stats.orders.total > 0 ? stats.sales.total / stats.orders.total : 0;
+    document.getElementById('averageCart').textContent = formatCurrency(avgCart);
+}
+
+// Para formatı
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+
+// Sayfa yüklendiğinde widget'ları güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    // Analytics Service yüklendiğinde widget'ları güncelle
+    if (typeof window.analyticsService !== 'undefined') {
+        updateDashboardWidgets();
+        
+        // Her 30 saniyede bir güncelle
+        setInterval(updateDashboardWidgets, 30000);
+    } else {
+        // Analytics Service yüklenene kadar bekle
+        const checkInterval = setInterval(() => {
+            if (typeof window.analyticsService !== 'undefined') {
+                updateDashboardWidgets();
+                setInterval(updateDashboardWidgets, 30000);
+                clearInterval(checkInterval);
+            }
+        }, 500);
+    }
+});
+</script>
+
