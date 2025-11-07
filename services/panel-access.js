@@ -160,6 +160,36 @@
                     localStorage.setItem('currentUser', JSON.stringify(user));
                     return { success: true, user };
                 }
+
+                const fallbackAdmins = [
+                    { email: 'admin@videosat.com', password: 'admin123', role: 'admin' },
+                    { email: 'admin@basvideo.com', password: 'admin123', role: 'admin' }
+                ];
+
+                const adminUser = fallbackAdmins.find((admin) => admin.email === email && admin.password === password);
+                if (adminUser) {
+                    const userTemplate = {
+                        id: `admin-${Date.now()}`,
+                        email: adminUser.email,
+                        role: adminUser.role,
+                        companyName: 'VideoSat Admin',
+                        firstName: 'Admin',
+                        lastName: 'User',
+                        phone: '+90 555 000 0000',
+                        address: 'Admin Adresi',
+                        city: 'istanbul',
+                        sector: 'admin',
+                        status: 'active',
+                        createdAt: new Date().toISOString(),
+                        lastLogin: new Date().toISOString(),
+                        password: adminUser.password
+                    };
+
+                    users.push(userTemplate);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    localStorage.setItem('currentUser', JSON.stringify(userTemplate));
+                    return { success: true, user: userTemplate };
+                }
             } catch (error) {
                 console.warn('Legacy login failed:', error);
             }

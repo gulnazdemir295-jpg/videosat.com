@@ -11,6 +11,7 @@ class PWAService {
         this.updateAvailable = false;
         this.serviceWorkerRegistration = null;
         this.isRefreshing = false;
+        this.refreshFlagKey = 'pwa-refreshing';
         
         this.init();
     }
@@ -22,6 +23,15 @@ class PWAService {
         // Check if already installed
         this.checkIfInstalled();
         
+        // Reset refresh flag if sayfa tamamen yenilendi ise
+        try {
+            if (sessionStorage.getItem(this.refreshFlagKey) === 'true') {
+                sessionStorage.removeItem(this.refreshFlagKey);
+            }
+        } catch (error) {
+            console.warn('PWA refresh flag temizlenemedi:', error);
+        }
+
         // Register service worker
         await this.registerServiceWorker();
         
@@ -83,6 +93,16 @@ class PWAService {
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
                     if (this.isRefreshing) {
                         return;
+                    }
+
+                    // Aynı oturumda tekrar tekrar yenilemeyi önle
+                    try {
+                        if (sessionStorage.getItem(this.refreshFlagKey) === 'true') {
+                            return;
+                        }
+                        sessionStorage.setItem(this.refreshFlagKey, 'true');
+                    } catch (error) {
+                        console.warn('PWA refresh flag ayarlanamadı:', error);
                     }
 
                     this.isRefreshing = true;
