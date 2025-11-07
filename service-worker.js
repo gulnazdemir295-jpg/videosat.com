@@ -3,8 +3,8 @@
  * Web Push API, Cache Management, Background Sync
  */
 
-const CACHE_NAME = 'basvideo-v1';
-const CACHE_VERSION = '1.0.0';
+const CACHE_NAME = 'basvideo-v2';
+const CACHE_VERSION = '2.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -13,6 +13,11 @@ const urlsToCache = [
   '/live-stream.html',
   '/live-stream.js',
   '/config/backend-config.js',
+  '/panel.html',
+  '/panel-app/panel.css',
+  '/panel-app/panel-backend.js',
+  '/panel-app/panel-frontend.js',
+  '/panel-app/templates/pos.html',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.socket.io/4.7.2/socket.io.min.js'
 ];
