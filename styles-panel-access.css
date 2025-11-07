@@ -122,6 +122,66 @@ body.panel-access-page {
     cursor: wait;
 }
 
+.panel-submit.secondary {
+    background: rgba(148, 163, 184, 0.25);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    color: #e2e8f0;
+}
+
+.panel-submit.secondary:hover:not([disabled]) {
+    box-shadow: 0 14px 24px rgba(148, 163, 184, 0.25);
+}
+
+.panel-extra-actions {
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.panel-change-password-toggle {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.panel-change-password-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.panel-change-password-toggle.active {
+    background: rgba(220, 38, 38, 0.18);
+    border-color: rgba(220, 38, 38, 0.35);
+    color: #fecaca;
+}
+
+.panel-change-password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 1.1rem;
+    border-radius: 0.85rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-change-password-form[hidden] {
+    display: none;
+}
+
 .panel-hint {
     display: flex;
     justify-content: space-between;
