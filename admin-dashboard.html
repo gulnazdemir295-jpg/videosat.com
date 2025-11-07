@@ -3,339 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - VideoSat</title>
-    <meta name="description" content="VideoSat Admin Dashboard - Üye ve sistem yönetimi">
+    <title>VideoSat Admin Prosedür Paneli</title>
+    <meta name="description" content="VideoSat admin prosedürlerini yönetin, denetleyin ve kayıt altına alın.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modern-ui-enhancements.css">
+    <link rel="stylesheet" href="text-readability-fix.css">
+    <link rel="stylesheet" href="color-contrast-fix.css">
+    <link rel="stylesheet" href="red-white-black-theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin-dashboard.css">
-    <link rel="stylesheet" href="styles-responsive-tables.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="config/backend-config.js"></script>
-    <script src="services/responsive-tables.js"></script>
 </head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="admin-navbar">
-        <div class="admin-nav-container">
-            <div class="admin-nav-brand">
-                <i class="fas fa-shield-alt"></i>
-                <span>Admin Dashboard</span>
+<body class="panel-body">
+    <nav class="panel-nav" aria-label="Admin panel menü">
+        <div class="panel-nav-container">
+            <div class="panel-logo" data-section-target="dashboard">
+                <a href="#dashboard" data-section="dashboard">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>VideoSat</span>
+                </a>
+                <span class="role-badge admin">Admin</span>
             </div>
-            <div class="admin-nav-menu">
-                <a href="#dashboard" class="admin-nav-link active" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+            <div class="panel-nav-menu">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-layer-group"></i>
+                    Prosedür Özeti
                 </a>
-                <a href="#users" class="admin-nav-link" data-section="users">
-                    <i class="fas fa-users"></i> Üyeler
+                <a href="#procedures" class="nav-link" data-section="procedures">
+                    <i class="fas fa-route"></i>
+                    Prosedür Akışları
                 </a>
-                <a href="#streams" class="admin-nav-link" data-section="streams">
-                    <i class="fas fa-video"></i> Yayınlar
+                <a href="#checklists" class="nav-link" data-section="checklists">
+                    <i class="fas fa-clipboard-check"></i>
+                    Kontrol Listeleri
                 </a>
-                <a href="#statistics" class="admin-nav-link" data-section="statistics">
-                    <i class="fas fa-chart-bar"></i> İstatistikler
+                <a href="#documentation" class="nav-link" data-section="documentation">
+                    <i class="fas fa-book"></i>
+                    Dokümantasyon
                 </a>
             </div>
-            <div class="admin-nav-user">
-                <span id="adminUserEmail">Admin</span>
-                <button class="btn btn-outline btn-sm" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Çıkış
+            <div class="panel-user">
+                <div class="user-welcome admin-welcome">
+                    <i class="fas fa-user-shield"></i>
+                    <div class="welcome-text">
+                        <span class="welcome-label">Aktif Admin</span>
+                        <span id="adminName" class="welcome-name">Admin</span>
+                        <span id="adminMemberNumber" class="welcome-member">admin@videosat.com</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-small" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Çıkış
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="admin-main">
-        <!-- Dashboard Section -->
-        <section id="dashboard-section" class="admin-section active">
-            <div class="admin-container">
-                <h1 class="admin-title">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </h1>
-                
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value" id="statTotalUsers">0</h3>
-                            <p class="stat-label">Toplam Üye</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                            <i class="fas fa-video"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value" id="statTotalStreams">0</h3>
-                            <p class="stat-label">Toplam Yayın</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value" id="statTotalErrors">0</h3>
-                            <p class="stat-label">Hatalar (24s)</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-value" id="statActiveStreams">0</h3>
-                            <p class="stat-label">Aktif Yayınlar</p>
-                        </div>
-                    </div>
+    <main class="panel-main">
+        <section id="dashboard" class="panel-section active" aria-labelledby="dashboardTitle">
+            <div class="section-header">
+                <div>
+                    <h1 id="dashboardTitle"><i class="fas fa-compass"></i> Admin Prosedür Uyum Özeti</h1>
+                    <p>VideoSat admin operasyonları için tanımlı prosedürlerin güncel durumunu, son denetim notlarını ve aksiyon gereksinimlerini tek ekranda izleyin.</p>
                 </div>
-
-                <!-- Quick Actions -->
-                <div class="admin-card">
-                    <h2 class="admin-card-title">Hızlı İşlemler</h2>
-                    <div class="quick-actions">
-                        <button class="btn btn-primary" onclick="showCreateUserModal()">
-                            <i class="fas fa-user-plus"></i> Yeni Üye Ekle
-                        </button>
-                        <button class="btn btn-outline" onclick="exportUsers()">
-                            <i class="fas fa-download"></i> Üye Export
-                        </button>
-                        <button class="btn btn-outline" onclick="refreshStats()">
-                            <i class="fas fa-sync-alt"></i> Yenile
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Users Section -->
-        <section id="users-section" class="admin-section">
-            <div class="admin-container">
-                <div class="admin-header">
-                    <h1 class="admin-title">
-                        <i class="fas fa-users"></i> Üye Yönetimi
-                    </h1>
-                    <button class="btn btn-primary" onclick="showCreateUserModal()">
-                        <i class="fas fa-user-plus"></i> Yeni Üye
+                <div class="section-actions">
+                    <button class="btn btn-primary" id="exportSummary">
+                        <i class="fas fa-file-export"></i>
+                        Özeti Dışa Aktar
+                    </button>
+                    <button class="btn btn-outline" id="refreshSnapshot">
+                        <i class="fas fa-sync-alt"></i>
+                        Denetimi Güncelle
                     </button>
                 </div>
+            </div>
 
-                <!-- Filters -->
-                <div class="admin-card">
-                    <div class="filters-grid">
-                        <div class="filter-group">
-                            <label>Ara</label>
-                            <input type="text" id="userSearch" class="form-input" placeholder="Email, şirket adı...">
-                        </div>
-                        <div class="filter-group">
-                            <label>Rol</label>
-                            <select id="userRoleFilter" class="form-select">
-                                <option value="">Tüm Roller</option>
-                                <option value="satici">Satıcı</option>
-                                <option value="musteri">Müşteri</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Durum</label>
-                            <select id="userStatusFilter" class="form-select">
-                                <option value="">Tüm Durumlar</option>
-                                <option value="active">Aktif</option>
-                                <option value="inactive">Pasif</option>
-                                <option value="banned">Banlı</option>
-                                <option value="suspended">Askıda</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <button class="btn btn-primary" onclick="applyFilters()">
-                                <i class="fas fa-search"></i> Filtrele
-                            </button>
-                            <button class="btn btn-outline" onclick="resetFilters()">
-                                <i class="fas fa-redo"></i> Sıfırla
-                            </button>
-                        </div>
-                    </div>
+            <div id="procedureSummary" class="summary-grid" aria-live="polite"></div>
+
+            <div class="timeline-card" aria-labelledby="timelineTitle">
+                <div class="timeline-header">
+                    <h2 id="timelineTitle"><i class="fas fa-clock"></i> Son Denetim ve Güncelleme Kronolojisi</h2>
+                    <p>Admin prosedürleri için yapılan son kontrollerin tarihçesi ve sorumluları.</p>
                 </div>
-
-                <!-- Users Table -->
-                <div class="admin-card">
-                    <div class="table-container">
-                        <table class="admin-table responsive-table" id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" id="selectAllUsers"></th>
-                                    <th>Email</th>
-                                    <th>Şirket</th>
-                                    <th>Rol</th>
-                                    <th>Durum</th>
-                                    <th>Kayıt Tarihi</th>
-                                    <th>Son Giriş</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <tr>
-                                    <td colspan="8" class="text-center">
-                                        <div class="loading-spinner"></div>
-                                        Yükleniyor...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="pagination" id="usersPagination">
-                        <!-- Pagination will be inserted here -->
-                    </div>
-                </div>
+                <ol id="auditTimeline" class="timeline-list"></ol>
             </div>
         </section>
 
-        <!-- Streams Section -->
-        <section id="streams-section" class="admin-section">
-            <div class="admin-container">
-                <h1 class="admin-title">
-                    <i class="fas fa-video"></i> Yayın Yönetimi
-                </h1>
-                <div class="admin-card">
-                    <p>Yayın yönetimi yakında eklenecek...</p>
+        <section id="procedures" class="panel-section" aria-labelledby="proceduresTitle">
+            <div class="section-header">
+                <div>
+                    <h1 id="proceduresTitle"><i class="fas fa-route"></i> Prosedür Akışları</h1>
+                    <p>Her prosedür için adım adım anlatım, kontrol maddeleri ve ilgili dokümantasyon bağlantıları.</p>
+                </div>
+                <div class="section-actions">
+                    <input type="search" id="procedureSearch" class="search-input" placeholder="Prosedür ara..." aria-label="Prosedür arama">
                 </div>
             </div>
+            <div id="procedureList" class="procedure-grid"></div>
         </section>
 
-        <!-- Statistics Section -->
-        <section id="statistics-section" class="admin-section">
-            <div class="admin-container">
-                <h1 class="admin-title">
-                    <i class="fas fa-chart-bar"></i> İstatistikler
-                </h1>
-                <div class="admin-card">
-                    <p>Detaylı istatistikler yakında eklenecek...</p>
+        <section id="checklists" class="panel-section" aria-labelledby="checklistTitle">
+            <div class="section-header">
+                <div>
+                    <h1 id="checklistTitle"><i class="fas fa-clipboard-check"></i> Kontrol Listeleri</h1>
+                    <p>Denetim sırasında işaretlenmek üzere hazırlanan prosedür bazlı checklist öğeleri.</p>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-outline" id="clearChecklist">
+                        <i class="fas fa-eraser"></i>
+                        İşaretleri Temizle
+                    </button>
                 </div>
             </div>
+            <div id="checklistContainer" class="checklist-grid"></div>
+        </section>
+
+        <section id="documentation" class="panel-section" aria-labelledby="documentationTitle">
+            <div class="section-header">
+                <div>
+                    <h1 id="documentationTitle"><i class="fas fa-book"></i> Kaynak Dokümantasyon</h1>
+                    <p>Prosedürlerin referans alındığı dokümanları hızlıca açın ve güncel tutun.</p>
+                </div>
+            </div>
+            <div id="documentationList" class="documentation-list"></div>
         </section>
     </main>
 
-    <!-- Create User Modal -->
-    <div id="createUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Yeni Üye Ekle</h2>
-                <button class="modal-close" onclick="closeModal('createUserModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="createUserForm" onsubmit="handleCreateUser(event)">
-                <div class="form-group">
-                    <label>E-posta *</label>
-                    <input type="email" id="createUserEmail" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label>Şifre *</label>
-                    <input type="password" id="createUserPassword" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label>Şirket Adı *</label>
-                    <input type="text" id="createUserCompany" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label>Rol *</label>
-                    <select id="createUserRole" class="form-select" required>
-                        <option value="satici">Satıcı</option>
-                        <option value="musteri">Müşteri</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Ad</label>
-                    <input type="text" id="createUserFirstName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Soyad</label>
-                    <input type="text" id="createUserLastName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Telefon</label>
-                    <input type="tel" id="createUserPhone" class="form-input">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('createUserModal')">
-                        İptal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit User Modal -->
-    <div id="editUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Üye Düzenle</h2>
-                <button class="modal-close" onclick="closeModal('editUserModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="editUserForm" onsubmit="handleEditUser(event)">
-                <input type="hidden" id="editUserEmail">
-                <div class="form-group">
-                    <label>Şirket Adı</label>
-                    <input type="text" id="editUserCompany" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Rol</label>
-                    <select id="editUserRole" class="form-select">
-                        <option value="satici">Satıcı</option>
-                        <option value="musteri">Müşteri</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Durum</label>
-                    <select id="editUserStatus" class="form-select">
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Pasif</option>
-                        <option value="banned">Banlı</option>
-                        <option value="suspended">Askıda</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Ad</label>
-                    <input type="text" id="editUserFirstName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Soyad</label>
-                    <input type="text" id="editUserLastName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Telefon</label>
-                    <input type="tel" id="editUserPhone" class="form-input">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('editUserModal')">
-                        İptal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="services/admin-dashboard-service.js"></script>
-    <script src="admin-dashboard.js"></script>
+    <script src="admin-dashboard.js" defer></script>
 </body>
 </html>
 

@@ -1,809 +1,556 @@
-/**
- * Admin Dashboard JavaScript
- * Admin panel için ana JavaScript dosyası
- */
+'use strict';
 
-// Global variables
-let currentPage = 1;
-let pageSize = 50;
-let currentFilters = {
-    search: '',
-    role: '',
-    status: ''
+const STATUS_META = {
+    compliant: { label: 'Uyumlu', icon: 'fa-check-circle', className: 'status-pill status-compliant' },
+    warning: { label: 'Gözden Geçir', icon: 'fa-exclamation-triangle', className: 'status-pill status-warning' },
+    review: { label: 'Denetim Planlandı', icon: 'fa-flag', className: 'status-pill status-review' }
 };
 
-const FALLBACK_USERS = [
-    { email: 'admin@videosat.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', status: 'active' },
-    { email: 'admin@basvideo.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', status: 'active' },
-    { email: 'hammaddeci@videosat.com', password: 'test123', role: 'hammaddeci', companyName: 'Hammadde Tedarik A.Ş.', status: 'active' },
-    { email: 'uretici@videosat.com', password: 'test123', role: 'uretici', companyName: 'Üretim Firma Ltd.', status: 'active' },
-    { email: 'toptanci@videosat.com', password: 'test123', role: 'toptanci', companyName: 'Toptan Satış A.Ş.', status: 'active' },
-    { email: 'satici@videosat.com', password: 'satici123', role: 'satici', companyName: 'Perakende Satış Ltd.', status: 'active' }
+const PROCEDURE_DATA = [
+    {
+        id: 'product-onboarding',
+        title: 'Ürün Ekleme Prosedürü',
+        icon: 'fa-box-open',
+        owner: 'Satıcı Operasyon Ekibi',
+        status: 'compliant',
+        summary: 'Ürünlerin sisteme hatasız şekilde alınması ve stok kayıtlarının doğrulanması.',
+        lastAudit: '2025-11-03',
+        nextReview: '2025-12-02',
+        auditNote: 'Form alanları ve birim kontrolleri 3 Kasım denetiminde sorunsuz geçti.',
+        sentences: [
+            'Rolüne ait panele giriş yapan kullanıcı Ürün Yönetimi sekmesine geçer ve Yeni Ürün Ekle butonuna tıklar.',
+            'Ürün adı, açıklaması, kategori ve marka alanları prosedürde tanımlandığı biçimde eksiksiz doldurulur.',
+            'Birim seçimi yalnızca kg, m², m³, litre, gram veya adet seçeneklerinden biriyle yapılır ve seçime göre fiyat alanı doğrulanır.',
+            'Birim fiyatı, stok miktarı ve minimum sipariş değerleri seçilen birimle tutarlı olacak şekilde girilir.',
+            'Ürün görselleri yüklenir, optimizasyon kontrolü yapılır ve Kaydet butonu ile kayıt tamamlanır.',
+            'Kayıt sonrası ürün listesi kontrol edilerek başarı mesajı doğrulanır ve log kaydı alınır.'
+        ],
+        controls: [
+            'Birim seçimi prosedürdeki altı seçenekle sınırlandırılmıştır.',
+            'Fiyat ve stok alanları minimum sipariş kuralına göre çift kontrol edilir.',
+            'Kaydetme sonrası ürün listesinde yepyeni kayıt doğrulanır ve loglanır.'
+        ],
+        checklist: [
+            'Yetki doğrulaması yapıldı ve panel erişim loglandı.',
+            'Birim ve fiyat alanları seçilen ölçü ile uyumlu.',
+            'Ürün kaydı sonrası liste ekranında görünürlük kontrol edildi.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §38', href: 'workflow-documentation.html#urun-ekleme', description: 'Ürün Ekleme Prosedürü detayı' }
+        ],
+        tags: ['Ürün', 'Stok', 'Form Doğrulaması']
+    },
+    {
+        id: 'order-management',
+        title: 'Sipariş Yönetimi Prosedürü',
+        icon: 'fa-arrows-rotate',
+        owner: 'Operasyon Koordinasyon Ekibi',
+        status: 'compliant',
+        summary: 'Talep, onay, üretim ve ödeme süreçlerini uçtan uca tanımlar.',
+        lastAudit: '2025-11-01',
+        nextReview: '2025-11-29',
+        auditNote: 'Sipariş akışı ve departmanlar arası transferler 1 Kasım kontrolünde onaylandı.',
+        sentences: [
+            'Hammaddeci ürün talebini başlatır; üretici stok kontrolü yapar ve teklif hazırlar.',
+            'Hammaddeci teklifi değerlendirir, onaylanan siparişler üretim sürecine aktarılır.',
+            'Üretici siparişi tamamlar, kalite kontrol yapar ve stok transferini toptancıya gerçekleştirir.',
+            'Toptancı stok yönetimini yürütür ve ürünleri satıcıya aktarır.',
+            'Satıcı müşteriye satış işlemini tamamlar, ödeme bildirimi admin paneline düşer.',
+            'Admin komisyon hesaplamasını yapar ve taraflara ödeme transferini gerçekleştirir.'
+        ],
+        controls: [
+            'Her rol için stok ve kalite kontrol kayıtları tutulur.',
+            'Onaylanan siparişler üretim tamamlanmadan stok çıkışına izin vermez.',
+            'Ödeme transferi sonrası taraflara dekont iletildiği loglanır.'
+        ],
+        checklist: [
+            'Talep ve teklif logları CRM ile senkronize edildi.',
+            'Üretim kalite kontrol raporu sisteme yüklendi.',
+            'Ödeme transfer dekontu paylaşıldı ve komisyon hesaplaması doğrulandı.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §107', href: 'workflow-documentation.html#siparis-yonetimi', description: 'Sipariş Yönetimi Prosedürü' }
+        ],
+        tags: ['Sipariş', 'Operasyon', 'Departmanlar']
+    },
+    {
+        id: 'payment-commission',
+        title: 'Ödeme ve Komisyon Prosedürü',
+        icon: 'fa-coins',
+        owner: 'Finans & Muhasebe',
+        status: 'review',
+        summary: 'Merkezi ödeme sistemi, komisyon formülü ve dağıtım takvimini yönetir.',
+        lastAudit: '2025-10-28',
+        nextReview: '2025-11-15',
+        auditNote: 'Komisyon formülü onaylandı, işlem ücretleri için güncelleme bekleniyor.',
+        sentences: [
+            'Müşteri ödemesi ve canlı yayın ücretleri admin hesabında toplanır.',
+            'Toplam gelir üzerinden %5 platform komisyonu ve %2 işlem ücreti kesilir.',
+            'Net bakiye hammadeci, üretici, toptancı ve satıcı paylarına dağıtılır.',
+            'Ödeme takvimi gereği acil, haftalık, aylık ve özel planlar takip edilir.',
+            'Her transfer öncesi IBAN doğrulaması ve bakiye kontrolü yapılır.',
+            'Tamamlanan transferler finans raporlarına işlenir ve taraflara bildirilir.'
+        ],
+        controls: [
+            'Komisyon formülü platform konfigürasyonu ile tutarlı olmalıdır.',
+            'Ödeme takvimi tetikleyicileri otomasyon loglarında doğrulanır.',
+            'Transfer sonrası hesap ekstresi arşivlenir.'
+        ],
+        checklist: [
+            'Net bakiye hesaplaması paydaş bazında kontrol edildi.',
+            'IBAN ve hesap unvanı eşleştirmesi yapıldı.',
+            'Ödeme sonrası finans raporu güncellendi.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §161', href: 'workflow-documentation.html#odeme-sistemi', description: 'Ödeme ve Komisyon Prosedürü' }
+        ],
+        tags: ['Finans', 'Komisyon', 'Ödeme Takvimi']
+    },
+    {
+        id: 'livestream',
+        title: 'Canlı Yayın Prosedürü',
+        icon: 'fa-broadcast-tower',
+        owner: 'Canlı Yayın Operasyonları',
+        status: 'warning',
+        summary: 'Canlı yayına hazırlık, yayın süreci ve sonlandırma adımlarını yönetir.',
+        lastAudit: '2025-10-30',
+        nextReview: '2025-11-12',
+        auditNote: 'Bakiye kontrol otomasyonunda iyileştirme planlandı; kontroller devam ediyor.',
+        sentences: [
+            'Yayın öncesi bakiye kontrol edilir, gerekirse bakiye yükleme akışı tamamlanır.',
+            'Kamera ve mikrofon erişimleri doğrulanır, yayınlanacak ürün ve sloganlar hazırlanır.',
+            'Canlı yayın başlatılarak ürün tanıtımı ve müşteri etkileşimi sürdürülür.',
+            'Siparişler yayın sırasında kaydedilir ve satış ekibine aktarılır.',
+            'Yayın sonlandırıldığında bakiye düşümü yapılır ve rapor oluşturulur.',
+            'Son adımda yayın kapanış raporu ve sipariş takibi başlatılır.'
+        ],
+        controls: [
+            'Bakiye yetersizse yayın başlatılamaz; yükleme ekranına otomatik yönlendirilir.',
+            'Yayın ekipman testi (kamera, mikrofon) her yayın öncesi doğrulanır.',
+            'Yayın sonrası rapor ve sipariş listesi CRM ile senkronize edilir.'
+        ],
+        checklist: [
+            'Bakiye kontrol raporu incelendi.',
+            'Ekipman testi logu kaydedildi.',
+            'Yayın kapanış raporu dosyalandı.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §203', href: 'workflow-documentation.html#canli-yayin', description: 'Canlı Yayın Prosedürü' }
+        ],
+        tags: ['Canlı Yayın', 'Satış', 'Bakiye']
+    },
+    {
+        id: 'admin-security',
+        title: 'Admin Güvenlik Prosedürü',
+        icon: 'fa-user-shield',
+        owner: 'Güvenlik Operasyonları',
+        status: 'warning',
+        summary: 'Admin hesaplarının korunması, oturum kontrolü ve alarm süreçlerini kapsar.',
+        lastAudit: '2025-11-04',
+        nextReview: '2025-11-11',
+        auditNote: 'Oturum süresi sınırı güncelleniyor; IP loglaması çalışıyor.',
+        sentences: [
+            'Admin erişimi yalnızca yetkilendirilmiş personellere verilir ve erişimler loglanır.',
+            'Şifreler karmaşıklık politikasına uygun şekilde belirlenir ve düzenli olarak güncellenir.',
+            'Oturum süresi sınırlaması uygulanır, pasif oturumlar otomatik olarak sonlandırılır.',
+            'IP adresi kayıtları tutulur, şüpheli aktivite durumunda uyarı sistemi devreye girer.',
+            'Alternatif admin hesapları (CEO vb.) için çift faktörlü doğrulama zorunludur.',
+            'Güvenlik kontrolleri haftalık raporlanır ve eksikler için aksiyon tanımlanır.'
+        ],
+        controls: [
+            'Şifre karmaşıklığı (uzunluk, karakter seti) denetlenir.',
+            'Oturum süreleri ve başarısız giriş denemeleri loglanır.',
+            'Şüpheli IP listesi güncel tutulur ve alarm sistemi test edilir.'
+        ],
+        checklist: [
+            'Şifre politikası güncellendi ve iletişime açıldı.',
+            'Oturum süresi sınırı test edildi.',
+            'IP log kayıtları incelendi ve arşivlendi.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §260', href: 'workflow-documentation.html#guvenlik', description: 'Güvenlik ve Admin Prosedürü' }
+        ],
+        tags: ['Güvenlik', 'Kimlik Doğrulama', 'Loglama']
+    },
+    {
+        id: 'emergency',
+        title: 'Acil Durum Prosedürü',
+        icon: 'fa-bolt',
+        owner: 'Platform SRE Ekibi',
+        status: 'review',
+        summary: 'Sistem arızaları ve güvenlik ihlallerinde uygulanacak acil aksiyonları tanımlar.',
+        lastAudit: '2025-10-26',
+        nextReview: '2025-11-09',
+        auditNote: 'İzolasyon planı güncellendi, raporlama şablonu yeniden düzenlenecek.',
+        sentences: [
+            'Sistem arızası veya güvenlik ihlali tespit edildiğinde acil bildirim tetiklenir.',
+            'Hızlı müdahale ekibi olayı izolasyon prosedürüne göre sınırlar.',
+            'Olay analizi gerçekleştirilir ve kök neden raporu hazırlanır.',
+            'Gerekli düzeltme ve güvenlik önlemleri uygulanır.',
+            'Sonuçlar raporlanır ve prosedür iyileştirmesi için geri bildirim alınır.'
+        ],
+        controls: [
+            'Bildirim zinciri ve iletişim kanalları test edilir.',
+            'İzolasyon adımları için runbook güncelliği doğrulanır.',
+            'Raporlama şablonu ve kök neden analizi çıktıları arşivlenir.'
+        ],
+        checklist: [
+            'Alarm kanalları test edildi.',
+            'İzolasyon runbook’u gözden geçirildi.',
+            'Olay raporu şablonu güncellendi.'
+        ],
+        docs: [
+            { label: 'PROCEDURES_WORKFLOW.md §297', href: 'PROCEDURES_WORKFLOW.md', description: 'Acil Durum Prosedürü' }
+        ],
+        tags: ['Acil Durum', 'SRE', 'Olay Yönetimi']
+    }
 ];
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Admin Dashboard yükleniyor...');
-    
-    // Check admin authentication
-    checkAdminAuth();
-    ensureAdminSeed();
-    
-    // Initialize navigation
+let currentSearchTerm = '';
+
+window.addEventListener('DOMContentLoaded', () => {
+    const adminUser = checkAdminAuth();
+    if (adminUser) {
+        updateAdminBanner(adminUser);
+    }
+
     initNavigation();
-    
-    // Load initial data
-    loadDashboardStats();
-    loadUsers();
-    
-    // Setup event listeners
-    setupEventListeners();
-    
-    console.log('✅ Admin Dashboard yüklendi');
+    renderSummaryCards();
+    renderAuditTimeline();
+    renderProcedureCards();
+    renderChecklists();
+    renderDocumentation();
+    bindActions();
 });
 
-/**
- * Check admin authentication
- */
 function checkAdminAuth() {
     try {
-        const userStr = localStorage.getItem('currentUser');
-        if (!userStr) {
+        const currentUserStr = localStorage.getItem('currentUser');
+        if (!currentUserStr) {
+            return {
+                email: 'admin@videosat.com',
+                firstName: 'Admin',
+                role: 'admin'
+            };
+        }
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser?.role !== 'admin') {
             window.location.href = 'index.html';
-            return;
+            return null;
         }
-        
-        const user = JSON.parse(userStr);
-        if (user.role !== 'admin') {
-            window.location.href = 'index.html';
-            return;
-        }
-        
-        // Set admin email
-        const adminEmailElement = document.getElementById('adminUserEmail');
-        if (adminEmailElement) {
-            adminEmailElement.textContent = user.email || 'Admin';
-        }
+        return currentUser;
     } catch (error) {
-        console.error('Auth check error:', error);
-        window.location.href = 'index.html';
+        console.warn('Admin auth kontrolü sırasında hata:', error);
+        return {
+            email: 'admin@videosat.com',
+            firstName: 'Admin',
+            role: 'admin'
+        };
     }
 }
 
-function getStoredUsers() {
-    try {
-        const usersStr = localStorage.getItem('users');
-        if (!usersStr) return [];
-        const parsed = JSON.parse(usersStr);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-        console.warn('Stored users parse failed:', error);
-        return [];
-    }
+function updateAdminBanner(user) {
+    const adminName = document.getElementById('adminName');
+    const adminMember = document.getElementById('adminMemberNumber');
+
+    if (!adminName || !adminMember) return;
+
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+    adminName.textContent = fullName || user.email || 'Admin';
+    adminMember.textContent = user.email || 'admin@videosat.com';
 }
 
-function saveStoredUsers(users) {
-    try {
-        localStorage.setItem('users', JSON.stringify(users));
-    } catch (error) {
-        console.warn('Save users failed:', error);
-    }
-}
-
-function ensureAdminSeed() {
-    const storedUsers = getStoredUsers();
-    const emails = storedUsers.map(u => (u.email || '').toLowerCase());
-    let mutated = false;
-
-    FALLBACK_USERS.forEach(seed => {
-        const email = seed.email.toLowerCase();
-        if (!emails.includes(email)) {
-            storedUsers.push({
-                id: seed.id || `seed-${email}`,
-                email: seed.email,
-                password: seed.password,
-                role: seed.role,
-                companyName: seed.companyName,
-                status: seed.status || 'active',
-                createdAt: seed.createdAt || new Date().toISOString(),
-                lastLogin: seed.lastLogin || new Date().toISOString()
-            });
-            mutated = true;
-        }
-    });
-
-    if (mutated) {
-        saveStoredUsers(storedUsers);
-    }
-}
-
-/**
- * Initialize navigation
- */
 function initNavigation() {
-    const navLinks = document.querySelectorAll('.admin-nav-link');
+    const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const section = this.getAttribute('data-section');
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const section = link.getAttribute('data-section');
+            if (!section) return;
             switchSection(section);
         });
     });
 }
 
-/**
- * Switch section
- */
-function switchSection(sectionName) {
-    // Hide all sections
-    document.querySelectorAll('.admin-section').forEach(section => {
-        section.classList.remove('active');
+function switchSection(sectionId) {
+    document.querySelectorAll('.panel-section').forEach(section => {
+        section.classList.toggle('active', section.id === sectionId);
     });
-    
-    // Remove active class from nav links
-    document.querySelectorAll('.admin-nav-link').forEach(link => {
-        link.classList.remove('active');
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('data-section') === sectionId);
     });
-    
-    // Show selected section
-    const section = document.getElementById(`${sectionName}-section`);
-    if (section) {
-        section.classList.add('active');
-    }
-    
-    // Set active nav link
-    const navLink = document.querySelector(`[data-section="${sectionName}"]`);
-    if (navLink) {
-        navLink.classList.add('active');
-    }
-    
-    // Load section data
-    if (sectionName === 'users') {
-        loadUsers();
-    } else if (sectionName === 'dashboard') {
-        loadDashboardStats();
-    }
 }
 
-/**
- * Setup event listeners
- */
-function setupEventListeners() {
-    // User search
-    const userSearch = document.getElementById('userSearch');
-    if (userSearch) {
-        userSearch.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                applyFilters();
-            }
-        });
-    }
-    
-    // Select all checkbox
-    const selectAllCheckbox = document.getElementById('selectAllUsers');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    }
-}
+function renderSummaryCards() {
+    const container = document.getElementById('procedureSummary');
+    if (!container) return;
 
-/**
- * Load dashboard statistics
- */
-async function loadDashboardStats() {
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        
-        // Load user stats
-        try {
-            const userStatsResponse = await fetch(`${apiUrl}/admin/users/stats`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            
-            if (userStatsResponse.ok) {
-                const userStats = await userStatsResponse.json();
-                if (userStats.ok) {
-                    document.getElementById('statTotalUsers').textContent = userStats.total || 0;
-                }
-            } else {
-                applyFallbackUserStats();
-            }
-        } catch (error) {
-            console.error('Error loading user stats:', error);
-            applyFallbackUserStats();
-        }
-        
-        // Load stream stats
-        try {
-            const streamStatsResponse = await fetch(`${apiUrl}/admin/streams/stats`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            
-            if (streamStatsResponse.ok) {
-                const streamStats = await streamStatsResponse.json();
-                if (streamStats.ok) {
-                    document.getElementById('statTotalStreams').textContent = streamStats.total || 0;
-                    document.getElementById('statActiveStreams').textContent = streamStats.active || 0;
-                }
-            }
-        } catch (error) {
-            console.error('Error loading stream stats:', error);
-        }
-        
-        // Load error stats (if endpoint exists)
-        try {
-            const errorStatsResponse = await fetch(`${apiUrl}/errors/stats`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            
-            if (errorStatsResponse.ok) {
-                const errorStats = await errorStatsResponse.json();
-                document.getElementById('statTotalErrors').textContent = errorStats.total || 0;
-            } else {
-                // Fallback if endpoint doesn't exist
-                document.getElementById('statTotalErrors').textContent = '0';
-            }
-        } catch (error) {
-            console.error('Error loading error stats:', error);
-            document.getElementById('statTotalErrors').textContent = '0';
-        }
-    } catch (error) {
-        console.error('Error loading dashboard stats:', error);
-        applyFallbackUserStats();
-    }
-}
+    container.innerHTML = '';
 
-function applyFallbackUserStats() {
-    const fallbackUsers = mergeUsers(getStoredUsers(), FALLBACK_USERS);
-    document.getElementById('statTotalUsers').textContent = fallbackUsers.length || 0;
-}
-
-/**
- * Load users list
- */
-async function loadUsers() {
-    const tableBody = document.getElementById('usersTableBody');
-    if (!tableBody) return;
-
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><div class="loading-spinner"></div> Yükleniyor...</td></tr>';
-
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const params = new URLSearchParams({
-            limit: pageSize,
-            offset: (currentPage - 1) * pageSize,
-            ...currentFilters
-        });
-
-        const response = await fetch(`${apiUrl}/admin/users?${params}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to load users');
-        }
-
-        const data = await response.json();
-
-        if (!data.ok || !data.users || data.users.length === 0) {
-            console.warn('Backend kullanıcı listesi boş döndü, yerel veri kullanılacak.');
-            renderFallbackUsers();
-            return;
-        }
-
-        renderUsersTable(data.users);
-        renderPagination(data.total, pageSize, currentPage);
-
-    } catch (error) {
-        console.error('Error loading users:', error);
-        renderFallbackUsers(error.message);
-    }
-}
-
-function renderUsersTable(users) {
-    const tableBody = document.getElementById('usersTableBody');
-    if (!tableBody) return;
-
-    if (!users || users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Üye bulunamadı</td></tr>';
-        return;
-    }
-
-    tableBody.innerHTML = users.map(user => `
-        <tr>
-            <td><input type="checkbox" value="${user.email}"></td>
-            <td>${escapeHtml(user.email)}</td>
-            <td>${escapeHtml(user.companyName || '-')}</td>
-            <td><span class="status-badge">${escapeHtml(user.role || 'user')}</span></td>
-            <td><span class="status-badge status-${user.status || 'inactive'}">${getStatusText(user.status)}</span></td>
-            <td>${formatDate(user.createdAt)}</td>
-            <td>${formatDate(user.lastLogin) || '-'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn btn-icon btn-outline" onclick="editUser('${user.email}')" title="Düzenle">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-icon btn-outline" onclick="deleteUser('${user.email}')" title="Sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    ${user.status === 'banned' || user.status === 'suspended' ? `
-                        <button class="btn btn-icon btn-outline" onclick="activateUser('${user.email}')" title="Aktifleştir">
-                            <i class="fas fa-check"></i>
-                        </button>` : `
-                        <button class="btn btn-icon btn-outline" onclick="banUser('${user.email}')" title="Banla">
-                            <i class="fas fa-ban"></i>
-                        </button>`
-                    }
+    PROCEDURE_DATA.forEach(proc => {
+        const status = STATUS_META[proc.status] || STATUS_META.review;
+        const card = document.createElement('article');
+        card.className = 'summary-card';
+        card.innerHTML = `
+            <div class="summary-card-header">
+                <div class="summary-card-icon"><i class="fas ${proc.icon}"></i></div>
+                <div>
+                    <h3>${proc.title}</h3>
+                    <p>${proc.summary}</p>
                 </div>
-            </td>
-        </tr>
-    `).join('');
+            </div>
+            <div class="summary-meta">
+                <span><i class="fas fa-user-cog"></i>${proc.owner}</span>
+                <span><i class="far fa-calendar-check"></i>Son denetim: ${formatDate(proc.lastAudit)}</span>
+                <span><i class="far fa-calendar-plus"></i>Sonraki kontrol: ${formatDate(proc.nextReview)}</span>
+            </div>
+            <footer>
+                <span class="${status.className}"><i class="fas ${status.icon}"></i>${status.label}</span>
+                <a href="#procedures" class="card-action" data-view-procedure="${proc.id}"><i class="fas fa-arrow-right"></i> Detayları Gör</a>
+            </footer>
+        `;
+        container.appendChild(card);
+    });
 }
 
-function renderFallbackUsers(errorMessage) {
-    if (errorMessage) {
-        console.warn('Backend kullanıcı listesi alınamadı:', errorMessage);
+function renderAuditTimeline() {
+    const list = document.getElementById('auditTimeline');
+    if (!list) return;
+
+    const sorted = [...PROCEDURE_DATA].sort((a, b) => new Date(b.lastAudit) - new Date(a.lastAudit));
+
+    list.innerHTML = sorted.map(proc => {
+        const status = STATUS_META[proc.status] || STATUS_META.review;
+        return `
+            <li>
+                <div class="timeline-title">${proc.title}</div>
+                <div class="timeline-meta">
+                    <span><i class="far fa-calendar-check"></i>${formatDate(proc.lastAudit)}</span>
+                    <span><i class="fas fa-user"></i>${proc.owner}</span>
+                    <span><i class="fas ${status.icon}"></i>${status.label}</span>
+                </div>
+                <p>${proc.auditNote}</p>
+            </li>
+        `;
+    }).join('');
+}
+
+function renderProcedureCards() {
+    const container = document.getElementById('procedureList');
+    if (!container) return;
+
+    const filterTerm = currentSearchTerm.trim().toLowerCase();
+    const filtered = PROCEDURE_DATA.filter(proc => {
+        if (!filterTerm) return true;
+        return [proc.title, proc.summary, proc.owner, ...(proc.tags || [])]
+            .join(' ')
+            .toLowerCase()
+            .includes(filterTerm);
+    });
+
+    container.innerHTML = '';
+
+    filtered.forEach(proc => {
+        const card = document.createElement('article');
+        card.className = 'procedure-card';
+        card.id = `procedure-${proc.id}`;
+        card.innerHTML = `
+            <div class="procedure-header">
+                <i class="fas ${proc.icon}"></i>
+                <div>
+                    <h3>${proc.title}</h3>
+                    <span>${proc.owner}</span>
+                </div>
+            </div>
+            <div class="procedure-body">
+                <p>${proc.summary}</p>
+                <div>
+                    <h4>Adımlar</h4>
+                    <ol>${proc.sentences.map(sentence => `<li>${sentence}</li>`).join('')}</ol>
+                </div>
+                <div>
+                    <h4>Kontroller</h4>
+                    <ul>${proc.controls.map(control => `<li>${control}</li>`).join('')}</ul>
+                </div>
+            </div>
+            <div class="procedure-footer">
+                <div class="procedure-tags">
+                    ${(proc.tags || []).map(tag => `<span class="procedure-tag">${tag}</span>`).join('')}
+                </div>
+                <div class="procedure-links">
+                    ${(proc.docs || []).map(doc => `<a class="card-action" href="${doc.href}" target="_blank" rel="noopener">${doc.label}</a>`).join('')}
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    if (!filtered.length) {
+        container.innerHTML = '<p>Arama kriterine uyan prosedür bulunamadı.</p>';
+    }
+}
+
+function renderChecklists() {
+    const container = document.getElementById('checklistContainer');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    PROCEDURE_DATA.forEach(proc => {
+        const card = document.createElement('div');
+        card.className = 'checklist-card';
+        card.innerHTML = `
+            <div class="checklist-card-header">
+                <h3><i class="fas ${proc.icon}"></i> ${proc.title}</h3>
+                <span class="checklist-meta">Sonraki kontrol: ${formatDate(proc.nextReview)}</span>
+            </div>
+            <ul>
+                ${proc.checklist.map((item, index) => `
+                    <li>
+                        <label>
+                            <input type="checkbox" data-procedure="${proc.id}" data-index="${index}">
+                            ${item}
+                        </label>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function renderDocumentation() {
+    const container = document.getElementById('documentationList');
+    if (!container) return;
+
+    const docMap = new Map();
+    PROCEDURE_DATA.forEach(proc => {
+        (proc.docs || []).forEach(doc => {
+            if (!docMap.has(doc.href)) {
+                docMap.set(doc.href, {
+                    label: doc.label,
+                    description: doc.description || proc.title,
+                    procedures: new Set([proc.title])
+                });
+            } else {
+                docMap.get(doc.href).procedures.add(proc.title);
+            }
+        });
+    });
+
+    container.innerHTML = '';
+
+    Array.from(docMap.entries()).forEach(([href, meta]) => {
+        const item = document.createElement('div');
+        item.className = 'documentation-item';
+        item.innerHTML = `
+            <div>
+                <h3>${meta.label}</h3>
+                <p>${meta.description}</p>
+                <p><strong>İlgili prosedürler:</strong> ${Array.from(meta.procedures).join(', ')}</p>
+            </div>
+            <a href="${href}" target="_blank" rel="noopener">
+                <i class="fas fa-arrow-up-right-from-square"></i>
+                Aç
+            </a>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function bindActions() {
+    document.querySelectorAll('[data-view-procedure]').forEach(link => {
+        link.addEventListener('click', (event) => {
+            const procedureId = event.currentTarget.getAttribute('data-view-procedure');
+            switchSection('procedures');
+            focusProcedureCard(procedureId);
+        });
+    });
+
+    const searchInput = document.getElementById('procedureSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+            currentSearchTerm = event.target.value;
+            renderProcedureCards();
+        });
     }
 
-    const storedUsers = getStoredUsers();
-    const mergedUsers = mergeUsers(storedUsers, FALLBACK_USERS);
-    const adminUser = getCurrentAdmin();
-
-    if (adminUser) {
-        const exists = mergedUsers.some(user => (user.email || '').toLowerCase() === adminUser.email.toLowerCase());
-        if (!exists) {
-            mergedUsers.push({
-                ...adminUser,
-                status: adminUser.status || 'active',
-                companyName: adminUser.companyName || 'VideoSat Admin',
-                createdAt: adminUser.createdAt || new Date().toISOString(),
-                lastLogin: adminUser.lastLogin || new Date().toISOString()
+    const clearButton = document.getElementById('clearChecklist');
+    if (clearButton) {
+        clearButton.addEventListener('click', () => {
+            document.querySelectorAll('#checklistContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
             });
-        }
+        });
     }
 
-    renderUsersTable(mergedUsers);
-    currentPage = 1;
-    renderPagination(mergedUsers.length, pageSize, 1);
+    const exportButton = document.getElementById('exportSummary');
+    if (exportButton) {
+        exportButton.addEventListener('click', () => {
+            console.table(PROCEDURE_DATA.map(proc => ({
+                Prosedur: proc.title,
+                Durum: STATUS_META[proc.status]?.label || 'Tanımsız',
+                SonDenetim: formatDate(proc.lastAudit),
+                SonrakiKontrol: formatDate(proc.nextReview)
+            })));
+            alert('Özet raporu CSV/PDF olarak dışa aktarma işlemi geliştirme listesine alındı. Şimdilik konsol tablosunu kullanabilirsiniz.');
+        });
+    }
+
+    const refreshButton = document.getElementById('refreshSnapshot');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => {
+            renderAuditTimeline();
+            renderSummaryCards();
+            bindSummaryLinks();
+            alert('Denetim özeti yenilendi. Planlanan manuel kontrolleri tamamladığınızdan emin olun.');
+        });
+    }
+
+    bindSummaryLinks();
 }
 
-function mergeUsers(primary = [], secondary = []) {
-    const map = new Map();
-    [...primary, ...secondary].forEach(user => {
-        if (!user || !user.email) return;
-        const key = user.email.toLowerCase();
-        if (!map.has(key)) {
-            map.set(key, {
-                ...user,
-                status: user.status || 'active',
-                createdAt: user.createdAt || new Date().toISOString(),
-                lastLogin: user.lastLogin || new Date().toISOString()
+function bindSummaryLinks() {
+    document.querySelectorAll('[data-view-procedure]').forEach(link => {
+        if (!link.dataset.bound) {
+            link.dataset.bound = 'true';
+            link.addEventListener('click', (event) => {
+                const procedureId = event.currentTarget.getAttribute('data-view-procedure');
+                switchSection('procedures');
+                focusProcedureCard(procedureId);
             });
         }
     });
-    return Array.from(map.values());
 }
 
-function getCurrentAdmin() {
-    try {
-        const currentStr = localStorage.getItem('currentUser');
-        if (!currentStr) return null;
-        const parsed = JSON.parse(currentStr);
-        if (parsed && parsed.role === 'admin') {
-            return parsed;
-        }
-        return null;
-    } catch (error) {
-        console.warn('currentUser parse failed:', error);
-        return null;
-    }
+function focusProcedureCard(id) {
+    if (!id) return;
+    const card = document.getElementById(`procedure-${id}`);
+    if (!card) return;
+    card.classList.add('focus');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => card.classList.remove('focus'), 1600);
 }
 
-/**
- * Render pagination
- */
-function renderPagination(total, pageSize, currentPage) {
-    const pagination = document.getElementById('usersPagination');
-    if (!pagination) return;
-    
-    const totalPages = Math.ceil(total / pageSize);
-    if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-    }
-    
-    let html = '';
-    
-    // Previous button
-    html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
-        <i class="fas fa-chevron-left"></i> Önceki
-    </button>`;
-    
-    // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-        } else if (i === currentPage - 3 || i === currentPage + 3) {
-            html += `<button disabled>...</button>`;
-        }
-    }
-    
-    // Next button
-    html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
-        Sonraki <i class="fas fa-chevron-right"></i>
-    </button>`;
-    
-    pagination.innerHTML = html;
+function formatDate(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-/**
- * Go to page
- */
-function goToPage(page) {
-    currentPage = page;
-    loadUsers();
-}
-
-/**
- * Apply filters
- */
-function applyFilters() {
-    currentFilters.search = document.getElementById('userSearch').value || '';
-    currentFilters.role = document.getElementById('userRoleFilter').value || '';
-    currentFilters.status = document.getElementById('userStatusFilter').value || '';
-    currentPage = 1;
-    loadUsers();
-}
-
-/**
- * Reset filters
- */
-function resetFilters() {
-    document.getElementById('userSearch').value = '';
-    document.getElementById('userRoleFilter').value = '';
-    document.getElementById('userStatusFilter').value = '';
-    currentFilters = {
-        search: '',
-        role: '',
-        status: ''
-    };
-    currentPage = 1;
-    loadUsers();
-}
-
-/**
- * Show create user modal
- */
-function showCreateUserModal() {
-    const modal = document.getElementById('createUserModal');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-/**
- * Handle create user
- */
-async function handleCreateUser(e) {
-    e.preventDefault();
-    
-    const formData = {
-        email: document.getElementById('createUserEmail').value.trim(),
-        password: document.getElementById('createUserPassword').value,
-        companyName: document.getElementById('createUserCompany').value.trim(),
-        role: document.getElementById('createUserRole').value,
-        firstName: document.getElementById('createUserFirstName').value.trim(),
-        lastName: document.getElementById('createUserLastName').value.trim(),
-        phone: document.getElementById('createUserPhone').value.trim()
-    };
-    
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.ok) {
-            alert('Üye başarıyla oluşturuldu');
-            closeModal('createUserModal');
-            document.getElementById('createUserForm').reset();
-            loadUsers();
-            loadDashboardStats();
-        } else {
-            alert('Hata: ' + (data.message || 'Üye oluşturulamadı'));
-        }
-    } catch (error) {
-        console.error('Error creating user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Edit user
- */
-async function editUser(email) {
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users/${encodeURIComponent(email)}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load user');
-        }
-        
-        const data = await response.json();
-        if (!data.ok || !data.user) {
-            throw new Error('User not found');
-        }
-        
-        const user = data.user;
-        
-        // Fill edit form
-        document.getElementById('editUserEmail').value = user.email;
-        document.getElementById('editUserCompany').value = user.companyName || '';
-        document.getElementById('editUserRole').value = user.role || 'musteri';
-        document.getElementById('editUserStatus').value = user.status || 'active';
-        document.getElementById('editUserFirstName').value = user.firstName || '';
-        document.getElementById('editUserLastName').value = user.lastName || '';
-        document.getElementById('editUserPhone').value = user.phone || '';
-        
-        // Show modal
-        const modal = document.getElementById('editUserModal');
-        if (modal) {
-            modal.classList.add('active');
-        }
-    } catch (error) {
-        console.error('Error loading user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Handle edit user
- */
-async function handleEditUser(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('editUserEmail').value;
-    const formData = {
-        companyName: document.getElementById('editUserCompany').value.trim(),
-        role: document.getElementById('editUserRole').value,
-        status: document.getElementById('editUserStatus').value,
-        firstName: document.getElementById('editUserFirstName').value.trim(),
-        lastName: document.getElementById('editUserLastName').value.trim(),
-        phone: document.getElementById('editUserPhone').value.trim()
-    };
-    
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users/${encodeURIComponent(email)}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.ok) {
-            alert('Üye başarıyla güncellendi');
-            closeModal('editUserModal');
-            loadUsers();
-        } else {
-            alert('Hata: ' + (data.message || 'Üye güncellenemedi'));
-        }
-    } catch (error) {
-        console.error('Error updating user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Delete user
- */
-async function deleteUser(email) {
-    if (!confirm(`"${email}" adresli üyeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) {
-        return;
-    }
-    
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users/${encodeURIComponent(email)}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.ok) {
-            alert('Üye başarıyla silindi');
-            loadUsers();
-            loadDashboardStats();
-        } else {
-            alert('Hata: ' + (data.message || 'Üye silinemedi'));
-        }
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Ban user
- */
-async function banUser(email) {
-    if (!confirm(`"${email}" adresli üyeyi banlamak istediğinize emin misiniz?`)) {
-        return;
-    }
-    
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users/${encodeURIComponent(email)}/ban`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.ok) {
-            alert('Üye başarıyla banlandı');
-            loadUsers();
-        } else {
-            alert('Hata: ' + (data.message || 'Üye banlanamadı'));
-        }
-    } catch (error) {
-        console.error('Error banning user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Activate user
- */
-async function activateUser(email) {
-    try {
-        const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
-        const response = await fetch(`${apiUrl}/admin/users/${encodeURIComponent(email)}/activate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok && data.ok) {
-            alert('Üye başarıyla aktifleştirildi');
-            loadUsers();
-        } else {
-            alert('Hata: ' + (data.message || 'Üye aktifleştirilemedi'));
-        }
-    } catch (error) {
-        console.error('Error activating user:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Export users
- */
-async function exportUsers() {
-    try {
-        if (window.adminDashboardService) {
-            const success = await window.adminDashboardService.exportData('users', 'csv');
-            if (success) {
-                alert('Üyeler başarıyla export edildi');
-            } else {
-                alert('Export başarısız');
-            }
-        }
-    } catch (error) {
-        console.error('Error exporting users:', error);
-        alert('Hata: ' + error.message);
-    }
-}
-
-/**
- * Refresh stats
- */
-function refreshStats() {
-    loadDashboardStats();
-    loadUsers();
-}
-
-/**
- * Close modal
- */
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-/**
- * Logout
- */
 function logout() {
-    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
-        localStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
-    }
-}
-
-/**
- * Utility functions
- */
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function formatDate(dateString) {
-    if (!dateString) return null;
     try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('tr-TR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('videosat_user');
+        localStorage.removeItem('videosat_token');
+        localStorage.removeItem('videosat_refresh_token');
     } catch (error) {
-        return dateString;
+        console.warn('Oturum kapatma sırasında hata:', error);
     }
+    window.location.href = 'index.html';
 }
 
-function getStatusText(status) {
-    const statusMap = {
-        'active': 'Aktif',
-        'inactive': 'Pasif',
-        'banned': 'Banlı',
-        'suspended': 'Askıda'
-    };
-    return statusMap[status] || status;
-}
+window.logout = logout;
 
