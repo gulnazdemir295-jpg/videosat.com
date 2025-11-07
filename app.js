@@ -1010,12 +1010,16 @@ function scrollToFeatures() {
     });
 }
 
-function showAlert(message, type = 'info') {
-    // Remove existing alerts
+function showAlert(message, type = 'info', options = {}) {
+    if (window.toastService && typeof window.toastService.show === 'function') {
+        window.toastService.show(message, type, options);
+        return;
+    }
+    
+    // Fallback legacy alert
     const existingAlerts = document.querySelectorAll('.alert');
     existingAlerts.forEach(alert => alert.remove());
     
-    // Create new alert
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.innerHTML = `
@@ -1023,10 +1027,7 @@ function showAlert(message, type = 'info') {
         <span>${message}</span>
     `;
     
-    // Add to page
     document.body.appendChild(alert);
-    
-    // Position alert
     alert.style.position = 'fixed';
     alert.style.top = '100px';
     alert.style.right = '20px';
@@ -1034,12 +1035,11 @@ function showAlert(message, type = 'info') {
     alert.style.maxWidth = '400px';
     alert.style.boxShadow = 'var(--shadow-lg)';
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         if (alert.parentNode) {
             alert.remove();
         }
-    }, 5000);
+    }, options.duration || 5000);
 }
 
 function getAlertIcon(type) {

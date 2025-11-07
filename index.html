@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="styles-touch-targets.css">
     <link rel="stylesheet" href="styles-platform-specific.css">
     <link rel="stylesheet" href="styles-cookie-banner.css">
+    <link rel="stylesheet" href="styles-toast.css">
     <!-- Preload critical resources -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
@@ -98,7 +99,7 @@
     <!-- Loading Screen -->
     <script src="services/loading-screen.js"></script>
 </head>
-<body>
+<body data-toast-enabled="false">
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
@@ -575,6 +576,8 @@
                     'services/language-selector-loader.js',
                     'services/seo-service.js',
                     'services/error-tracking-service.js',
+                    'services/global-error-handler.js',
+                    'services/toast-service.js',
                     'services/admin-dashboard-service.js',
                     'services/file-upload-service.js',
                     'services/search-service.js',
