@@ -710,8 +710,28 @@ function redirectToDashboard() {
         return;
     }
     
-    // Panels klasörü silindi, tüm kullanıcıları canlı yayın sayfasına yönlendir
     const basePath = getBasePath();
+    
+    // Admin kullanıcılarını admin dashboard'a yönlendir
+    if (userRole === 'admin') {
+        const adminDashboardUrl = basePath + 'admin-dashboard.html';
+        console.log('🎯 Admin dashboard sayfasına yönlendiriliyor:', adminDashboardUrl);
+        
+        // Yönlendirme öncesi son kontrol
+        if (window.loginLogger) {
+            window.loginLogger.logLoginAttempt(
+                currentUser.email, 
+                '***', 
+                true, 
+                null
+            );
+        }
+        
+        window.location.href = adminDashboardUrl;
+        return;
+    }
+    
+    // Diğer kullanıcıları canlı yayın sayfasına yönlendir
     const liveStreamUrl = basePath + 'live-stream.html';
     
     console.log('🎯 Canlı yayın sayfasına yönlendiriliyor:', liveStreamUrl);

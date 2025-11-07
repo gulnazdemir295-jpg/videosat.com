@@ -761,31 +761,478 @@ app.get('/api/admin/users/stats', requireAdmin, (req, res) => {
   }
 });
 
-// Admin: get users list
-app.get('/api/admin/users', requireAdmin, (req, res) => {
+// Admin: get users list (with filtering and sorting)
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
+    const search = req.query.search || '';
+    const role = req.query.role || '';
+    const status = req.query.status || '';
     
-    const usersList = Array.from(users.values())
-      .slice(offset, offset + limit)
-      .map(u => ({
-        email: u.email,
-        role: 'user',
-        status: u.hasTime ? 'active' : 'inactive',
-        createdAt: u.createdAt || new Date().toISOString()
-      }));
+    let usersList = [];
+    
+    // Get users from DynamoDB or in-memory
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new ScanCommand({
+          TableName: USERS_TABLE
+        }));
+        usersList = result.Items || [];
+      } catch (dbError) {
+        console.error('DynamoDB scan error:', dbError);
+        // Fallback to in-memory
+        usersList = Array.from(users.values());
+      }
+    } else {
+      usersList = Array.from(users.values());
+    }
+    
+    // Apply filters
+    if (search) {
+      const searchLower = search.toLowerCase();
+      usersList = usersList.filter(u => 
+        (u.email && u.email.toLowerCase().includes(searchLower)) ||
+        (u.companyName && u.companyName.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (role) {
+      usersList = usersList.filter(u => u.role === role);
+    }
+    
+    if (status) {
+      usersList = usersList.filter(u => (u.status || (u.hasTime ? 'active' : 'inactive')) === status);
+    }
+    
+    // Map to response format
+    const mappedUsers = usersList.map(u => ({
+      email: u.email,
+      companyName: u.companyName || u.company_name || '',
+      role: u.role || 'musteri',
+      status: u.status || (u.hasTime ? 'active' : 'inactive'),
+      firstName: u.firstName || u.first_name || '',
+      lastName: u.lastName || u.last_name || '',
+      phone: u.phone || '',
+      createdAt: u.createdAt || u.created_at || new Date().toISOString(),
+      lastLogin: u.lastLogin || u.last_login || null
+    }));
+    
+    // Apply pagination
+    const total = mappedUsers.length;
+    const paginatedUsers = mappedUsers.slice(offset, offset + limit);
     
     res.json({
       ok: true,
-      users: usersList,
-      total: users.size,
+      users: paginatedUsers,
+      total,
       limit,
       offset
     });
   } catch (err) {
     console.error('Get users error:', err);
     res.status(500).json({ error: 'get_users_failed', detail: String(err) });
+  }
+});
+
+// Admin: get single user
+app.get('/api/admin/users/:email', requireAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    
+    let user = null;
+    
+    // Get user from DynamoDB or in-memory
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        user = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+        // Fallback to in-memory
+        user = users.get(email);
+      }
+    } else {
+      user = users.get(email);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user_not_found' });
+    }
+    
+    res.json({
+      ok: true,
+      user: {
+        email: user.email,
+        companyName: user.companyName || user.company_name || '',
+        role: user.role || 'musteri',
+        status: user.status || (user.hasTime ? 'active' : 'inactive'),
+        firstName: user.firstName || user.first_name || '',
+        lastName: user.lastName || user.last_name || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        createdAt: user.createdAt || user.created_at || new Date().toISOString(),
+        lastLogin: user.lastLogin || user.last_login || null
+      }
+    });
+  } catch (err) {
+    console.error('Get user error:', err);
+    res.status(500).json({ error: 'get_user_failed', detail: String(err) });
+  }
+});
+
+// Admin: create user
+app.post('/api/admin/users', requireAdmin, [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('companyName').notEmpty().trim(),
+  body('role').isIn(['satici', 'musteri', 'admin'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ ok: false, error: 'validation_failed', details: errors.array() });
+    }
+    
+    const { email, password, companyName, role, firstName, lastName, phone } = req.body;
+    
+    // Check if user exists
+    let existingUser = null;
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        existingUser = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+      }
+    } else {
+      existingUser = users.get(email);
+    }
+    
+    if (existingUser) {
+      return res.status(400).json({ ok: false, error: 'user_already_exists', message: 'Bu e-posta adresi zaten kayıtlı' });
+    }
+    
+    // Hash password
+    const bcrypt = require('bcryptjs');
+    const passwordHash = await bcrypt.hash(password, 10);
+    
+    // Create user object
+    const userData = {
+      email: email,
+      password: passwordHash,
+      companyName: companyName,
+      role: role || 'musteri',
+      firstName: firstName || '',
+      lastName: lastName || '',
+      phone: phone || '',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Save user
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        await dynamoClient.send(new PutCommand({
+          TableName: USERS_TABLE,
+          Item: userData
+        }));
+      } catch (dbError) {
+        console.error('DynamoDB put error:', dbError);
+        return res.status(500).json({ ok: false, error: 'database_error', message: 'Kullanıcı kaydedilemedi' });
+      }
+    } else {
+      users.set(email, userData);
+    }
+    
+    // Also save via userService if available
+    if (userService && userService.saveUser) {
+      try {
+        await userService.saveUser(userData);
+      } catch (svcError) {
+        console.error('UserService save error:', svcError);
+      }
+    }
+    
+    res.json({
+      ok: true,
+      message: 'Kullanıcı başarıyla oluşturuldu',
+      user: {
+        email: userData.email,
+        companyName: userData.companyName,
+        role: userData.role,
+        status: userData.status
+      }
+    });
+  } catch (err) {
+    console.error('Create user error:', err);
+    res.status(500).json({ ok: false, error: 'create_user_failed', detail: String(err) });
+  }
+});
+
+// Admin: update user
+app.put('/api/admin/users/:email', requireAdmin, [
+  body('role').optional().isIn(['satici', 'musteri', 'admin']),
+  body('status').optional().isIn(['active', 'inactive', 'banned', 'suspended'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ ok: false, error: 'validation_failed', details: errors.array() });
+    }
+    
+    const email = decodeURIComponent(req.params.email);
+    const { companyName, role, status, firstName, lastName, phone, address, city } = req.body;
+    
+    // Get existing user
+    let user = null;
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        user = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+        user = users.get(email);
+      }
+    } else {
+      user = users.get(email);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user_not_found', message: 'Kullanıcı bulunamadı' });
+    }
+    
+    // Update user data
+    if (companyName !== undefined) user.companyName = companyName;
+    if (role !== undefined) user.role = role;
+    if (status !== undefined) user.status = status;
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (city !== undefined) user.city = city;
+    user.updatedAt = new Date().toISOString();
+    
+    // Save updated user
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        await dynamoClient.send(new PutCommand({
+          TableName: USERS_TABLE,
+          Item: user
+        }));
+      } catch (dbError) {
+        console.error('DynamoDB put error:', dbError);
+        return res.status(500).json({ ok: false, error: 'database_error', message: 'Kullanıcı güncellenemedi' });
+      }
+    } else {
+      users.set(email, user);
+    }
+    
+    // Also update via userService if available
+    if (userService && userService.saveUser) {
+      try {
+        await userService.saveUser(user);
+      } catch (svcError) {
+        console.error('UserService save error:', svcError);
+      }
+    }
+    
+    res.json({
+      ok: true,
+      message: 'Kullanıcı başarıyla güncellendi',
+      user: {
+        email: user.email,
+        companyName: user.companyName,
+        role: user.role,
+        status: user.status
+      }
+    });
+  } catch (err) {
+    console.error('Update user error:', err);
+    res.status(500).json({ ok: false, error: 'update_user_failed', detail: String(err) });
+  }
+});
+
+// Admin: delete user
+app.delete('/api/admin/users/:email', requireAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    
+    // Check if user exists
+    let user = null;
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        user = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+        user = users.get(email);
+      }
+    } else {
+      user = users.get(email);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user_not_found', message: 'Kullanıcı bulunamadı' });
+    }
+    
+    // Delete user (soft delete - set status to deleted)
+    // In production, you might want to soft delete instead of hard delete
+    user.status = 'deleted';
+    user.deletedAt = new Date().toISOString();
+    
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        // For soft delete, update the record
+        await dynamoClient.send(new PutCommand({
+          TableName: USERS_TABLE,
+          Item: user
+        }));
+        // Or for hard delete:
+        // await dynamoClient.send(new DeleteCommand({
+        //   TableName: USERS_TABLE,
+        //   Key: { email: email }
+        // }));
+      } catch (dbError) {
+        console.error('DynamoDB delete error:', dbError);
+        return res.status(500).json({ ok: false, error: 'database_error', message: 'Kullanıcı silinemedi' });
+      }
+    } else {
+      users.delete(email);
+    }
+    
+    res.json({
+      ok: true,
+      message: 'Kullanıcı başarıyla silindi'
+    });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ ok: false, error: 'delete_user_failed', detail: String(err) });
+  }
+});
+
+// Admin: ban user
+app.post('/api/admin/users/:email/ban', requireAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    
+    // Get user
+    let user = null;
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        user = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+        user = users.get(email);
+      }
+    } else {
+      user = users.get(email);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user_not_found', message: 'Kullanıcı bulunamadı' });
+    }
+    
+    // Ban user
+    user.status = 'banned';
+    user.bannedAt = new Date().toISOString();
+    user.updatedAt = new Date().toISOString();
+    
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        await dynamoClient.send(new PutCommand({
+          TableName: USERS_TABLE,
+          Item: user
+        }));
+      } catch (dbError) {
+        console.error('DynamoDB put error:', dbError);
+        return res.status(500).json({ ok: false, error: 'database_error', message: 'Kullanıcı banlanamadı' });
+      }
+    } else {
+      users.set(email, user);
+    }
+    
+    res.json({
+      ok: true,
+      message: 'Kullanıcı başarıyla banlandı'
+    });
+  } catch (err) {
+    console.error('Ban user error:', err);
+    res.status(500).json({ ok: false, error: 'ban_user_failed', detail: String(err) });
+  }
+});
+
+// Admin: activate user (remove ban/suspension)
+app.post('/api/admin/users/:email/activate', requireAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    
+    // Get user
+    let user = null;
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        const result = await dynamoClient.send(new GetCommand({
+          TableName: USERS_TABLE,
+          Key: { email: email }
+        }));
+        user = result.Item;
+      } catch (dbError) {
+        console.error('DynamoDB get error:', dbError);
+        user = users.get(email);
+      }
+    } else {
+      user = users.get(email);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user_not_found', message: 'Kullanıcı bulunamadı' });
+    }
+    
+    // Activate user
+    user.status = 'active';
+    user.updatedAt = new Date().toISOString();
+    if (user.bannedAt) delete user.bannedAt;
+    if (user.suspendedAt) delete user.suspendedAt;
+    
+    if (USE_DYNAMODB && dynamoClient) {
+      try {
+        await dynamoClient.send(new PutCommand({
+          TableName: USERS_TABLE,
+          Item: user
+        }));
+      } catch (dbError) {
+        console.error('DynamoDB put error:', dbError);
+        return res.status(500).json({ ok: false, error: 'database_error', message: 'Kullanıcı aktifleştirilemedi' });
+      }
+    } else {
+      users.set(email, user);
+    }
+    
+    res.json({
+      ok: true,
+      message: 'Kullanıcı başarıyla aktifleştirildi'
+    });
+  } catch (err) {
+    console.error('Activate user error:', err);
+    res.status(500).json({ ok: false, error: 'activate_user_failed', detail: String(err) });
   }
 });
 
