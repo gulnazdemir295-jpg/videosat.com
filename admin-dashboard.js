@@ -207,24 +207,24 @@ const PROCEDURE_DATA = [
 ];
 
 const DEPARTMENT_USERS = [
-    { department: 'Admin - Sistem', role: 'admin', email: 'admin@videosat.com', password: 'admin123', notes: 'Ana yönetici hesabı. İlk giriş sonrası MFA etkinleştirin.' },
-    { department: 'Admin - Yedek', role: 'admin', email: 'admin@basvideo.com', password: 'admin123', notes: 'Yedek yönetici hesabı. Sadece acil durumlarda kullanın.' },
-    { department: 'Hammadde Tedarik', role: 'hammaddeci', email: 'hammaddeci@videosat.com', password: 'test123', notes: 'Tedarik ve stok yönetimi yetkilisi.' },
-    { department: 'Üretim', role: 'uretici', email: 'uretici@videosat.com', password: 'test123', notes: 'Üretim planlama ve kontrol.' },
-    { department: 'Toptan Satış', role: 'toptanci', email: 'toptanci@videosat.com', password: 'test123', notes: 'Toptancı paneli erişimi.' },
-    { department: 'Perakende Satış', role: 'satici', email: 'satici@videosat.com', password: 'satici123', notes: 'Satış noktası operasyonları.' },
-    { department: 'Yönetim', role: 'yonetim', email: 'yonetim@videosat.com', password: 'yonetim123', notes: 'Kurumsal yönetim ve karar destek.' },
-    { department: 'Finans', role: 'finans', email: 'finans@videosat.com', password: 'finans123', notes: 'Finansal raporlama ve kasa yönetimi.' },
-    { department: 'Operasyon', role: 'operasyon', email: 'operasyon@videosat.com', password: 'operasyon123', notes: 'Operasyon koordinasyonu ve lojistik.' },
-    { department: 'Müşteri Hizmetleri', role: 'musteri-hizmetleri', email: 'musterihizmetleri@videosat.com', password: 'musteri123', notes: 'Çağrı merkezi ve müşteri iletişimi.' },
-    { department: 'İnsan Kaynakları', role: 'insan-kaynaklari', email: 'insankaynaklari@videosat.com', password: 'ik123456', notes: 'İK süreçleri ve işe alım.' },
-    { department: 'Muhasebe', role: 'muhasebe', email: 'muhasebe@videosat.com', password: 'muhasebe123', notes: 'Muhasebe kayıtları ve mali tablolar.' },
-    { department: 'Faturalandırma', role: 'faturalandirma', email: 'faturalandirma@videosat.com', password: 'fatura123', notes: 'Faturalandırma süreçleri.' },
-    { department: 'Personel Özlük İşleri', role: 'personel-ozluk-isleri', email: 'personelozluk@videosat.com', password: 'ozluk123', notes: 'Personel özlük dosyaları ve izin yönetimi.' },
-    { department: 'Reklam', role: 'reklam', email: 'reklam@videosat.com', password: 'reklam123', notes: 'Kampanya ve reklam yönetimi.' },
-    { department: 'İş Geliştirme', role: 'is-gelistirme', email: 'isgelistirme@videosat.com', password: 'gelistirme123', notes: 'Stratejik iş geliştirme projeleri.' },
-    { department: 'AR-GE', role: 'ar-ge', email: 'arge@videosat.com', password: 'arge12345', notes: 'Araştırma ve geliştirme çalışmaları.' },
-    { department: 'Yazılım-Donanım-Güvenlik', role: 'yazilim-donanim-guvenlik', email: 'yazilimdonanimguvenlik@videosat.com', password: 'ydg12345', notes: 'Teknoloji, altyapı ve güvenlik operasyonları.' }
+    { department: 'Admin - Sistem', role: 'admin', email: 'admin@videosat.com', password: 'admin123', companyName: 'VideoSat Yönetim', firstName: 'Admin', lastName: 'Kullanıcısı', notes: 'Ana yönetici hesabı. İlk giriş sonrası MFA etkinleştirin.' },
+    { department: 'Admin - Yedek', role: 'admin', email: 'admin@basvideo.com', password: 'admin123', companyName: 'VideoSat Yönetim', firstName: 'Admin', lastName: 'VideoSat', notes: 'Yedek yönetici hesabı. Sadece acil durumlarda kullanın.' },
+    { department: 'Hammadde Tedarik', role: 'hammaddeci', email: 'hammaddeci@videosat.com', password: 'test123', companyName: 'Hammadde Tedarik A.Ş.', firstName: 'Hammadde', lastName: 'Yetkilisi', notes: 'Tedarik ve stok yönetimi yetkilisi.' },
+    { department: 'Üretim', role: 'uretici', email: 'uretici@videosat.com', password: 'test123', companyName: 'Üretim Firma Ltd.', firstName: 'Üretim', lastName: 'Koordinatörü', notes: 'Üretim planlama ve kontrol.' },
+    { department: 'Toptan Satış', role: 'toptanci', email: 'toptanci@videosat.com', password: 'test123', companyName: 'Toptan Satış A.Ş.', firstName: 'Toptancı', lastName: 'Temsilcisi', notes: 'Toptancı paneli erişimi.' },
+    { department: 'Perakende Satış', role: 'satici', email: 'satici@videosat.com', password: 'satici123', companyName: 'Perakende Satış Ltd.', firstName: 'Satış', lastName: 'Yetkilisi', notes: 'Satış noktası operasyonları.' },
+    { department: 'Yönetim', role: 'yonetim', email: 'yonetim@videosat.com', password: 'yonetim123', companyName: 'VideoSat Yönetim Birimi', firstName: 'Yönetim', lastName: 'Koordinatörü', notes: 'Kurumsal yönetim ve karar destek.' },
+    { department: 'Finans', role: 'finans', email: 'finans@videosat.com', password: 'finans123', companyName: 'VideoSat Finans Departmanı', firstName: 'Finans', lastName: 'Uzmanı', notes: 'Finansal raporlama ve kasa yönetimi.' },
+    { department: 'Operasyon', role: 'operasyon', email: 'operasyon@videosat.com', password: 'operasyon123', companyName: 'VideoSat Operasyon Ekibi', firstName: 'Operasyon', lastName: 'Sorumlusu', notes: 'Operasyon koordinasyonu ve lojistik.' },
+    { department: 'Müşteri Hizmetleri', role: 'musteri-hizmetleri', email: 'musterihizmetleri@videosat.com', password: 'musteri123', companyName: 'VideoSat Destek Merkezi', firstName: 'Müşteri', lastName: 'Temsilcisi', notes: 'Çağrı merkezi ve müşteri iletişimi.' },
+    { department: 'İnsan Kaynakları', role: 'insan-kaynaklari', email: 'insankaynaklari@videosat.com', password: 'ik123456', companyName: 'VideoSat İnsan Kaynakları', firstName: 'İK', lastName: 'Uzmanı', notes: 'İK süreçleri ve işe alım.' },
+    { department: 'Muhasebe', role: 'muhasebe', email: 'muhasebe@videosat.com', password: 'muhasebe123', companyName: 'VideoSat Muhasebe', firstName: 'Muhasebe', lastName: 'Yetkilisi', notes: 'Muhasebe kayıtları ve mali tablolar.' },
+    { department: 'Faturalandırma', role: 'faturalandirma', email: 'faturalandirma@videosat.com', password: 'fatura123', companyName: 'VideoSat Faturalandırma', firstName: 'Faturalandırma', lastName: 'Uzmanı', notes: 'Faturalandırma süreçleri.' },
+    { department: 'Personel Özlük İşleri', role: 'personel-ozluk-isleri', email: 'personelozluk@videosat.com', password: 'ozluk123', companyName: 'VideoSat Özlük İşleri', firstName: 'Özlük', lastName: 'Uzmanı', notes: 'Personel özlük dosyaları ve izin yönetimi.' },
+    { department: 'Reklam', role: 'reklam', email: 'reklam@videosat.com', password: 'reklam123', companyName: 'VideoSat Reklam ve Pazarlama', firstName: 'Reklam', lastName: 'Yöneticisi', notes: 'Kampanya ve reklam yönetimi.' },
+    { department: 'İş Geliştirme', role: 'is-gelistirme', email: 'isgelistirme@videosat.com', password: 'gelistirme123', companyName: 'VideoSat İş Geliştirme', firstName: 'İş', lastName: 'Geliştirme', notes: 'Stratejik iş geliştirme projeleri.' },
+    { department: 'AR-GE', role: 'ar-ge', email: 'arge@videosat.com', password: 'arge12345', companyName: 'VideoSat AR-GE', firstName: 'AR-GE', lastName: 'Uzmanı', notes: 'Araştırma ve geliştirme çalışmaları.' },
+    { department: 'Yazılım-Donanım-Güvenlik', role: 'yazilim-donanim-guvenlik', email: 'yazilimdonanimguvenlik@videosat.com', password: 'ydg12345', companyName: 'VideoSat Teknoloji ve Güvenlik', firstName: 'Teknoloji', lastName: 'Uzmanı', notes: 'Teknoloji, altyapı ve güvenlik operasyonları.' }
 ];
 
 let currentSearchTerm = '';
@@ -235,6 +235,7 @@ window.addEventListener('DOMContentLoaded', () => {
         updateAdminBanner(adminUser);
     }
 
+    seedDepartmentUsers();
     initNavigation();
     renderSummaryCards();
     renderAuditTimeline();
@@ -362,7 +363,19 @@ function renderDepartmentUsers() {
     const tbody = document.getElementById('departmentUserTable');
     if (!tbody) return;
 
-    tbody.innerHTML = DEPARTMENT_USERS.map(user => `
+    const storedUsers = getStoredUsers();
+    const rows = DEPARTMENT_USERS.map(user => {
+        const match = storedUsers.find((record) => (record.email || '').toLowerCase() === user.email.toLowerCase());
+        return {
+            department: user.department,
+            role: match?.role || user.role,
+            email: match?.email || user.email,
+            password: match?.password || match?.temporaryPassword || user.password,
+            notes: user.notes
+        };
+    });
+
+    tbody.innerHTML = rows.map(user => `
         <tr>
             <td>${escapeHtml(user.department)}</td>
             <td>${escapeHtml(user.role)}</td>
@@ -629,13 +642,17 @@ function attachCopyHandlers() {
 
 function getDepartmentUserTableText() {
     const header = ['Departman', 'Rol', 'E-posta', 'Varsayılan Şifre', 'Not'];
-    const rows = DEPARTMENT_USERS.map(user => [
-        user.department,
-        user.role,
-        user.email,
-        user.password,
-        user.notes
-    ].join('\t'));
+    const storedUsers = getStoredUsers();
+    const rows = DEPARTMENT_USERS.map(user => {
+        const stored = storedUsers.find((record) => (record.email || '').toLowerCase() === user.email.toLowerCase());
+        return [
+            user.department,
+            stored?.role || user.role,
+            stored?.email || user.email,
+            stored?.password || stored?.temporaryPassword || user.password,
+            user.notes
+        ].join('\t');
+    });
     return [header.join('\t'), ...rows].join('\n');
 }
 
@@ -675,6 +692,76 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function getStoredUsers() {
+    try {
+        const usersStr = localStorage.getItem('users');
+        const users = usersStr ? JSON.parse(usersStr) : [];
+        return Array.isArray(users) ? users : [];
+    } catch (error) {
+        console.warn('Stored users parse failure:', error);
+        return [];
+    }
+}
+
+function saveStoredUsers(users) {
+    try {
+        localStorage.setItem('users', JSON.stringify(users));
+    } catch (error) {
+        console.warn('Stored users persist failure:', error);
+    }
+}
+
+function seedDepartmentUsers() {
+    const users = getStoredUsers();
+    const map = new Map(users.map(user => [(user.email || '').toLowerCase(), user]));
+    let updated = false;
+
+    DEPARTMENT_USERS.forEach((user) => {
+        const key = user.email.toLowerCase();
+        const existing = map.get(key);
+
+        if (!existing) {
+            const seedUser = {
+                id: `seed-${key}`,
+                email: user.email,
+                password: user.password,
+                role: user.role,
+                companyName: user.department,
+                firstName: user.department,
+                lastName: 'Kullanıcısı',
+                status: 'active',
+                createdAt: new Date().toISOString(),
+                lastLogin: null,
+                mustChangePassword: true
+            };
+            users.push(seedUser);
+            map.set(key, seedUser);
+            updated = true;
+        } else {
+            let mutated = false;
+            if (!existing.role && user.role) {
+                existing.role = user.role;
+                mutated = true;
+            }
+            if (!existing.companyName) {
+                existing.companyName = user.department;
+                mutated = true;
+            }
+            if (!existing.password && user.password) {
+                existing.password = user.password;
+                mutated = true;
+            }
+            if (mutated) {
+                updated = true;
+            }
+        }
+    });
+
+    if (updated) {
+        saveStoredUsers(users);
+    }
 }
 
 function focusProcedureCard(id) {
