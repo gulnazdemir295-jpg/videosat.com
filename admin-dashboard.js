@@ -240,6 +240,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderSummaryCards();
     renderAuditTimeline();
     renderDepartmentUsers();
+    renderPanelUserList();
     renderProcedureCards();
     renderChecklists();
     renderDocumentation();
@@ -407,6 +408,44 @@ function renderDepartmentUsers() {
 
     attachCopyHandlers();
     attachPasswordVisibilityHandlers();
+}
+
+function renderPanelUserList(searchTerm = '') {
+    const tbody = document.getElementById('panelUserTableBody');
+    if (!tbody) return;
+
+    const normalizedSearch = (searchTerm || '').trim().toLowerCase();
+    const users = getAllPanelUsers();
+
+    const filtered = normalizedSearch
+        ? users.filter(user => {
+            const haystack = [
+                user.fullName,
+                user.email,
+                user.role,
+                user.companyName,
+                user.status
+            ].join(' ').toLowerCase();
+            return haystack.includes(normalizedSearch);
+        })
+        : users;
+
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="panel-user-empty">Eşleşen kayıt bulunamadı.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(user => `
+        <tr>
+            <td>${escapeHtml(user.fullName)}</td>
+            <td>${escapeHtml(user.email)}</td>
+            <td>${escapeHtml(user.role)}</td>
+            <td><span class="user-status-pill ${getStatusClass(user.status)}">${escapeHtml(getStatusLabel(user.status))}</span></td>
+            <td>${escapeHtml(user.companyName || '-')}</td>
+            <td>${formatDate(user.createdAt)}</td>
+            <td>${formatDate(user.lastLogin)}</td>
+        </tr>
+    `).join('');
 }
 
 function renderProcedureCards() {
@@ -581,29 +620,26 @@ function bindActions() {
         });
     }
 
-    const copyDirectoryBtn = document.getElementById('copyUserDirectory');
-    if (copyDirectoryBtn) {
-        copyDirectoryBtn.addEventListener('click', async () => {
-            const original = copyDirectoryBtn.innerHTML;
-            copyDirectoryBtn.disabled = true;
-            const success = await copyToClipboard(getDepartmentUserTableText());
-            if (success) {
-                copyDirectoryBtn.innerHTML = '<i class="fas fa-check"></i> Kopyalandı';
-                setTimeout(() => {
-                    copyDirectoryBtn.innerHTML = original;
-                    copyDirectoryBtn.disabled = false;
-                }, 1600);
-            } else {
-                copyDirectoryBtn.disabled = false;
-                alert('Kopyalama başarısız oldu. Lütfen bilgileri manuel olarak kopyalayın.');
-            }
-        });
-    }
-
     const passwordToggle = document.getElementById('departmentPasswordVisibility');
     if (passwordToggle) {
         passwordToggle.addEventListener('change', () => {
             setDepartmentPasswordVisibility(passwordToggle.checked);
+        });
+    }
+
+    const panelUserSearch = document.getElementById('panelUserSearch');
+    if (panelUserSearch) {
+        panelUserSearch.addEventListener('input', (event) => {
+            renderPanelUserList(event.target.value);
+        });
+    }
+
+    const refreshPanelUsersBtn = document.getElementById('refreshPanelUsers');
+    if (refreshPanelUsersBtn) {
+        refreshPanelUsersBtn.addEventListener('click', () => {
+            seedDepartmentUsers();
+            const term = panelUserSearch?.value || '';
+            renderPanelUserList(term);
         });
     }
 
@@ -771,6 +807,45 @@ function setDepartmentPasswordVisibility(visible) {
     });
 }
 
+function getAllPanelUsers() {
+    const stored = getStoredUsers();
+    const map = new Map();
+
+    DEPARTMENT_USERS.forEach(user => {
+        const key = user.email.toLowerCase();
+        map.set(key, {
+            email: user.email,
+            role: user.role,
+            companyName: user.department,
+            firstName: user.department,
+            lastName: 'Kullanıcısı',
+            status: 'active',
+            createdAt: null,
+            lastLogin: null
+        });
+    });
+
+    stored.forEach(user => {
+        const key = (user.email || '').toLowerCase();
+        if (!key) return;
+        map.set(key, {
+            email: user.email,
+            role: user.role || map.get(key)?.role || 'belirsiz',
+            companyName: user.companyName || map.get(key)?.companyName || '-',
+            firstName: user.firstName || map.get(key)?.firstName || '',
+            lastName: user.lastName || map.get(key)?.lastName || '',
+            status: user.status || 'active',
+            createdAt: user.createdAt || map.get(key)?.createdAt || null,
+            lastLogin: user.lastLogin || map.get(key)?.lastLogin || null
+        });
+    });
+
+    return Array.from(map.values()).map(user => ({
+        ...user,
+        fullName: buildFullName(user.firstName, user.lastName)
+    })).sort((a, b) => a.email.localeCompare(b.email));
+}
+
 function getStoredUsers() {
     try {
         const usersStr = localStorage.getItem('users');
@@ -839,6 +914,27 @@ function seedDepartmentUsers() {
     if (updated) {
         saveStoredUsers(users);
     }
+}
+
+function buildFullName(firstName, lastName) {
+    const name = [firstName, lastName].filter(Boolean).join(' ').trim();
+    return name || 'Belirtilmedi';
+}
+
+function getStatusClass(status) {
+    const normalized = (status || '').toLowerCase();
+    if (normalized === 'inactive') return 'user-status-inactive';
+    if (normalized === 'banned') return 'user-status-inactive';
+    if (normalized === 'suspended') return 'user-status-inactive';
+    return 'user-status-active';
+}
+
+function getStatusLabel(status) {
+    const normalized = (status || '').toLowerCase();
+    if (normalized === 'inactive') return 'Pasif';
+    if (normalized === 'banned') return 'Banlı';
+    if (normalized === 'suspended') return 'Askıda';
+    return 'Aktif';
 }
 
 function focusProcedureCard(id) {

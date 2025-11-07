@@ -124,6 +124,45 @@
                     </label>
                 </div>
             </div>
+
+            <div class="user-list-card" aria-labelledby="panelUserListTitle">
+                <div class="user-list-header">
+                    <div>
+                        <h2 id="panelUserListTitle"><i class="fas fa-address-book"></i> Panel Üye Listesi</h2>
+                        <p>Tüm seed edilmiş departman kullanıcıları ve yerel üyeler. Şifre değişikliklerinden sonra güncel bilgileri görmek için yenileyin.</p>
+                    </div>
+                    <div class="user-list-actions">
+                        <div class="user-list-search">
+                            <i class="fas fa-search"></i>
+                            <input type="search" id="panelUserSearch" placeholder="E-posta, rol veya şirket adı ara..." aria-label="Panel üye arama">
+                        </div>
+                        <button class="btn btn-outline" id="refreshPanelUsers">
+                            <i class="fas fa-sync"></i>
+                            Yenile
+                        </button>
+                    </div>
+                </div>
+                <div class="user-list-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>E-posta</th>
+                                <th>Rol</th>
+                                <th>Durum</th>
+                                <th>Şirket</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Son Giriş</th>
+                            </tr>
+                        </thead>
+                        <tbody id="panelUserTableBody">
+                            <tr>
+                                <td colspan="7" class="panel-user-empty">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <section id="procedures" class="panel-section" aria-labelledby="proceduresTitle">

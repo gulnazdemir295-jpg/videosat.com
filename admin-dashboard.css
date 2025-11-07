@@ -587,6 +587,130 @@
     font-size: 0.9rem;
 }
 
+.user-list-card {
+    margin-top: 2.5rem;
+    background: var(--panel-surface);
+    border-radius: var(--panel-radius);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.user-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.user-list-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.user-list-header p {
+    margin: 0.5rem 0 0 0;
+    color: var(--panel-muted);
+    line-height: 1.5;
+}
+
+.user-list-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.user-list-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+}
+
+.user-list-search i {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.user-list-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: rgba(255, 255, 255, 0.85);
+    min-width: 240px;
+}
+
+.user-list-table {
+    overflow-x: auto;
+}
+
+.user-list-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 780px;
+}
+
+.user-list-table th,
+.user-list-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-list-table thead th {
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.user-list-table tbody tr:hover {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.user-list-table td {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.user-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.user-status-active {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #bbf7d0;
+}
+
+.user-status-inactive {
+    background: rgba(156, 163, 175, 0.15);
+    border: 1px solid rgba(156, 163, 175, 0.4);
+    color: #e5e7eb;
+}
+
+.panel-user-empty {
+    text-align: center;
+    padding: 2rem 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .password-masked code {
     letter-spacing: 0.2rem;
     font-weight: 600;
@@ -893,6 +1017,12 @@
 
     .section-actions {
         justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-list-search input {
+        min-width: 160px;
     }
 }
 
