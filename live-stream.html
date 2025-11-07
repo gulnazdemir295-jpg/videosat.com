@@ -2,13 +2,17 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#dc2626">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>VideoSat - Canlı Yayın</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles-platform-specific.css">
     <!-- Agora SDK -->
     <!-- Merkezi Backend Config -->
     <script src="config/backend-config.js"></script>
@@ -62,10 +66,29 @@
             gap: 8px;
         }
 
-        .main-content {
+            .main-content {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
+        }
+        
+        /* Landscape orientation optimization */
+        @media (orientation: landscape) and (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-container {
+                aspect-ratio: 16/9;
+                max-height: 60vh;
+            }
+            
+            #localVideo {
+                width: 150px;
+                height: 100px;
+                top: 5px;
+                right: 5px;
+            }
         }
 
         .video-section {
@@ -83,6 +106,7 @@
             aspect-ratio: 16/9;
             margin-bottom: 20px;
             border: 2px solid #dc2626;
+            width: 100%;
         }
 
         #remoteVideo, #localVideo {
@@ -90,6 +114,8 @@
             height: 100%;
             object-fit: cover;
             background: #000000;
+            -webkit-transform: translateZ(0); /* iOS hardware acceleration */
+            transform: translateZ(0);
         }
 
         #localVideo {
@@ -101,6 +127,55 @@
             border-radius: 10px;
             border: 2px solid #dc2626;
             z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Video Controls Overlay */
+        .video-controls-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 20;
+            pointer-events: none;
+        }
+        
+        .video-container:hover .video-controls-overlay,
+        .video-container:active .video-controls-overlay {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .video-control-btn {
+            background: rgba(220, 38, 38, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3);
+        }
+        
+        .video-control-btn:active {
+            transform: scale(0.95);
+            background: rgba(220, 38, 38, 1);
+        }
+        
+        .video-control-btn.fullscreen {
+            margin-left: auto;
         }
 
         .controls {
@@ -256,14 +331,49 @@
                 padding: 8px 16px;
             }
             
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .video-section {
+                order: 1;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
             .video-container {
-                min-height: 300px;
+                min-height: 250px;
+                aspect-ratio: 16/9;
+                width: 100%;
             }
             
             .video-container video {
                 width: 100%;
-                height: auto;
-                max-height: 400px;
+                height: 100%;
+                object-fit: contain;
+            }
+            
+            #localVideo {
+                width: 120px;
+                height: 90px;
+                top: 8px;
+                right: 8px;
+                border-width: 2px;
+            }
+            
+            .video-controls-overlay {
+                opacity: 1;
+                pointer-events: all;
+                padding: 10px;
+            }
+            
+            .video-control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
             
             .controls {
@@ -273,8 +383,9 @@
             
             .controls .btn {
                 width: 100%;
-                padding: 12px;
+                padding: 14px;
                 font-size: 1rem;
+                min-height: 44px;
             }
             
             .card {
@@ -286,15 +397,20 @@
             }
             
             .input-group {
-                flex-direction: column;
+                flex-direction: row;
+                gap: 8px;
             }
             
             .input-group input {
-                width: 100%;
+                flex: 1;
+                min-height: 44px;
+                font-size: 16px; /* Prevents zoom on iOS */
             }
             
             .input-group button {
-                width: 100%;
+                min-height: 44px;
+                min-width: 44px;
+                padding: 10px;
             }
             
             .messages {
@@ -355,6 +471,47 @@
             .input-group button {
                 min-height: 44px;
             }
+            
+            .video-controls-overlay {
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .video-container {
+                touch-action: pan-y pinch-zoom;
+            }
+        }
+        
+        /* Fullscreen styles */
+        .video-container:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        .video-container:-moz-full-screen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        .video-container:-ms-fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        .video-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        
+        .video-container:-webkit-full-screen #remoteVideo,
+        .video-container:-moz-full-screen #remoteVideo,
+        .video-container:-ms-fullscreen #remoteVideo,
+        .video-container:fullscreen #remoteVideo {
+            object-fit: contain;
         }
     </style>
 </head>
@@ -376,9 +533,17 @@
                     </button>
                 </div>
 
-                <div class="video-container">
-                    <video id="remoteVideo" autoplay playsinline></video>
-                    <video id="localVideo" autoplay muted playsinline style="display: none;"></video>
+                <div class="video-container" id="videoContainer">
+                    <video id="remoteVideo" autoplay playsinline webkit-playsinline></video>
+                    <video id="localVideo" autoplay muted playsinline webkit-playsinline style="display: none;"></video>
+                    <div class="video-controls-overlay">
+                        <button class="video-control-btn" id="pipBtn" onclick="togglePictureInPicture()" title="Picture-in-Picture" style="display: none;">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button class="video-control-btn fullscreen" id="fullscreenBtn" onclick="toggleFullscreen()" title="Tam Ekran">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="controls">
@@ -413,6 +578,8 @@
         </div>
     </div>
 
+    <!-- Platform Detection -->
+    <script src="services/platform-detection.js"></script>
     <!-- Error Handlers - Must load before live-stream.js -->
     <script src="agora-error-handler.js"></script>
     <script src="yayin-baslatma-error-handler.js"></script>
@@ -423,6 +590,148 @@
     <!-- Main Live Stream Script -->
     <script src="live-stream.js"></script>
     <script>
+        // Fullscreen functionality
+        function toggleFullscreen() {
+            const videoContainer = document.getElementById('videoContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const icon = fullscreenBtn ? fullscreenBtn.querySelector('i') : null;
+            
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.msFullscreenElement) {
+                // Enter fullscreen
+                if (videoContainer.requestFullscreen) {
+                    videoContainer.requestFullscreen();
+                } else if (videoContainer.webkitRequestFullscreen) {
+                    videoContainer.webkitRequestFullscreen();
+                } else if (videoContainer.mozRequestFullScreen) {
+                    videoContainer.mozRequestFullScreen();
+                } else if (videoContainer.msRequestFullscreen) {
+                    videoContainer.msRequestFullscreen();
+                }
+                if (icon) icon.className = 'fas fa-compress';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                if (icon) icon.className = 'fas fa-expand';
+            }
+        }
+        
+        // Picture-in-Picture functionality
+        async function togglePictureInPicture() {
+            const remoteVideo = document.getElementById('remoteVideo');
+            const pipBtn = document.getElementById('pipBtn');
+            
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    if (remoteVideo && remoteVideo.readyState >= 2) {
+                        await remoteVideo.requestPictureInPicture();
+                    }
+                }
+            } catch (error) {
+                console.error('Picture-in-Picture error:', error);
+            }
+        }
+        
+        // Check PiP support and show/hide button
+        document.addEventListener('DOMContentLoaded', function() {
+            const pipBtn = document.getElementById('pipBtn');
+            const remoteVideo = document.getElementById('remoteVideo');
+            
+            if (document.pictureInPictureEnabled && pipBtn) {
+                pipBtn.style.display = 'flex';
+            }
+            
+            // Listen for PiP events
+            if (remoteVideo) {
+                remoteVideo.addEventListener('enterpictureinpicture', function() {
+                    if (pipBtn) {
+                        const icon = pipBtn.querySelector('i');
+                        if (icon) icon.className = 'fas fa-compress-arrows-alt';
+                    }
+                });
+                
+                remoteVideo.addEventListener('leavepictureinpicture', function() {
+                    if (pipBtn) {
+                        const icon = pipBtn.querySelector('i');
+                        if (icon) icon.className = 'fas fa-expand-arrows-alt';
+                    }
+                });
+            }
+            
+            // Fullscreen change events
+            document.addEventListener('fullscreenchange', updateFullscreenButton);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+            document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+        });
+        
+        function updateFullscreenButton() {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const icon = fullscreenBtn ? fullscreenBtn.querySelector('i') : null;
+            
+            if (icon) {
+                if (document.fullscreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.msFullscreenElement) {
+                    icon.className = 'fas fa-compress';
+                } else {
+                    icon.className = 'fas fa-expand';
+                }
+            }
+        }
+        
+        // Screen Wake Lock for video playback
+        let wakeLock = null;
+        
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator && window.platformDetection && window.platformDetection.platform.isMobile) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('✅ Screen wake lock activated');
+                } catch (err) {
+                    console.warn('Wake lock error:', err);
+                }
+            }
+        }
+        
+        async function releaseWakeLock() {
+            if (wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+                console.log('Screen wake lock released');
+            }
+        }
+        
+        // Request wake lock when video starts playing
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo) {
+            remoteVideo.addEventListener('play', requestWakeLock);
+            remoteVideo.addEventListener('pause', releaseWakeLock);
+            remoteVideo.addEventListener('ended', releaseWakeLock);
+        }
+        
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', async () => {
+            if (document.hidden) {
+                await releaseWakeLock();
+            } else if (remoteVideo && !remoteVideo.paused) {
+                await requestWakeLock();
+            }
+        });
+        
         // Obfuscation sonrası window fonksiyonlarını kontrol et ve yeniden ata
         window.addEventListener('load', function() {
             setTimeout(function() {
@@ -435,6 +744,9 @@
                 if (typeof stopStream !== 'undefined' && !window.stopStream) {
                     window.stopStream = stopStream;
                 }
+                // Export new functions
+                window.toggleFullscreen = toggleFullscreen;
+                window.togglePictureInPicture = togglePictureInPicture;
                 console.log('✅ Global fonksiyonlar kontrol edildi');
             }, 1000);
         });

@@ -1,0 +1,385 @@
+/**
+ * Touch Targets Optimization
+ * Ensures all interactive elements meet minimum 44x44px touch target size
+ * Based on iOS HIG and Material Design guidelines
+ */
+
+/* Minimum touch target size */
+:root {
+    --touch-target-min-size: 44px;
+    --touch-target-min-size-small: 36px; /* For dense UIs */
+}
+
+/* Buttons - Ensure minimum touch target */
+.btn {
+    min-height: var(--touch-target-min-size);
+    min-width: var(--touch-target-min-size);
+    padding: 0.75rem 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    /* Touch optimization */
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Small buttons - still meet minimum */
+.btn-sm {
+    min-height: var(--touch-target-min-size-small);
+    min-width: var(--touch-target-min-size-small);
+    padding: 0.5rem 1rem;
+}
+
+/* Large buttons */
+.btn-large {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 1rem 2rem;
+}
+
+/* Icon-only buttons */
+.btn-icon-only {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    width: var(--touch-target-min-size);
+    height: var(--touch-target-min-size);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Navigation Links */
+.nav-link,
+a[role="button"],
+a.btn {
+    min-height: var(--touch-target-min-size);
+    min-width: var(--touch-target-min-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Hamburger Menu */
+.hamburger {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Close buttons */
+.close,
+.modal-close,
+.btn-close {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Checkboxes and Radio buttons */
+input[type="checkbox"],
+input[type="radio"] {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    width: var(--touch-target-min-size);
+    height: var(--touch-target-min-size);
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Checkbox/Radio labels - extend touch area */
+.checkbox-label,
+.radio-label {
+    min-height: var(--touch-target-min-size);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Form inputs - minimum height */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+textarea,
+select {
+    min-height: var(--touch-target-min-size);
+    padding: 0.75rem;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.1);
+}
+
+/* Select dropdowns */
+select {
+    min-height: var(--touch-target-min-size);
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* File inputs */
+input[type="file"] {
+    min-height: var(--touch-target-min-size);
+    padding: 0.5rem;
+}
+
+/* Social links */
+.social-links a {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    width: var(--touch-target-min-size);
+    height: var(--touch-target-min-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Card clickable areas */
+.card[onclick],
+.card[role="button"],
+.card.clickable {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.1);
+    touch-action: manipulation;
+}
+
+/* List items */
+li[onclick],
+li[role="button"],
+.list-item-clickable {
+    min-height: var(--touch-target-min-size);
+    padding: 0.75rem 1rem;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.1);
+    touch-action: manipulation;
+}
+
+/* Tabs */
+.tab-btn,
+.tab-button {
+    min-height: var(--touch-target-min-size);
+    min-width: var(--touch-target-min-size-small);
+    padding: 0.75rem 1.25rem;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Pagination buttons */
+.pagination-btn,
+.pagination .btn {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    padding: 0.5rem;
+}
+
+/* Action buttons in tables/cards */
+.action-btn,
+.table-actions .btn {
+    min-width: var(--touch-target-min-size-small);
+    min-height: var(--touch-target-min-size-small);
+    padding: 0.5rem 0.75rem;
+}
+
+/* Video controls */
+.video-control-btn,
+.media-control-btn {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    width: var(--touch-target-min-size);
+    height: var(--touch-target-min-size);
+    padding: 0;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3);
+    touch-action: manipulation;
+}
+
+/* Icon buttons */
+.icon-btn,
+button[class*="icon"] {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Floating action buttons */
+.fab {
+    min-width: 56px;
+    min-height: 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3);
+    touch-action: manipulation;
+}
+
+/* Switch/Toggle */
+.switch,
+.toggle {
+    min-width: 44px;
+    min-height: 24px;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    touch-action: manipulation;
+}
+
+/* Expandable elements */
+.expandable-header,
+.accordion-header {
+    min-height: var(--touch-target-min-size);
+    padding: 1rem;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.1);
+    touch-action: manipulation;
+}
+
+/* Mobile-specific optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Ensure all interactive elements meet minimum size on touch devices */
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    [role="button"],
+    [onclick] {
+        min-height: var(--touch-target-min-size);
+        min-width: var(--touch-target-min-size);
+    }
+    
+    /* Increase spacing between interactive elements */
+    .btn + .btn,
+    .nav-link + .nav-link {
+        margin-left: 0.5rem;
+    }
+    
+    /* Larger hit areas for small text links */
+    a:not(.btn):not(.nav-link) {
+        padding: 0.25rem 0.5rem;
+        margin: -0.25rem -0.5rem;
+        min-height: var(--touch-target-min-size-small);
+    }
+}
+
+/* Small mobile devices - ensure spacing */
+@media (max-width: 480px) {
+    /* Increase spacing between buttons */
+    .btn-group {
+        gap: 0.5rem;
+    }
+    
+    /* Full-width buttons on small screens */
+    .btn-block,
+    .btn-full {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    /* Stack buttons vertically if needed */
+    .button-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .button-stack .btn {
+        width: 100%;
+    }
+}
+
+/* Touch feedback - visual feedback on touch */
+@media (hover: none) and (pointer: coarse) {
+    button:active,
+    a:active,
+    .btn:active,
+    .nav-link:active,
+    [role="button"]:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+        transition: opacity 0.1s, transform 0.1s;
+    }
+    
+    /* Remove hover effects on touch devices */
+    button:hover,
+    a:hover,
+    .btn:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    button,
+    .btn,
+    a,
+    [role="button"] {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    button,
+    .btn,
+    a,
+    [role="button"] {
+        transition: none;
+    }
+    
+    button:active,
+    .btn:active,
+    a:active {
+        transform: none;
+    }
+}
+
+/* Utility classes for touch target adjustments */
+.touch-target-small {
+    min-width: var(--touch-target-min-size-small);
+    min-height: var(--touch-target-min-size-small);
+}
+
+.touch-target-normal {
+    min-width: var(--touch-target-min-size);
+    min-height: var(--touch-target-min-size);
+}
+
+.touch-target-large {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+/* Spacing helpers for touch targets */
+.touch-spacing {
+    padding: 0.5rem;
+    margin: -0.5rem;
+}
+
+.touch-spacing-sm {
+    padding: 0.25rem;
+    margin: -0.25rem;
+}
+

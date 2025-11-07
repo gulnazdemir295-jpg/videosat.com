@@ -199,3 +199,4 @@ console.log('Müşteri girişi:', customerResult.success);
 
 **Son Güncelleme**: 2024-11-06
 
+

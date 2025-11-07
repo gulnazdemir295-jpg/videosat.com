@@ -1,0 +1,318 @@
+/**
+ * Platform-Specific Optimizations
+ * iOS and Android specific CSS fixes and enhancements
+ */
+
+/* ============================================
+   iOS SPECIFIC FIXES
+   ============================================ */
+
+/* Safe Area Support - iPhone X and later */
+@supports (padding: max(0px)) {
+    .navbar,
+    .admin-navbar {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    
+    .footer {
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+    
+    .modal-content {
+        padding-left: max(2rem, env(safe-area-inset-left));
+        padding-right: max(2rem, env(safe-area-inset-right));
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    
+    .video-container {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+    
+    /* Fullscreen video safe area */
+    .video-container:-webkit-full-screen {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* iOS Viewport Height Fix */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari viewport height bug fix */
+    .hero,
+    section {
+        min-height: -webkit-fill-available;
+    }
+    
+    .modal-content {
+        max-height: -webkit-fill-available;
+    }
+    
+    /* Fix 100vh issue on iOS */
+    .video-container {
+        height: -webkit-fill-available;
+    }
+}
+
+/* iOS Input Zoom Prevention */
+@supports (-webkit-touch-callout: none) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="search"],
+    textarea,
+    select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        transform: scale(1); /* Prevents zoom */
+    }
+}
+
+/* iOS Scroll Bounce Prevention (Optional) */
+@supports (-webkit-overflow-scrolling: touch) {
+    body {
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal-content,
+    .table-container {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+}
+
+/* iOS Fixed Position Fix */
+@supports (-webkit-touch-callout: none) {
+    .navbar,
+    .admin-navbar {
+        position: -webkit-sticky;
+        position: sticky;
+    }
+    
+    /* Fix for fixed elements on iOS */
+    @supports (position: sticky) {
+        .navbar {
+            position: fixed;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+    }
+}
+
+/* iOS Select Styling */
+@supports (-webkit-touch-callout: none) {
+    select {
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+    }
+}
+
+/* iOS Status Bar Style */
+@supports (-webkit-touch-callout: none) {
+    /* Black status bar on iOS */
+    meta[name="apple-mobile-web-app-status-bar-style"] {
+        content: "black-translucent";
+    }
+}
+
+/* iOS Home Indicator Area */
+@supports (padding: max(0px)) {
+    .bottom-nav,
+    .floating-action-button {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* ============================================
+   ANDROID SPECIFIC FIXES
+   ============================================ */
+
+/* Android Chrome Address Bar Fix */
+@media screen and (max-width: 768px) {
+    /* Fix for Android Chrome address bar */
+    .hero {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Android Back Button Handling */
+@media screen and (max-width: 768px) {
+    /* Ensure modals close on Android back button */
+    .modal.active {
+        display: block;
+    }
+}
+
+/* Android Share Sheet */
+@media screen and (max-width: 768px) {
+    /* Optimize for Android share intents */
+    .share-button {
+        -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3);
+        touch-action: manipulation;
+    }
+}
+
+/* Android Edge-to-Edge Support */
+@supports (padding: env(safe-area-inset-top)) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* Android Navigation Bar Color */
+@media screen and (max-width: 768px) {
+    /* Match navigation bar color */
+    body {
+        background-color: #000000;
+    }
+}
+
+/* ============================================
+   CROSS-PLATFORM OPTIMIZATIONS
+   ============================================ */
+
+/* Haptic Feedback Support */
+@media (hover: none) and (pointer: coarse) {
+    button:active,
+    .btn:active,
+    a:active {
+        /* Trigger haptic feedback on supported devices */
+        -webkit-tap-highlight-color: rgba(220, 38, 38, 0.3);
+    }
+}
+
+/* Screen Wake Lock Support */
+@media screen and (max-width: 768px) {
+    .video-playing {
+        /* Prevent screen sleep during video playback */
+        /* Requires JavaScript API: navigator.wakeLock */
+    }
+}
+
+/* Orientation Lock Support */
+@media screen and (max-width: 768px) {
+    /* Landscape optimization */
+    @media (orientation: landscape) {
+        .hero {
+            padding: 2rem 1rem;
+        }
+        
+        .modal-content {
+            max-height: 90vh;
+        }
+        
+        .video-container {
+            max-height: 70vh;
+        }
+    }
+    
+    /* Portrait optimization */
+    @media (orientation: portrait) {
+        .video-container {
+            aspect-ratio: 9/16;
+        }
+    }
+}
+
+/* Battery Optimization */
+@media (prefers-reduced-motion: no-preference) {
+    /* Reduce animations on low battery (if supported) */
+    @media (prefers-reduced-data: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* Network Status Optimization */
+@media (prefers-reduced-data: reduce) {
+    /* Reduce image quality on slow connections */
+    img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+    
+    /* Disable background images */
+    .hero::before,
+    .hero::after {
+        display: none;
+    }
+}
+
+/* ============================================
+   PLATFORM DETECTION HELPERS
+   ============================================ */
+
+/* iOS Detection */
+.ios {
+    /* iOS specific styles */
+}
+
+/* Android Detection */
+.android {
+    /* Android specific styles */
+}
+
+/* Desktop Detection */
+.desktop {
+    /* Desktop specific styles */
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .btn,
+    button {
+        border: 2px solid currentColor;
+    }
+    
+    .nav-link,
+    a {
+        text-decoration: underline;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    /* Already using dark theme, but can add additional optimizations */
+    body {
+        background-color: #000000;
+        color: #ffffff;
+    }
+}
+
+/* Light Mode Support (if needed) */
+@media (prefers-color-scheme: light) {
+    /* Currently using dark theme, but can switch if needed */
+}
+

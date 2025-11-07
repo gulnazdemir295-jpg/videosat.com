@@ -126,3 +126,4 @@ Sadece gerekli bucket'a erişim verir.
 
 
 
+

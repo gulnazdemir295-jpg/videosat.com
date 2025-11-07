@@ -313,6 +313,17 @@ a:focus {
     flex-direction: column;
     cursor: pointer;
     gap: 0.25rem;
+    padding: 0.5rem;
+    min-width: 44px; /* Touch target için minimum genişlik */
+    min-height: 44px; /* Touch target için minimum yükseklik */
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.hamburger:active {
+    transform: scale(0.95);
 }
 
 .hamburger span {
@@ -324,15 +335,16 @@ a:focus {
 }
 
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translateY(8px);
+    transform: rotate(45deg) translate(6px, 6px);
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
+    transform: translateX(-10px);
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translateY(-8px);
+    transform: rotate(-45deg) translate(6px, -6px);
 }
 
 /* Hero Section */
@@ -825,6 +837,11 @@ section {
     transition: border-color 0.2s ease;
     background-color: var(--bg-secondary) !important; /* Koyu input arka planı */
     color: #ffffff !important; /* Beyaz metin */
+    /* iOS zoom prevention - must be at least 16px */
+    font-size: 16px;
+    /* Smooth scrolling */
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-group input::placeholder,
@@ -986,13 +1003,23 @@ section {
 .modal {
     display: none;
     position: fixed;
-    z-index: 2000;
+    z-index: 5000; /* Cookie banner'dan düşük ama diğer elementlerden yüksek */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(5px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Body scroll lock when modal is open */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 .modal-content {
@@ -1098,9 +1125,18 @@ section {
     /* Modal mobile */
     .modal-content {
         width: 95%;
-        margin: 10% auto;
+        margin: 5% auto;
         max-height: 90vh;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2rem; /* Extra padding for keyboard */
+    }
+    
+    /* Modal form optimization for keyboard */
+    .modal.active .modal-content {
+        /* Adjust modal position when keyboard is visible */
+        transform: translateY(-10%);
+        transition: transform 0.3s ease;
     }
     
     /* Table responsive */
@@ -1108,7 +1144,14 @@ section {
         display: block;
         overflow-x: auto;
         white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
     }
+    
+    /* Import responsive tables styles */
+    @import url('styles-responsive-tables.css');
+    
+    /* Import touch targets styles */
+    @import url('styles-touch-targets.css');
     
     .nav-logo {
         font-size: 1.25rem;
@@ -1120,23 +1163,49 @@ section {
     
     .nav-menu {
         display: none;
-        position: absolute;
-        top: 100%;
+        position: fixed;
+        top: 4rem;
         left: 0;
         right: 0;
+        bottom: 0;
         background-color: rgba(0, 0, 0, 0.98);
+        backdrop-filter: blur(10px);
         flex-direction: column;
-        padding: 1rem;
+        padding: 1.5rem 1rem;
         border-top: 2px solid var(--primary-color);
+        z-index: 999;
+        overflow-y: auto;
+        max-height: calc(100vh - 4rem);
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        -webkit-overflow-scrolling: touch;
     }
     
     .nav-menu.active {
         display: flex;
+        opacity: 1;
+        transform: translateY(0);
     }
     
     .nav-link {
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1.125rem;
+        min-height: 44px; /* Touch target için minimum yükseklik */
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+    }
+    
+    .nav-link:active {
+        background-color: rgba(220, 38, 38, 0.1);
+        transform: scale(0.98);
+    }
+    
+    .nav-link:last-child {
+        border-bottom: none;
     }
     
     .nav-auth {
@@ -1151,6 +1220,18 @@ section {
     
     .hamburger {
         display: flex;
+        order: 2; /* Butonların sağında görünmesi için */
+    }
+    
+    .nav-auth {
+        order: 1; /* Hamburger'den önce */
+        gap: 0.5rem;
+    }
+    
+    .nav-auth .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        min-height: 36px;
     }
     
     .hero {
@@ -1279,7 +1360,23 @@ section {
     .form-group input,
     .form-group select,
     .form-group textarea {
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: 16px !important; /* Prevents zoom on iOS - CRITICAL */
+        min-height: 44px; /* Touch target */
+        padding: 0.875rem;
+    }
+    
+    /* Modal form scroll optimization */
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Input focus scroll into view */
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        scroll-margin-top: 20px;
     }
     
     /* Buttons touch-friendly */
@@ -1356,6 +1453,31 @@ section {
     
     .auth-form {
         padding: 1.5rem;
+    }
+    
+    /* Form group spacing on mobile */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    /* Input labels on mobile */
+    .form-group label {
+        font-size: 0.9375rem;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-weight: 500;
+    }
+    
+    /* Select dropdown on mobile */
+    .form-group select {
+        /* iOS select styling */
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
     }
 }
 

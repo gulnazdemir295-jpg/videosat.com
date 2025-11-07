@@ -9,8 +9,10 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin-dashboard.css">
+    <link rel="stylesheet" href="styles-responsive-tables.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="config/backend-config.js"></script>
+    <script src="services/responsive-tables.js"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -165,7 +167,7 @@
                 <!-- Users Table -->
                 <div class="admin-card">
                     <div class="table-container">
-                        <table class="admin-table" id="usersTable">
+                        <table class="admin-table responsive-table" id="usersTable">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="selectAllUsers"></th>
@@ -336,4 +338,5 @@
     <script src="admin-dashboard.js"></script>
 </body>
 </html>
+
 

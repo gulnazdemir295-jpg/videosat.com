@@ -7,6 +7,7 @@ let userRole = null;
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
+    setupMobileMenuListeners();
     checkAuthStatus();
 });
 
@@ -118,6 +119,49 @@ function setupEventListeners() {
     }
 }
 
+// Setup Mobile Menu Listeners
+function setupMobileMenuListeners() {
+    // Menü dışına tıklanınca kapat
+    document.addEventListener('click', closeMobileMenuOnOutsideClick);
+    
+    // Nav linklerine tıklanınca menüyü kapat
+    const navLinks = document.querySelectorAll('.nav-menu .nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            closeMobileMenuOnLinkClick();
+        });
+    });
+    
+    // ESC tuşu ile menüyü kapat
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const navMenu = document.getElementById('navMenu');
+            if (navMenu && navMenu.classList.contains('active')) {
+                closeMobileMenuOnLinkClick();
+            }
+        }
+    });
+    
+    // Pencere boyutu değişince menüyü kapat (desktop'a geçince)
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (window.innerWidth > 768) {
+                const navMenu = document.getElementById('navMenu');
+                const hamburger = document.querySelector('.hamburger');
+                if (navMenu && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    if (hamburger) {
+                        hamburger.classList.remove('active');
+                    }
+                    document.body.style.overflow = '';
+                }
+            }
+        }, 250);
+    });
+}
+
 // Authentication Functions
 function showLoginModal() {
     closeModal('registerModal');
@@ -126,6 +170,8 @@ function showLoginModal() {
     if (modal) {
         modal.style.display = 'block';
         modal.setAttribute('aria-hidden', 'false');
+        // Lock body scroll
+        lockBodyScroll();
         // Focus trap
         trapFocus(modal);
         // Add ESC key listener
@@ -140,6 +186,8 @@ function showRegisterModal() {
     if (modal) {
         modal.style.display = 'block';
         modal.setAttribute('aria-hidden', 'false');
+        // Lock body scroll
+        lockBodyScroll();
         // Focus trap
         trapFocus(modal);
         // Add ESC key listener
@@ -154,11 +202,34 @@ function showAdminLoginModal() {
     if (modal) {
         modal.style.display = 'block';
         modal.setAttribute('aria-hidden', 'false');
+        // Lock body scroll
+        lockBodyScroll();
         // Focus trap
         trapFocus(modal);
         // Add ESC key listener
         addModalListeners(modal);
     }
+}
+
+// Body scroll lock/unlock functions
+function lockBodyScroll() {
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.classList.add('modal-open');
+    // Store scroll position for later restoration
+    document.body.dataset.scrollY = scrollY;
+}
+
+function unlockBodyScroll() {
+    const scrollY = document.body.dataset.scrollY || 0;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.classList.remove('modal-open');
+    window.scrollTo(0, parseInt(scrollY || 0, 10));
+    delete document.body.dataset.scrollY;
 }
 
 function closeModal(modalId) {
@@ -175,6 +246,12 @@ function closeModal(modalId) {
             m.setAttribute('aria-hidden', 'true');
             removeModalListeners(m);
         });
+    }
+    
+    // Unlock body scroll if no other modal is open
+    const openModals = document.querySelectorAll('.modal[style*="display: block"]');
+    if (openModals.length === 0) {
+        unlockBodyScroll();
     }
 }
 
@@ -313,12 +390,13 @@ async function handleAdminLogin(e) {
         
         // Close modal and redirect to dashboard
         closeModal('adminLoginModal');
+        unlockBodyScroll(); // Unlock scroll before redirect
         showAlert('Admin olarak başarıyla giriş yaptınız!', 'success');
         
-        // Redirect to admin dashboard
+        // Redirect to admin dashboard (reduced delay)
         setTimeout(() => {
             redirectToDashboard();
-        }, 1000);
+        }, 500);
         
     } catch(err) {
         errorMessage = 'Admin girişi sırasında bir hata oluştu: ' + err.message;
@@ -415,12 +493,13 @@ async function handleLogin(e) {
                 
                 // Close modal and redirect to dashboard
                 closeModal('loginModal');
+                unlockBodyScroll(); // Unlock scroll before redirect
                 showAlert('Başarıyla giriş yaptınız!', 'success');
                 
-                // Redirect to appropriate dashboard
+                // Redirect to appropriate dashboard (reduced delay)
                 setTimeout(() => {
                     redirectToDashboard();
-                }, 1000);
+                }, 500);
             } else {
                 errorMessage = result.message || 'E-posta ya da şifre hatalı!';
                 showAlert(errorMessage, 'error');
@@ -543,12 +622,13 @@ async function handleRegister(e) {
                 
                 // Close modal and redirect to dashboard
                 closeModal('registerModal');
+                unlockBodyScroll(); // Unlock scroll before redirect
                 showAlert('Başarıyla kayıt oldunuz!', 'success');
                 
-                // Redirect to appropriate dashboard
+                // Redirect to appropriate dashboard (reduced delay)
                 setTimeout(() => {
                     redirectToDashboard();
-                }, 1000);
+                }, 500);
             } else {
                 showAlert(result.message || 'Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.', 'error');
             }
@@ -777,14 +857,55 @@ function getBasePath() {
 
 function updateUIForLoggedInUser() {
     const navAuth = document.querySelector('.nav-auth');
+    const navMenu = document.querySelector('.nav-menu');
+    const basePath = getBasePath();
+    
     if (navAuth && currentUser) {
+        // Update auth section
+        let dashboardLink = '';
+        if (userRole === 'admin') {
+            dashboardLink = `<a href="${basePath}admin-dashboard.html" class="nav-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>`;
+        } else {
+            dashboardLink = `<a href="${basePath}live-stream.html" class="nav-link">
+                <i class="fas fa-video"></i> Canlı Yayın
+            </a>`;
+        }
+        
         navAuth.innerHTML = `
-            <span class="user-info">
-                <i class="fas fa-user"></i>
-                ${currentUser.companyName}
+            <span class="user-info" style="color: var(--text-secondary); margin-right: 1rem;">
+                <i class="fas fa-user"></i> ${currentUser.companyName || currentUser.email}
             </span>
-            <button class="btn btn-outline" onclick="logout()">Çıkış</button>
+            ${dashboardLink}
+            <button class="btn btn-outline" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Çıkış
+            </button>
         `;
+    }
+    
+    // Update navigation menu for logged in users
+    if (navMenu && currentUser) {
+        // Hide login/register buttons if they exist in menu
+        const loginLinks = navMenu.querySelectorAll('a[onclick*="showLoginModal"], a[onclick*="showRegisterModal"]');
+        loginLinks.forEach(link => {
+            link.style.display = 'none';
+        });
+        
+        // Add dashboard link if not exists
+        if (!navMenu.querySelector('a[href*="dashboard"], a[href*="live-stream"]')) {
+            const dashboardItem = document.createElement('li');
+            if (userRole === 'admin') {
+                dashboardItem.innerHTML = `<a href="${basePath}admin-dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>`;
+            } else {
+                dashboardItem.innerHTML = `<a href="${basePath}live-stream.html" class="nav-link">
+                    <i class="fas fa-video"></i> Canlı Yayın
+                </a>`;
+            }
+            navMenu.insertBefore(dashboardItem, navMenu.firstChild);
+        }
     }
 }
 
@@ -834,9 +955,53 @@ function checkAuthStatus() {
 function toggleMobileMenu() {
     const navMenu = document.getElementById('navMenu');
     const hamburger = document.querySelector('.hamburger');
+    const body = document.body;
     
-    navMenu.classList.toggle('active');
-    hamburger.classList.toggle('active');
+    const isActive = navMenu.classList.contains('active');
+    
+    if (isActive) {
+        // Menüyü kapat
+        navMenu.classList.remove('active');
+        hamburger.classList.remove('active');
+        body.style.overflow = ''; // Scroll'u geri aç
+    } else {
+        // Menüyü aç
+        navMenu.classList.add('active');
+        hamburger.classList.add('active');
+        body.style.overflow = 'hidden'; // Scroll'u engelle
+    }
+}
+
+// Menü dışına tıklanınca kapat
+function closeMobileMenuOnOutsideClick(event) {
+    const navMenu = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    const navContainer = document.querySelector('.nav-container');
+    
+    if (navMenu && navMenu.classList.contains('active')) {
+        // Eğer tıklama menü dışındaysa
+        if (!navContainer.contains(event.target) && !event.target.closest('.hamburger')) {
+            navMenu.classList.remove('active');
+            if (hamburger) {
+                hamburger.classList.remove('active');
+            }
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// Menü linklerine tıklanınca kapat
+function closeMobileMenuOnLinkClick() {
+    const navMenu = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (navMenu && navMenu.classList.contains('active')) {
+        navMenu.classList.remove('active');
+        if (hamburger) {
+            hamburger.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    }
 }
 
 function scrollToFeatures() {
