@@ -366,11 +366,12 @@ function renderDepartmentUsers() {
     const storedUsers = getStoredUsers();
     const rows = DEPARTMENT_USERS.map(user => {
         const match = storedUsers.find((record) => (record.email || '').toLowerCase() === user.email.toLowerCase());
+        const displayPassword = match?.password || match?.temporaryPassword || user.password;
         return {
             department: user.department,
             role: match?.role || user.role,
             email: match?.email || user.email,
-            password: match?.password || match?.temporaryPassword || user.password,
+            password: displayPassword,
             notes: user.notes
         };
     });
@@ -389,7 +390,12 @@ function renderDepartmentUsers() {
             </td>
             <td>
                 <div class="table-cell-copy">
-                    <code>${escapeHtml(user.password)}</code>
+                    <div class="password-visibility" data-password="${escapeHtml(user.password)}" data-visible="false">
+                        <span class="masked-password">${maskPassword(user.password)}</span>
+                        <button type="button" class="password-visibility-toggle" data-password="${escapeHtml(user.password)}" aria-label="Şifreyi göster">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     <button type="button" class="copy-button" data-copy="${escapeHtml(user.password)}" data-copy-label="Şifre">
                         <i class="fas fa-copy"></i> Kopyala
                     </button>
@@ -400,6 +406,7 @@ function renderDepartmentUsers() {
     `).join('');
 
     attachCopyHandlers();
+    attachPasswordVisibilityHandlers();
 }
 
 function renderProcedureCards() {
@@ -594,6 +601,7 @@ function bindActions() {
     }
 
     attachCopyHandlers();
+    attachPasswordVisibilityHandlers();
 
     bindSummaryLinks();
 }
@@ -635,6 +643,38 @@ function attachCopyHandlers() {
             } else {
                 button.disabled = false;
                 alert('Kopyalama başarısız oldu. Lütfen değerleri manuel olarak kopyalayın.');
+            }
+        });
+    });
+}
+
+function attachPasswordVisibilityHandlers() {
+    document.querySelectorAll('.password-visibility-toggle').forEach((button) => {
+        if (button.dataset.bound === 'true') {
+            return;
+        }
+
+        button.dataset.bound = 'true';
+        button.addEventListener('click', () => {
+            const container = button.closest('.password-visibility');
+            if (!container) return;
+
+            const span = container.querySelector('.masked-password');
+            if (!span) return;
+
+            const password = button.getAttribute('data-password') || container.getAttribute('data-password') || '';
+            const isVisible = container.getAttribute('data-visible') === 'true';
+
+            if (isVisible) {
+                span.textContent = maskPassword(password);
+                container.setAttribute('data-visible', 'false');
+                button.innerHTML = '<i class="fas fa-eye"></i>';
+                button.setAttribute('aria-label', 'Şifreyi göster');
+            } else {
+                span.textContent = password;
+                container.setAttribute('data-visible', 'true');
+                button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                button.setAttribute('aria-label', 'Şifreyi gizle');
             }
         });
     });
@@ -692,6 +732,15 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function maskPassword(value) {
+    const length = (value || '').length;
+    if (!length) {
+        return '••••••••';
+    }
+    const repeat = Math.max(8, Math.min(length, 12));
+    return '•'.repeat(repeat);
 }
 
 function getStoredUsers() {
