@@ -20,8 +20,8 @@ jobs:
   deploy-backend:
     name: Deploy Backend
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
-    if: ${{ github.event.inputs.environment != '' }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment != '' ? github.event.inputs.environment : 'production' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.environment != '' }}
     
     steps:
       - name: Checkout code
@@ -75,8 +75,8 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend to S3
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
-    if: ${{ github.event.inputs.environment != '' }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment != '' ? github.event.inputs.environment : 'production' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.environment != '' }}
     
     steps:
       - name: Checkout code
