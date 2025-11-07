@@ -346,79 +346,9 @@ class PWAService {
      * Show update notification
      */
     showUpdateNotification() {
-        const banner = document.createElement('div');
-        banner.id = 'pwa-update-banner';
-        banner.className = 'pwa-update-banner';
-        banner.innerHTML = `
-            <div class="pwa-update-content">
-                <i class="fas fa-sync-alt"></i>
-                <span>Yeni güncelleme mevcut</span>
-                <button class="pwa-update-btn" id="pwa-update-btn">Yenile</button>
-            </div>
-        `;
-        
-        // Add styles if not exists
-        if (!document.getElementById('pwa-update-styles')) {
-            const style = document.createElement('style');
-            style.id = 'pwa-update-styles';
-            style.textContent = `
-                .pwa-update-banner {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #1a1a1a;
-                    border: 2px solid #dc2626;
-                    border-radius: 8px;
-                    padding: 12px 16px;
-                    z-index: 10000;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-                    animation: slideDown 0.3s ease-out;
-                }
-                
-                @keyframes slideDown {
-                    from {
-                        transform: translateY(-100px);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-                
-                .pwa-update-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    color: #ffffff;
-                }
-                
-                .pwa-update-btn {
-                    padding: 6px 12px;
-                    background: #dc2626;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                }
-                
-                .pwa-update-btn:hover {
-                    background: #b91c1c;
-                }
-            `;
-            document.head.appendChild(style);
+        if (this.serviceWorkerRegistration && this.serviceWorkerRegistration.waiting) {
+            this.serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
-        
-        document.body.appendChild(banner);
-        
-        document.getElementById('pwa-update-btn')?.addEventListener('click', () => {
-            if (this.serviceWorkerRegistration && this.serviceWorkerRegistration.waiting) {
-                this.serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
-            window.location.reload();
-        });
     }
 
     /**
