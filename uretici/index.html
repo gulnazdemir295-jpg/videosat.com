@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üretici Panel Girişi - VideoSat</title>
+    <meta name="description" content="Üretici paneline erişmek için giriş yapın.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../styles-panel-access.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="panel-access-page" data-panel-name="Üretici Paneli" data-required-role="uretici" data-redirect-url="../live-stream.html?role=uretici" data-default-email="uretici@videosat.com">
+    <main class="panel-access-wrapper" role="main">
+        <div class="panel-access-header">
+            <span class="panel-access-badge"><i class="fas fa-industry"></i> Üretim Yönetimi</span>
+            <h1 id="panelTitle">Üretici Paneli</h1>
+            <p id="panelDescription">Üretim sürecinizi yönetmek ve canlı yayınlara erişmek için hesabınızla giriş yapın.</p>
+        </div>
+        <form id="panelAccessForm" class="panel-access-form" novalidate>
+            <div class="panel-field">
+                <label for="panelEmail">E-posta</label>
+                <input id="panelEmail" name="email" class="panel-input" type="email" inputmode="email" autocomplete="email" placeholder="ornek@videosat.com" required>
+            </div>
+            <div class="panel-field">
+                <label for="panelPassword">Şifre</label>
+                <input id="panelPassword" name="password" class="panel-input" type="password" autocomplete="current-password" placeholder="Şifrenizi girin" required>
+            </div>
+            <button type="submit" class="panel-submit">
+                <i class="fas fa-sign-in-alt"></i> Panele Giriş Yap
+            </button>
+        </form>
+        <div id="panelAccessMessage" class="panel-message" hidden></div>
+        <div class="panel-hint">
+            <span>Farklı bir panel arıyorsanız</span>
+            <a href="../index.html">Panel listesine dön</a>
+        </div>
+        <p id="panelSupportText" class="panel-support"></p>
+    </main>
+
+    <script src="../config/backend-config.js"></script>
+    <script src="../services/auth-service.js"></script>
+    <script src="../services/panel-access.js"></script>
+</body>
+</html>

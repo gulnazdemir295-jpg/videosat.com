@@ -490,16 +490,8 @@ async function handleLogin(e) {
                 }));
                 
                 loginSuccess = true;
-                
-                // Close modal and redirect to dashboard
-                closeModal('loginModal');
-                unlockBodyScroll(); // Unlock scroll before redirect
-                showAlert('Başarıyla giriş yaptınız!', 'success');
-                
-                // Redirect to appropriate dashboard (reduced delay)
-                setTimeout(() => {
-                    redirectToDashboard();
-                }, 500);
+
+                handlePostLoginSuccess(result.user);
             } else {
                 errorMessage = result.message || 'E-posta ya da şifre hatalı!';
                 showAlert(errorMessage, 'error');
@@ -531,14 +523,7 @@ async function handleLogin(e) {
             
             loginSuccess = true;
             
-            // Close modal and redirect to dashboard
-            closeModal('loginModal');
-            showAlert('Başarıyla giriş yaptınız!', 'success');
-            
-            // Redirect to appropriate dashboard
-            setTimeout(() => {
-                redirectToDashboard();
-            }, 1000);
+            handlePostLoginSuccess(user);
         }
         
     } catch(err) {
@@ -557,6 +542,42 @@ async function handleLogin(e) {
 }
 
 // Handle Register
+
+function handlePostLoginSuccess(user) {
+    const role = (user?.role || '').toLowerCase();
+    const customerRoles = ['buyer', 'musteri', 'customer'];
+    const roleRedirectMap = {
+        admin: '/admin',
+        hammaddeci: '/hammaddeci',
+        uretici: '/uretici',
+        toptanci: '/toptanci',
+        satici: '/satici',
+        seller: '/satici'
+    };
+
+    // Modalı kapat ve scroll kilidini kaldır
+    closeModal('loginModal');
+    unlockBodyScroll();
+
+    if (customerRoles.includes(role) || !role) {
+        showAlert('Müşteri girişi başarılı. Yönlendiriliyorsunuz...', 'success');
+        setTimeout(() => {
+            redirectToDashboard();
+        }, 500);
+        return;
+    }
+
+    const target = roleRedirectMap[role];
+    if (target) {
+        showAlert('Rolünüze özel panel sayfasına yönlendiriliyorsunuz...', 'info');
+        setTimeout(() => {
+            window.location.href = target;
+        }, 600);
+    } else {
+        showAlert('Bu panel için giriş bağlantısı bulunamadı. Lütfen destek ekibi ile iletişime geçin.', 'error');
+    }
+}
+
 async function handleRegister(e) {
     e.preventDefault();
     

@@ -68,11 +68,8 @@
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', function() {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New service worker available
-                                    if (confirm('Yeni versiyon mevcut! Yenilemek ister misiniz?')) {
-                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                        window.location.reload();
-                                    }
+                                    // New service worker available - skip waiting silently
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
                                 }
                             });
                         });
@@ -119,13 +116,13 @@
             </div>
             <div class="nav-auth">
                 <button class="btn btn-outline" onclick="showLoginModal()">
-                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                    <i class="fas fa-sign-in-alt"></i> Müşteri Girişi
                 </button>
                 <button class="btn btn-primary" onclick="showRegisterModal()">
-                    <i class="fas fa-user-plus"></i> Kayıt Ol
+                    <i class="fas fa-user-plus"></i> Müşteri Kaydı
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="showAdminLoginModal()" title="Admin Girişi">
-                    <i class="fas fa-shield-alt"></i> Admin
+                <button class="btn btn-secondary btn-sm" onclick="window.location.href='/admin'" title="Admin Paneli">
+                    <i class="fas fa-shield-alt"></i> Admin Paneli
                 </button>
                 <div class="hamburger" onclick="toggleMobileMenu()">
                     <span></span>
@@ -171,6 +168,38 @@
                     <h3>Analitik</h3>
                     <p>Detaylı raporlar</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Panel Shortcuts Section -->
+    <section class="panel-shortcuts" id="panel-shortcuts">
+        <div class="container">
+            <div class="panel-shortcuts-header">
+                <h2 class="section-title">Panel Girişleri</h2>
+                <p class="section-description">Yetkili kullanıcılar için hızlı panel kısayolları. Müşteri girişleri bu sayfadan, diğer roller aşağıdaki bağlantıları kullanarak giriş yapabilir.</p>
+            </div>
+            <div class="panel-links-grid">
+                <a class="panel-link-card" href="/admin">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>Admin Paneli</div>
+                </a>
+                <a class="panel-link-card" href="/hammaddeci">
+                    <i class="fas fa-boxes"></i>
+                    <div>Hammaddeci Paneli</div>
+                </a>
+                <a class="panel-link-card" href="/uretici">
+                    <i class="fas fa-industry"></i>
+                    <div>Üretici Paneli</div>
+                </a>
+                <a class="panel-link-card" href="/toptanci">
+                    <i class="fas fa-truck-loading"></i>
+                    <div>Toptancı Paneli</div>
+                </a>
+                <a class="panel-link-card" href="/satici">
+                    <i class="fas fa-store"></i>
+                    <div>Satıcı Paneli</div>
+                </a>
             </div>
         </div>
     </section>
@@ -421,7 +450,7 @@
     <div id="loginModal" class="modal" role="dialog" aria-labelledby="loginModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="loginModalTitle">Giriş Yap</h2>
+                <h2 id="loginModalTitle">Müşteri Girişi</h2>
                 <span class="close" onclick="closeModal('loginModal')" aria-label="Kapat">&times;</span>
             </div>
             <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
@@ -449,7 +478,7 @@
                     </a>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">
-                    <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Giriş Yap</span>
+                    <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Müşteri Girişi</span>
                     <span class="btn-loading" style="display: none;">
                         <i class="fas fa-spinner fa-spin"></i> Giriş yapılıyor...
                     </span>
@@ -467,7 +496,7 @@
     <div id="registerModal" class="modal" role="dialog" aria-labelledby="registerModalTitle" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="registerModalTitle">Kayıt Ol</h2>
+                <h2 id="registerModalTitle">Müşteri Kaydı</h2>
                 <span class="close" onclick="closeModal('registerModal')" aria-label="Kapat">&times;</span>
             </div>
             <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
@@ -481,16 +510,9 @@
                     <i class="fas fa-check-circle"></i> <span id="registerSuccessText"></span>
                 </div>
                 
+                <input type="hidden" id="userRole" name="role" value="buyer">
                 <div class="form-group">
-                    <label for="userRole">Rol</label>
-                    <select id="userRole" name="role" required>
-                        <option value="">Seçiniz</option>
-                        <option value="seller">Satıcı</option>
-                        <option value="buyer">Alıcı</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="companyName">Şirket Adı</label>
+                    <label for="companyName">Ad Soyad</label>
                     <input type="text" id="companyName" name="companyName" required autocomplete="organization" inputmode="text">
                 </div>
                 <div class="form-group">
@@ -510,7 +532,7 @@
                     <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">
-                    <i class="fas fa-user-plus"></i> <span class="btn-text">Kayıt Ol</span>
+                    <i class="fas fa-user-plus"></i> <span class="btn-text">Müşteri Kaydı</span>
                     <span class="btn-loading" style="display: none;">
                         <i class="fas fa-spinner fa-spin"></i> Kayıt yapılıyor...
                     </span>

@@ -1,0 +1,194 @@
+/* Panel Access Page Styles */
+:root {
+    --panel-bg: rgba(15, 15, 15, 0.85);
+    --panel-border: rgba(255, 255, 255, 0.08);
+}
+
+body.panel-access-page {
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, rgba(220, 38, 38, 0.25), rgba(0, 0, 0, 0.95) 45%);
+    color: #fff;
+    font-family: var(--font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+.panel-access-wrapper {
+    width: min(450px, calc(100vw - 3rem));
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 1rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(18px);
+    padding: 2.5rem;
+}
+
+.panel-access-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.panel-access-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(220, 38, 38, 0.15);
+    color: #f87171;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.panel-access-header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.panel-access-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.panel-access-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.panel-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.panel-field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.panel-input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    border-radius: 0.65rem;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.panel-input:focus {
+    outline: none;
+    border-color: rgba(220, 38, 38, 0.55);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+.panel-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #dc2626, #f97316);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    min-height: 48px;
+}
+
+.panel-submit:hover:not([disabled]) {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 30px rgba(220, 38, 38, 0.25);
+}
+
+.panel-submit[disabled] {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.panel-hint {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+}
+
+.panel-hint a {
+    color: rgba(248, 113, 113, 0.85);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.panel-hint a:hover {
+    color: #fca5a5;
+}
+
+.panel-message {
+    margin-top: 1.25rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.65rem;
+    font-size: 0.93rem;
+    line-height: 1.4;
+    display: none;
+}
+
+.panel-message.show {
+    display: block;
+}
+
+.panel-message.success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #bbf7d0;
+}
+
+.panel-message.error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fecaca;
+}
+
+.panel-message.info {
+    background: rgba(96, 165, 250, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.35);
+    color: #bfdbfe;
+}
+
+.panel-support {
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.panel-support strong {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 520px) {
+    .panel-access-wrapper {
+        padding: 2rem 1.5rem;
+    }
+
+    .panel-access-header h1 {
+        font-size: 1.55rem;
+    }
+}
