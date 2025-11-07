@@ -34,6 +34,7 @@ const {
 } = require('./middleware/enhanced-rate-limiting');
 const logger = require('./utils/logger');
 const { body, validationResult } = require('express-validator');
+const { authenticateToken } = require('./middleware/auth-middleware');
 const multer = require('multer');
 const fs = require('fs');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -546,9 +547,7 @@ paymentService.initializePaymentService(dynamoClient, payments, userPayments);
 const authRoutes = require('./routes/auth-routes');
 app.use('/api/auth', authRoutes);
 
-// Health
-app.get('/api/health', (req, res) => res.json({ ok: true }));
-
+// Health endpoint defined later with detailed status
 function requireAdmin(req, res, next) {
   const token = req.header('x-admin-token') || '';
   if (!ADMIN_TOKEN || token === ADMIN_TOKEN) return next();
@@ -1381,7 +1380,7 @@ if (STREAM_PROVIDER === 'AGORA') {
 
 // Yayıncı room'a katılır ve kendi channel'ını oluşturur
 // Input validation helper
-const validateInput = (req, res, next) => {
+function validateInput(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ 
@@ -1390,7 +1389,7 @@ const validateInput = (req, res, next) => {
     });
   }
   next();
-};
+}
 
 app.post('/api/rooms/:roomId/join', 
   [
@@ -3621,32 +3620,33 @@ app.get('/api/streams', async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => {
-  const localIP = getLocalIP();
-  const config = getBackendConfig();
-  
-  // Winston logger ile loglama
-  logger.info(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
-  logger.info(`🌐 API Base URL: http://localhost:${PORT}/api`);
-  logger.info(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
-  logger.info(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
-  logger.info(`💬 Chat, beğeni ve davet sistemi aktif`);
-  logger.info(`🔌 WebSocket Server aktif (Socket.io)`);
-  logger.info(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
-  logger.info(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
-  logger.info(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);
-  
-  // Port validasyon uyarısı
-  if (PORT !== DEFAULT_BACKEND_PORT) {
-    logger.warn(`⚠️  Port ${PORT} kullanılıyor (Default: ${DEFAULT_BACKEND_PORT})`);
-    logger.warn(`   Frontend'in bu port'u kullanacak şekilde yapılandırıldığından emin olun!`);
-  }
-  
-  // Console'a da yaz (backward compatibility)
-  console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
-  console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
-});
-
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, HOST, () => {
+    const localIP = getLocalIP();
+    const config = getBackendConfig();
+    
+    // Winston logger ile loglama
+    logger.info(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
+    logger.info(`🌐 API Base URL: http://localhost:${PORT}/api`);
+    logger.info(`🌐 Yerel network: http://${localIP}:${PORT}/api`);
+    logger.info(`📡 Tüm network interface'lere açık (${HOST}:${PORT})`);
+    logger.info(`💬 Chat, beğeni ve davet sistemi aktif`);
+    logger.info(`🔌 WebSocket Server aktif (Socket.io)`);
+    logger.info(`📡 Streaming Provider: ${STREAM_PROVIDER}`);
+    logger.info(`🔑 Agora Service: ${agoraService ? '✅ Aktif' : '❌ Devre Dışı'}`);
+    logger.info(`🔧 Port: ${PORT} (Default: ${DEFAULT_BACKEND_PORT})`);
+    
+    // Port validasyon uyarısı
+    if (PORT !== DEFAULT_BACKEND_PORT) {
+      logger.warn(`⚠️  Port ${PORT} kullanılıyor (Default: ${DEFAULT_BACKEND_PORT})`);
+      logger.warn(`   Frontend'in bu port'u kullanacak şekilde yapılandırıldığından emin olun!`);
+    }
+    
+    // Console'a da yaz (backward compatibility)
+    console.log(`✅ Backend API çalışıyor: http://localhost:${PORT}`);
+    console.log(`🌐 API Base URL: http://localhost:${PORT}/api`);
+  });
+}
 
 
 // ============================================
@@ -3867,3 +3867,6 @@ app.use(notFoundHandler);
 
 // Error handler - en sonda olmalı
 app.use(errorHandler);
+
+module.exports = app;
+module.exports.server = server;

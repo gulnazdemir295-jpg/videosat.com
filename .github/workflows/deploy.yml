@@ -35,7 +35,7 @@ jobs:
       
       - name: Install backend dependencies
         working-directory: ./backend/api
-        run: npm ci --production
+        run: npm ci
       
       - name: Run tests before deployment
         working-directory: ./backend/api
@@ -43,6 +43,10 @@ jobs:
         env:
           NODE_ENV: test
           PORT: 3001
+
+      - name: Prune dev dependencies
+        working-directory: ./backend/api
+        run: npm prune --production
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

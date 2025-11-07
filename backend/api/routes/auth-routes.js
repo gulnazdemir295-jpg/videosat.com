@@ -1065,7 +1065,7 @@ router.post('/resend-verification',
       console.error('Resend verification error:', error);
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Doğrulama email'i gönderilirken bir hata oluştu.'
+        message: "Doğrulama email'i gönderilirken bir hata oluştu."
       });
     }
   }

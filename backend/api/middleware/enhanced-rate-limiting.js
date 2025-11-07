@@ -12,6 +12,9 @@ const rateLimit = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
 const Redis = require('ioredis');
 
+const isTestEnv = process.env.NODE_ENV === 'test';
+const noopLimiter = (req, res, next) => next();
+
 // Redis client (opsiyonel - eğer Redis varsa)
 let redisClient = null;
 if (process.env.REDIS_HOST) {
@@ -41,7 +44,7 @@ const getStore = () => {
 /**
  * Genel API rate limiter
  */
-const apiLimiter = rateLimit({
+const apiLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 dakika
   max: 100, // Her IP için 15 dakikada maksimum 100 istek
   message: {
@@ -61,7 +64,7 @@ const apiLimiter = rateLimit({
 /**
  * Strict rate limiter (kritik endpoint'ler için)
  */
-const strictLimiter = rateLimit({
+const strictLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 dakika
   max: 10, // Daha sıkı limit
   message: {
@@ -77,7 +80,7 @@ const strictLimiter = rateLimit({
 /**
  * Auth endpoint'ler için özel limiter
  */
-const authLimiter = rateLimit({
+const authLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 dakika
   max: 5, // Login/Register için çok sıkı limit
   message: {
@@ -94,7 +97,7 @@ const authLimiter = rateLimit({
 /**
  * Per-user rate limiter (authenticated users için)
  */
-const userLimiter = rateLimit({
+const userLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 saat
   max: 1000, // Authenticated users için daha yüksek limit
   message: {
@@ -118,7 +121,7 @@ const userLimiter = rateLimit({
 /**
  * Upload endpoint'ler için özel limiter
  */
-const uploadLimiter = rateLimit({
+const uploadLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 saat
   max: 20, // Upload için sınırlı limit
   message: {
@@ -134,7 +137,7 @@ const uploadLimiter = rateLimit({
 /**
  * Search endpoint'ler için özel limiter
  */
-const searchLimiter = rateLimit({
+const searchLimiter = isTestEnv ? noopLimiter : rateLimit({
   windowMs: 1 * 60 * 1000, // 1 dakika
   max: 30, // Search için orta limit
   message: {
@@ -159,6 +162,9 @@ function createDynamicLimiter(options = {}) {
     skip = () => false
   } = options;
 
+  if (isTestEnv) {
+    return noopLimiter;
+  }
   return rateLimit({
     windowMs,
     max,
