@@ -6,13 +6,10 @@
 const CACHE_NAME = 'basvideo-v2';
 const CACHE_VERSION = '2.0.0';
 const urlsToCache = [
-  '/',
   '/index.html',
   '/styles.css',
   '/app.min.js',
   '/live-stream.html',
-  '/live-stream.js',
-  '/config/backend-config.js',
   '/panel.html',
   '/panel-app/panel.css',
   '/panel-app/panel-backend.js',
@@ -21,6 +18,8 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.socket.io/4.7.2/socket.io.min.js'
 ];
+
+const PRECACHE_SET = new Set(urlsToCache);
 
 // Install Event - Cache resources
 self.addEventListener('install', (event) => {
@@ -71,38 +70,42 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API requests (always use network)
-  if (event.request.url.includes('/api/')) {
+  const requestUrl = new URL(event.request.url);
+
+  if (!PRECACHE_SET.has(requestUrl.pathname)) {
+    // For assets outside the allowlist always hit network.
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        if (event.request.destination === 'document') {
+          return caches.match('/index.html');
+        }
+      })
+    );
     return;
   }
 
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request)
-          .then((response) => {
-            // Don't cache if not a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+        if (response) {
+          return response;
+        }
+
+        return fetch(event.request)
+          .then((networkResponse) => {
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
             }
 
-            // Clone the response
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(() => {
-            // Offline fallback
-            if (event.request.destination === 'document') {
-              return caches.match('/index.html');
-            }
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+            return networkResponse;
           });
+      })
+      .catch(() => {
+        if (event.request.destination === 'document') {
+          return caches.match('/index.html');
+        }
       })
   );
 });

@@ -696,7 +696,7 @@ function attachPasswordVisibilityHandlers() {
         if (button.dataset.bound === 'true') {
             return;
         }
-
+        
         button.dataset.bound = 'true';
         button.addEventListener('click', () => {
             const container = button.closest('.password-visibility');
