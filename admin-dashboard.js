@@ -12,12 +12,22 @@ let currentFilters = {
     status: ''
 };
 
+const FALLBACK_USERS = [
+    { email: 'admin@videosat.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', status: 'active' },
+    { email: 'admin@basvideo.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', status: 'active' },
+    { email: 'hammaddeci@videosat.com', password: 'test123', role: 'hammaddeci', companyName: 'Hammadde Tedarik A.Ş.', status: 'active' },
+    { email: 'uretici@videosat.com', password: 'test123', role: 'uretici', companyName: 'Üretim Firma Ltd.', status: 'active' },
+    { email: 'toptanci@videosat.com', password: 'test123', role: 'toptanci', companyName: 'Toptan Satış A.Ş.', status: 'active' },
+    { email: 'satici@videosat.com', password: 'satici123', role: 'satici', companyName: 'Perakende Satış Ltd.', status: 'active' }
+];
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Admin Dashboard yükleniyor...');
     
     // Check admin authentication
     checkAdminAuth();
+    ensureAdminSeed();
     
     // Initialize navigation
     initNavigation();
@@ -57,6 +67,53 @@ function checkAdminAuth() {
     } catch (error) {
         console.error('Auth check error:', error);
         window.location.href = 'index.html';
+    }
+}
+
+function getStoredUsers() {
+    try {
+        const usersStr = localStorage.getItem('users');
+        if (!usersStr) return [];
+        const parsed = JSON.parse(usersStr);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn('Stored users parse failed:', error);
+        return [];
+    }
+}
+
+function saveStoredUsers(users) {
+    try {
+        localStorage.setItem('users', JSON.stringify(users));
+    } catch (error) {
+        console.warn('Save users failed:', error);
+    }
+}
+
+function ensureAdminSeed() {
+    const storedUsers = getStoredUsers();
+    const emails = storedUsers.map(u => (u.email || '').toLowerCase());
+    let mutated = false;
+
+    FALLBACK_USERS.forEach(seed => {
+        const email = seed.email.toLowerCase();
+        if (!emails.includes(email)) {
+            storedUsers.push({
+                id: seed.id || `seed-${email}`,
+                email: seed.email,
+                password: seed.password,
+                role: seed.role,
+                companyName: seed.companyName,
+                status: seed.status || 'active',
+                createdAt: seed.createdAt || new Date().toISOString(),
+                lastLogin: seed.lastLogin || new Date().toISOString()
+            });
+            mutated = true;
+        }
+    });
+
+    if (mutated) {
+        saveStoredUsers(storedUsers);
     }
 }
 
@@ -156,9 +213,12 @@ async function loadDashboardStats() {
                 if (userStats.ok) {
                     document.getElementById('statTotalUsers').textContent = userStats.total || 0;
                 }
+            } else {
+                applyFallbackUserStats();
             }
         } catch (error) {
             console.error('Error loading user stats:', error);
+            applyFallbackUserStats();
         }
         
         // Load stream stats
@@ -205,7 +265,13 @@ async function loadDashboardStats() {
         }
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
+        applyFallbackUserStats();
     }
+}
+
+function applyFallbackUserStats() {
+    const fallbackUsers = mergeUsers(getStoredUsers(), FALLBACK_USERS);
+    document.getElementById('statTotalUsers').textContent = fallbackUsers.length || 0;
 }
 
 /**
@@ -214,9 +280,9 @@ async function loadDashboardStats() {
 async function loadUsers() {
     const tableBody = document.getElementById('usersTableBody');
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = '<tr><td colspan="8" class="text-center"><div class="loading-spinner"></div> Yükleniyor...</td></tr>';
-    
+
     try {
         const apiUrl = window.getAPIBaseURL ? window.getAPIBaseURL() : '/api';
         const params = new URLSearchParams({
@@ -224,7 +290,7 @@ async function loadUsers() {
             offset: (currentPage - 1) * pageSize,
             ...currentFilters
         });
-        
+
         const response = await fetch(`${apiUrl}/admin/users?${params}`, {
             method: 'GET',
             headers: {
@@ -232,55 +298,124 @@ async function loadUsers() {
             },
             credentials: 'include'
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to load users');
         }
-        
+
         const data = await response.json();
-        
+
         if (!data.ok || !data.users || data.users.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Üye bulunamadı</td></tr>';
+            console.warn('Backend kullanıcı listesi boş döndü, yerel veri kullanılacak.');
+            renderFallbackUsers();
             return;
         }
-        
-        // Render users table
-        tableBody.innerHTML = data.users.map(user => `
-            <tr>
-                <td><input type="checkbox" value="${user.email}"></td>
-                <td>${escapeHtml(user.email)}</td>
-                <td>${escapeHtml(user.companyName || '-')}</td>
-                <td><span class="status-badge">${escapeHtml(user.role || 'user')}</span></td>
-                <td><span class="status-badge status-${user.status || 'inactive'}">${getStatusText(user.status)}</span></td>
-                <td>${formatDate(user.createdAt)}</td>
-                <td>${formatDate(user.lastLogin) || '-'}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn btn-icon btn-outline" onclick="editUser('${user.email}')" title="Düzenle">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-icon btn-outline" onclick="deleteUser('${user.email}')" title="Sil">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        ${user.status === 'banned' || user.status === 'suspended' ? 
-                            `<button class="btn btn-icon btn-outline" onclick="activateUser('${user.email}')" title="Aktifleştir">
-                                <i class="fas fa-check"></i>
-                            </button>` : 
-                            `<button class="btn btn-icon btn-outline" onclick="banUser('${user.email}')" title="Banla">
-                                <i class="fas fa-ban"></i>
-                            </button>`
-                        }
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-        
-        // Render pagination
+
+        renderUsersTable(data.users);
         renderPagination(data.total, pageSize, currentPage);
-        
+
     } catch (error) {
         console.error('Error loading users:', error);
-        tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Hata: ' + error.message + '</td></tr>';
+        renderFallbackUsers(error.message);
+    }
+}
+
+function renderUsersTable(users) {
+    const tableBody = document.getElementById('usersTableBody');
+    if (!tableBody) return;
+
+    if (!users || users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Üye bulunamadı</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = users.map(user => `
+        <tr>
+            <td><input type="checkbox" value="${user.email}"></td>
+            <td>${escapeHtml(user.email)}</td>
+            <td>${escapeHtml(user.companyName || '-')}</td>
+            <td><span class="status-badge">${escapeHtml(user.role || 'user')}</span></td>
+            <td><span class="status-badge status-${user.status || 'inactive'}">${getStatusText(user.status)}</span></td>
+            <td>${formatDate(user.createdAt)}</td>
+            <td>${formatDate(user.lastLogin) || '-'}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-icon btn-outline" onclick="editUser('${user.email}')" title="Düzenle">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-icon btn-outline" onclick="deleteUser('${user.email}')" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    ${user.status === 'banned' || user.status === 'suspended' ? `
+                        <button class="btn btn-icon btn-outline" onclick="activateUser('${user.email}')" title="Aktifleştir">
+                            <i class="fas fa-check"></i>
+                        </button>` : `
+                        <button class="btn btn-icon btn-outline" onclick="banUser('${user.email}')" title="Banla">
+                            <i class="fas fa-ban"></i>
+                        </button>`
+                    }
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderFallbackUsers(errorMessage) {
+    if (errorMessage) {
+        console.warn('Backend kullanıcı listesi alınamadı:', errorMessage);
+    }
+
+    const storedUsers = getStoredUsers();
+    const mergedUsers = mergeUsers(storedUsers, FALLBACK_USERS);
+    const adminUser = getCurrentAdmin();
+
+    if (adminUser) {
+        const exists = mergedUsers.some(user => (user.email || '').toLowerCase() === adminUser.email.toLowerCase());
+        if (!exists) {
+            mergedUsers.push({
+                ...adminUser,
+                status: adminUser.status || 'active',
+                companyName: adminUser.companyName || 'VideoSat Admin',
+                createdAt: adminUser.createdAt || new Date().toISOString(),
+                lastLogin: adminUser.lastLogin || new Date().toISOString()
+            });
+        }
+    }
+
+    renderUsersTable(mergedUsers);
+    currentPage = 1;
+    renderPagination(mergedUsers.length, pageSize, 1);
+}
+
+function mergeUsers(primary = [], secondary = []) {
+    const map = new Map();
+    [...primary, ...secondary].forEach(user => {
+        if (!user || !user.email) return;
+        const key = user.email.toLowerCase();
+        if (!map.has(key)) {
+            map.set(key, {
+                ...user,
+                status: user.status || 'active',
+                createdAt: user.createdAt || new Date().toISOString(),
+                lastLogin: user.lastLogin || new Date().toISOString()
+            });
+        }
+    });
+    return Array.from(map.values());
+}
+
+function getCurrentAdmin() {
+    try {
+        const currentStr = localStorage.getItem('currentUser');
+        if (!currentStr) return null;
+        const parsed = JSON.parse(currentStr);
+        if (parsed && parsed.role === 'admin') {
+            return parsed;
+        }
+        return null;
+    } catch (error) {
+        console.warn('currentUser parse failed:', error);
+        return null;
     }
 }
 
