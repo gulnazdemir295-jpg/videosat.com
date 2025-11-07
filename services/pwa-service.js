@@ -346,9 +346,33 @@ class PWAService {
      * Show update notification
      */
     showUpdateNotification() {
-        if (this.serviceWorkerRegistration && this.serviceWorkerRegistration.waiting) {
-            this.serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        if (!this.serviceWorkerRegistration) {
+            return;
         }
+
+        const waitingWorker = this.serviceWorkerRegistration.waiting;
+        if (!waitingWorker) {
+            return;
+        }
+
+        // Flag update availability so external listeners can react
+        this.updateAvailable = true;
+        window.dispatchEvent(new CustomEvent('pwa:update-available', {
+            detail: {
+                registration: this.serviceWorkerRegistration
+            }
+        }));
+
+        const handleStateChange = (event) => {
+            if (event.target.state === 'activated') {
+                waitingWorker.removeEventListener('statechange', handleStateChange);
+                this.updateAvailable = false;
+                window.dispatchEvent(new CustomEvent('pwa:update-applied'));
+            }
+        };
+
+        waitingWorker.addEventListener('statechange', handleStateChange);
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     }
 
     /**
