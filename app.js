@@ -4,7 +4,11 @@ let isLoggedIn = false;
 let userRole = null;
 
 // Initialize App
+
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof setupPasswordToggles === 'function') {
+        setupPasswordToggles();
+    }
     initializeApp();
     setupEventListeners();
     setupMobileMenuListeners();

@@ -15,11 +15,88 @@ const {
 } = require('../middleware/auth-middleware');
 const userService = require('../services/user-service');
 const emailService = require('../services/email-service');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
 // Rate limiting - Auth endpoint'leri için daha sıkı
 // Enhanced rate limiting kullan (Redis-backed), fallback olarak memory-based
+const ADMIN_LOGIN_WINDOW_MS = 10 * 60 * 1000; // 10 dakika
+const ADMIN_LOCK_THRESHOLD = 5;
+const ADMIN_LOCK_DURATION_MS = 15 * 60 * 1000; // 15 dakika
+
+const adminLoginAttempts = new Map();
+
+function getAttemptKey(email, ip) {
+  return `${email.toLowerCase()}|${ip}`;
+}
+
+function resetAttempts(key) {
+  adminLoginAttempts.delete(key);
+}
+
+function getAttemptRecord(key) {
+  const now = Date.now();
+  let record = adminLoginAttempts.get(key);
+  if (!record) {
+    record = {
+      count: 0,
+      firstAttempt: now,
+      lockedUntil: 0
+    };
+    adminLoginAttempts.set(key, record);
+  }
+
+  if (record.lockedUntil && record.lockedUntil <= now) {
+    adminLoginAttempts.delete(key);
+    record = {
+      count: 0,
+      firstAttempt: now,
+      lockedUntil: 0
+    };
+    adminLoginAttempts.set(key, record);
+  }
+
+  if (record.firstAttempt && now - record.firstAttempt > ADMIN_LOGIN_WINDOW_MS) {
+    record.count = 0;
+    record.firstAttempt = now;
+  }
+
+  return record;
+}
+
+function registerFailedAttempt(key) {
+  const record = getAttemptRecord(key);
+  record.count += 1;
+  if (record.count >= ADMIN_LOCK_THRESHOLD) {
+    record.lockedUntil = Date.now() + ADMIN_LOCK_DURATION_MS;
+  }
+  adminLoginAttempts.set(key, record);
+  return record;
+}
+
+function registerSuccessfulAttempt(key) {
+  resetAttempts(key);
+}
+
+function getLockInfo(key) {
+  const record = adminLoginAttempts.get(key);
+  if (!record) {
+    return null;
+  }
+  const now = Date.now();
+  if (record.lockedUntil && record.lockedUntil > now) {
+    return {
+      lockedUntil: record.lockedUntil,
+      attempts: record.count
+    };
+  }
+  if (record.lockedUntil && record.lockedUntil <= now) {
+    adminLoginAttempts.delete(key);
+  }
+  return null;
+}
+
 let authLimiter;
 try {
   authLimiter = enhancedAuthLimiter;
@@ -34,6 +111,15 @@ try {
     skipSuccessfulRequests: true // Başarılı login'leri sayma
   });
 }
+
+const adminLoginLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 dakika
+  max: 3, // Her IP için 10 dakikada maksimum 3 istek
+  message: 'Admin paneli için çok fazla giriş denemesi. Lütfen daha sonra tekrar deneyin.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true
+});
 
 // Input validation helper
 function validateInput(req, res, next) {
@@ -173,6 +259,135 @@ router.post('/register',
 
 /**
  * @swagger
+ * /api/auth/admin/login:
+ *   post:
+ *     summary: Admin kullanıcı girişi
+ *     description: Admin paneli için güvenli giriş endpoint'i. Başarısız denemeler kilitlenmeye neden olur.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Giriş başarılı
+ *       401:
+ *         description: Email veya şifre hatalı
+ *       429:
+ *         description: Çok fazla başarısız giriş denemesi
+ */
+router.post('/admin/login',
+  adminLoginLimiter,
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Geçerli bir email adresi gerekli')
+      .normalizeEmail(),
+    body('password')
+      .notEmpty()
+      .withMessage('Şifre gerekli')
+  ],
+  validateInput,
+  async (req, res) => {
+    const email = req.body.email.toLowerCase();
+    const { password } = req.body;
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const attemptKey = getAttemptKey(email, ip);
+
+    const lockInfo = getLockInfo(attemptKey);
+    if (lockInfo) {
+      const retryAfterMs = lockInfo.lockedUntil - Date.now();
+      const retryAfterSec = Math.ceil(retryAfterMs / 1000);
+      const retryAfterMin = Math.ceil(retryAfterMs / 60000);
+      res.set('Retry-After', String(Math.max(retryAfterSec, 1)));
+      logger.warn('Admin login locked', { email, ip, retryAfterSeconds: retryAfterSec });
+      return res.status(429).json({
+        error: 'Too Many Requests',
+        message: `Çok fazla başarısız giriş denemesi. ${retryAfterMin} dakika sonra tekrar deneyin.`
+      });
+    }
+
+    try {
+      const user = await userService.getUser(email);
+      if (!user || user.role !== 'admin') {
+        const attempt = registerFailedAttempt(attemptKey);
+        logger.warn('Admin login failure: invalid credentials', { email, ip, attempts: attempt.count });
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Email veya şifre hatalı.'
+        });
+      }
+
+      if (!user.password) {
+        const attempt = registerFailedAttempt(attemptKey);
+        logger.warn('Admin login failure: password unavailable', { email, ip, attempts: attempt.count });
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Lütfen şifrenizi sıfırlayın veya yeni bir hesap oluşturun.'
+        });
+      }
+
+      const passwordValid = await bcrypt.compare(password, user.password);
+      if (!passwordValid) {
+        const attempt = registerFailedAttempt(attemptKey);
+        logger.warn('Admin login failure: wrong password', { email, ip, attempts: attempt.count });
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Email veya şifre hatalı.'
+        });
+      }
+
+      registerSuccessfulAttempt(attemptKey);
+
+      const tokenPayload = {
+        userId: user.email,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName
+      };
+
+      const accessToken = generateToken(tokenPayload, '10m');
+      const refreshToken = generateRefreshToken({ userId: user.email, scope: 'admin' });
+
+      logger.info('Admin login success', { email, ip });
+
+      return res.json({
+        success: true,
+        message: 'Giriş başarılı',
+        data: {
+          user: {
+            email: user.email,
+            companyName: user.companyName,
+            role: user.role
+          },
+          accessToken,
+          refreshToken,
+          expiresIn: '10m'
+        }
+      });
+    } catch (error) {
+      logger.error('Admin login error', { email, ip, error: error.message });
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Giriş işlemi sırasında bir hata oluştu.'
+      });
+    }
+  }
+);
+
+/**
+ * @swagger
  * /api/auth/login:
  *   post:
  *     summary: Kullanıcı girişi
@@ -242,6 +457,13 @@ router.post('/login',
         return res.status(401).json({
           error: 'Unauthorized',
           message: 'Email veya şifre hatalı.'
+        });
+      }
+
+      if (user.role === 'admin') {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'Admin kullanıcıları için lütfen /api/auth/admin/login endpointini kullanın.'
         });
       }
 

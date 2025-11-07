@@ -93,6 +93,7 @@
     <script src="services/platform-detection.js" defer></script>
     <!-- Route Guard -->
     <script src="services/route-guard.js" defer></script>
+    <script src="scripts/password-toggle.js" defer></script>
     <!-- Loading Screen -->
     <script src="services/loading-screen.js"></script>
 </head>
@@ -468,9 +469,14 @@
                     <label for="loginEmail">E-posta</label>
                     <input type="email" id="loginEmail" name="email" required autocomplete="email">
                 </div>
-                <div class="form-group">
+                <div class="form-group password-field">
                     <label for="loginPassword">Şifre</label>
-                    <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                        <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Şifreyi göster">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <a href="forgot-password.html" class="forgot-password-link" style="color: var(--primary-color); text-decoration: none; font-size: 0.875rem;">
@@ -523,13 +529,23 @@
                     <label for="phone">Telefon</label>
                     <input type="tel" id="phone" name="phone" required autocomplete="tel" inputmode="numeric" pattern="[0-9]*" placeholder="05XX XXX XX XX">
                 </div>
-                <div class="form-group">
+                <div class="form-group password-field">
                     <label for="registerPassword">Şifre</label>
-                    <input type="password" id="registerPassword" name="password" required autocomplete="new-password">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="registerPassword" name="password" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-target="registerPassword" aria-label="Şifreyi göster">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group password-field">
                     <label for="confirmPassword">Şifre Tekrar</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-target="confirmPassword" aria-label="Şifreyi göster">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">
                     <i class="fas fa-user-plus"></i> <span class="btn-text">Müşteri Kaydı</span>
