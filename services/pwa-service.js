@@ -10,6 +10,7 @@ class PWAService {
         this.isOnline = navigator.onLine;
         this.updateAvailable = false;
         this.serviceWorkerRegistration = null;
+        this.isRefreshing = false;
         
         this.init();
     }
@@ -65,6 +66,9 @@ class PWAService {
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
+                    if (!newWorker) {
+                        return;
+                    }
                     
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
@@ -77,7 +81,15 @@ class PWAService {
                 
                 // Listen for controller change (update activated)
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (this.isRefreshing) {
+                        return;
+                    }
+
+                    this.isRefreshing = true;
                     console.log('✅ New Service Worker activated');
+                    if (window.notificationService) {
+                        window.notificationService.show('Yeni sürüm yüklendi, sayfa yenileniyor…', 'info');
+                    }
                     window.location.reload();
                 });
                 
@@ -338,7 +350,11 @@ class PWAService {
      */
     checkForUpdates() {
         if (this.serviceWorkerRegistration) {
-            this.serviceWorkerRegistration.update();
+            try {
+                this.serviceWorkerRegistration.update();
+            } catch (error) {
+                console.warn('⚠️ Service worker update check failed:', error);
+            }
         }
     }
 
@@ -372,6 +388,11 @@ class PWAService {
         };
 
         waitingWorker.addEventListener('statechange', handleStateChange);
+
+        if (window.notificationService) {
+            window.notificationService.show('Yeni sürüm hazır, otomatik güncelleniyor…', 'info');
+        }
+
         waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     }
 
