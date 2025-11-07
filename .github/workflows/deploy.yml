@@ -21,6 +21,7 @@ jobs:
     name: Deploy Backend
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'production' }}
+    if: ${{ github.event.inputs.environment != '' }}
     
     steps:
       - name: Checkout code
@@ -75,6 +76,7 @@ jobs:
     name: Deploy Frontend to S3
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'production' }}
+    if: ${{ github.event.inputs.environment != '' }}
     
     steps:
       - name: Checkout code
