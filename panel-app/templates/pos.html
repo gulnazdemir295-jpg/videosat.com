@@ -1,0 +1,113 @@
+<div class="panel-sidebar">
+    <header>
+        <span class="panel-badge" id="panelRoleBadge"><i class="fas fa-store"></i> Panel</span>
+        <h1 id="panelSidebarTitle">VideoSat Paneli</h1>
+        <p id="panelSidebarSubtitle">Mağaza ve canlı yayın operasyonlarını tek ekrandan yönetin.</p>
+    </header>
+
+    <section class="panel-sidebar-section">
+        <h2>Son Siparişler</h2>
+        <ul class="panel-sidebar-list" id="recentOrdersList">
+            <li class="panel-sidebar-item panel-empty-state">Henüz sipariş bulunmuyor</li>
+        </ul>
+    </section>
+
+    <section class="panel-sidebar-section">
+        <h2>Ekip</h2>
+        <ul class="panel-sidebar-list" id="teamList">
+            <li class="panel-sidebar-item panel-empty-state">Ekip bilgileri yükleniyor…</li>
+        </ul>
+    </section>
+
+    <section class="panel-sidebar-section">
+        <h2>Müşteri Kuyruğu</h2>
+        <ul class="panel-sidebar-list" id="customerQueueList">
+            <li class="panel-sidebar-item panel-empty-state">Kuyrukta bekleyen müşteri yok</li>
+        </ul>
+    </section>
+</div>
+
+<div class="panel-content">
+    <section class="panel-header">
+        <div class="panel-header-top">
+            <div class="panel-header-info">
+                <h2 id="panelHeaderTitle">POS Satış Alanı</h2>
+                <p id="panelHeaderSubtitle">Canlı yayın, stok ve sipariş yönetimi</p>
+            </div>
+            <div class="panel-header-user" id="panelUserChip">
+                <i class="fas fa-user-circle"></i>
+                <span id="panelUserName">Kullanıcı</span>
+            </div>
+        </div>
+
+        <div class="panel-stats" id="panelStats">
+            <div class="panel-stat-card">
+                <span class="panel-stat-label">Bugünkü Ciro</span>
+                <span class="panel-stat-value" id="statTodayRevenue">₺0,00</span>
+            </div>
+            <div class="panel-stat-card">
+                <span class="panel-stat-label">Aktif Sipariş</span>
+                <span class="panel-stat-value" id="statActiveOrders">0</span>
+            </div>
+            <div class="panel-stat-card">
+                <span class="panel-stat-label">Stok Değeri</span>
+                <span class="panel-stat-value" id="statInventoryValue">₺0,00</span>
+            </div>
+            <div class="panel-stat-card">
+                <span class="panel-stat-label">Canlı İzleyici</span>
+                <span class="panel-stat-value" id="statLiveViewers">0</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel-controls">
+        <label class="panel-search">
+            <i class="fas fa-search"></i>
+            <input id="productSearchInput" type="search" placeholder="Ürün ara (isim, stok kodu, kategori)…" autocomplete="off">
+        </label>
+        <select id="categoryFilter" class="panel-select">
+            <option value="">Tüm kategoriler</option>
+        </select>
+        <span class="panel-status-chip" id="panelLiveStatus">
+            <i class="fas fa-broadcast-tower"></i>
+            <span id="panelLiveStatusLabel">Yayın kapalı</span>
+        </span>
+    </section>
+
+    <section class="panel-main-area">
+        <div class="product-grid" id="productList">
+            <div class="panel-empty-state">Ürünler yükleniyor…</div>
+        </div>
+
+        <aside class="cart-panel">
+            <div class="cart-header">
+                <i class="fas fa-shopping-cart"></i> Sepet
+            </div>
+            <div class="cart-items" id="cartItems">
+                <div class="panel-empty-state">Sepetiniz boş. Ürün kartına tıklayarak ürün ekleyin.</div>
+            </div>
+            <div class="cart-summary">
+                <div class="cart-summary-row">
+                    <span>Ara Toplam</span>
+                    <span id="cartSubtotal">₺0,00</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>KDV (₺)</span>
+                    <span id="cartTax">₺0,00</span>
+                </div>
+                <div class="cart-summary-row cart-summary-total">
+                    <span>Genel Toplam</span>
+                    <span id="cartTotal">₺0,00</span>
+                </div>
+            </div>
+            <button id="checkoutButton" class="cart-checkout">
+                <i class="fas fa-receipt"></i> Satışı Tamamla
+            </button>
+        </aside>
+    </section>
+</div>
+
+<div class="panel-toast" id="panelToast" role="status" aria-live="polite">
+    <i class="fas fa-check-circle"></i>
+    <span id="panelToastMessage">İşlem tamamlandı</span>
+</div>

@@ -9,6 +9,7 @@
     const protectedRoutes = [
         '/admin-dashboard.html',
         '/live-stream.html',
+        '/panel.html',
         '/panels/'
     ];
 
@@ -86,7 +87,11 @@
         if (path.includes('live-stream.html')) {
             return true;
         }
-        
+
+        if (path.includes('panel.html')) {
+            return Boolean(userRole);
+        }
+
         // Panel routes - check role
         if (path.includes('panels/')) {
             if (path.includes('hammaddeci') && userRole === 'hammaddeci') return true;

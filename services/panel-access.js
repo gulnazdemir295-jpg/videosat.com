@@ -9,7 +9,7 @@
     class PanelAccessGateway {
         constructor() {
             this.role = document.body.dataset.requiredRole || null;
-            this.redirectUrl = document.body.dataset.redirectUrl || '/';
+            this.redirectUrl = this.computeRedirectUrl(document.body.dataset.redirectUrl || '/');
             this.panelName = document.body.dataset.panelName || 'Panel';
             this.defaultEmail = document.body.dataset.defaultEmail || '';
             this.form = document.getElementById('panelAccessForm');
@@ -30,6 +30,27 @@
                 }
                 : {};
             this.fallbackUsers = this.getFallbackUsers();
+        }
+
+        computeRedirectUrl(rawUrl) {
+            if (!this.role) {
+                return rawUrl || '/';
+            }
+
+            const cleanUrl = (rawUrl || '').trim();
+            const isCustom = cleanUrl && !cleanUrl.includes('live-stream') && !cleanUrl.includes('admin-dashboard');
+            if (isCustom && !cleanUrl.endsWith('/')) {
+                return cleanUrl;
+            }
+
+            try {
+                const target = new URL('../panel.html', window.location.href);
+                target.searchParams.set('role', this.role);
+                return target.pathname + target.search;
+            } catch (error) {
+                console.warn('Panel redirect hesaplanırken hata oluştu:', error);
+                return `/panel.html?role=${this.role}`;
+            }
         }
 
         async init() {
