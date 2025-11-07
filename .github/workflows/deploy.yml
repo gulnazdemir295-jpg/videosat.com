@@ -17,11 +17,34 @@ on:
           - staging
 
 jobs:
+  determine-environment:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.compute.outputs.env-name }}
+      should-run: ${{ steps.compute.outputs.should-run }}
+    steps:
+      - id: compute
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ -z "${{ github.event.inputs.environment }}" ]; then
+              echo "should-run=false" >> "$GITHUB_OUTPUT"
+              echo "env-name=production" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+            echo "env-name=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+            echo "env-name=production" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-backend:
     name: Deploy Backend
+    needs: determine-environment
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment != '' ? github.event.inputs.environment : 'production' }}
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.environment != '' }}
+    environment: ${{ needs.determine-environment.outputs.env-name }}
+    if: ${{ needs.determine-environment.outputs.should-run == 'true' }}
     
     steps:
       - name: Checkout code
@@ -74,9 +97,10 @@ jobs:
 
   deploy-frontend:
     name: Deploy Frontend to S3
+    needs: determine-environment
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment != '' ? github.event.inputs.environment : 'production' }}
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.environment != '' }}
+    environment: ${{ needs.determine-environment.outputs.env-name }}
+    if: ${{ needs.determine-environment.outputs.should-run == 'true' }}
     
     steps:
       - name: Checkout code
@@ -113,8 +137,8 @@ jobs:
   notify:
     name: Notify Deployment
     runs-on: ubuntu-latest
-    needs: [deploy-backend, deploy-frontend]
-    if: ${{ always() && (needs.deploy-backend.result != 'skipped' || needs.deploy-frontend.result != 'skipped') }}
+    needs: [determine-environment, deploy-backend, deploy-frontend]
+    if: ${{ always() && needs.determine-environment.outputs.should-run == 'true' }}
     
     steps:
       - name: Deployment Status
