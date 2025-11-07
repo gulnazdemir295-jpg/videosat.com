@@ -38,6 +38,7 @@
                 return;
             }
 
+            this.seedFallbackUsers();
             this.prefillEmail();
             this.setupSupportText();
             this.attachListeners();
@@ -305,6 +306,45 @@
                 { email: 'arge@videosat.com', password: 'arge12345', role: 'ar-ge', companyName: 'VideoSat AR-GE', firstName: 'AR-GE', lastName: 'Uzmanı' },
                 { email: 'yazilimdonanimguvenlik@videosat.com', password: 'ydg12345', role: 'yazilim-donanim-guvenlik', companyName: 'VideoSat Teknoloji ve Güvenlik', firstName: 'Teknoloji', lastName: 'Uzmanı' }
             ];
+        }
+
+        seedFallbackUsers() {
+            const existingUsers = this.getStoredUsers();
+            const byEmail = new Map(existingUsers.map((user) => [
+                (user.email || '').toLowerCase(),
+                user
+            ]));
+
+            let updated = false;
+
+            this.fallbackUsers.forEach((fallback) => {
+                const key = (fallback.email || '').toLowerCase();
+                if (!key || byEmail.has(key)) {
+                    return;
+                }
+
+                const seedUser = {
+                    id: `seed-${key}`,
+                    email: fallback.email,
+                    password: fallback.password,
+                    role: fallback.role,
+                    companyName: fallback.companyName,
+                    firstName: fallback.firstName,
+                    lastName: fallback.lastName,
+                    status: 'active',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: null,
+                    mustChangePassword: true
+                };
+
+                existingUsers.push(seedUser);
+                byEmail.set(key, seedUser);
+                updated = true;
+            });
+
+            if (updated) {
+                this.saveUsers(existingUsers);
+            }
         }
 
         getStoredUsers() {
