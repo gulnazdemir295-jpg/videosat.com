@@ -90,6 +90,33 @@
                 </div>
                 <ol id="auditTimeline" class="timeline-list"></ol>
             </div>
+
+            <div class="user-directory-card" aria-labelledby="userDirectoryTitle">
+                <div class="user-directory-header">
+                    <div>
+                        <h2 id="userDirectoryTitle"><i class="fas fa-users"></i> Departman Kullanıcı Bilgileri</h2>
+                        <p>Admin tarafından oluşturulan tüm departman hesaplarının varsayılan e-posta ve şifre bilgileri. İlk giriş sonrası şifre değişikliğini prosedürlere uygun tamamlayın.</p>
+                    </div>
+                    <button class="btn btn-outline" id="copyUserDirectory">
+                        <i class="fas fa-copy"></i>
+                        Tabloyu Kopyala
+                    </button>
+                </div>
+                <div class="user-directory-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Departman</th>
+                                <th>Rol</th>
+                                <th>E-posta</th>
+                                <th>Varsayılan Şifre</th>
+                                <th>Not</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentUserTable"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <section id="procedures" class="panel-section" aria-labelledby="proceduresTitle">

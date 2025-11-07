@@ -206,6 +206,27 @@ const PROCEDURE_DATA = [
     }
 ];
 
+const DEPARTMENT_USERS = [
+    { department: 'Admin - Sistem', role: 'admin', email: 'admin@videosat.com', password: 'admin123', notes: 'Ana yönetici hesabı. İlk giriş sonrası MFA etkinleştirin.' },
+    { department: 'Admin - Yedek', role: 'admin', email: 'admin@basvideo.com', password: 'admin123', notes: 'Yedek yönetici hesabı. Sadece acil durumlarda kullanın.' },
+    { department: 'Hammadde Tedarik', role: 'hammaddeci', email: 'hammaddeci@videosat.com', password: 'test123', notes: 'Tedarik ve stok yönetimi yetkilisi.' },
+    { department: 'Üretim', role: 'uretici', email: 'uretici@videosat.com', password: 'test123', notes: 'Üretim planlama ve kontrol.' },
+    { department: 'Toptan Satış', role: 'toptanci', email: 'toptanci@videosat.com', password: 'test123', notes: 'Toptancı paneli erişimi.' },
+    { department: 'Perakende Satış', role: 'satici', email: 'satici@videosat.com', password: 'satici123', notes: 'Satış noktası operasyonları.' },
+    { department: 'Yönetim', role: 'yonetim', email: 'yonetim@videosat.com', password: 'yonetim123', notes: 'Kurumsal yönetim ve karar destek.' },
+    { department: 'Finans', role: 'finans', email: 'finans@videosat.com', password: 'finans123', notes: 'Finansal raporlama ve kasa yönetimi.' },
+    { department: 'Operasyon', role: 'operasyon', email: 'operasyon@videosat.com', password: 'operasyon123', notes: 'Operasyon koordinasyonu ve lojistik.' },
+    { department: 'Müşteri Hizmetleri', role: 'musteri-hizmetleri', email: 'musterihizmetleri@videosat.com', password: 'musteri123', notes: 'Çağrı merkezi ve müşteri iletişimi.' },
+    { department: 'İnsan Kaynakları', role: 'insan-kaynaklari', email: 'insankaynaklari@videosat.com', password: 'ik123456', notes: 'İK süreçleri ve işe alım.' },
+    { department: 'Muhasebe', role: 'muhasebe', email: 'muhasebe@videosat.com', password: 'muhasebe123', notes: 'Muhasebe kayıtları ve mali tablolar.' },
+    { department: 'Faturalandırma', role: 'faturalandirma', email: 'faturalandirma@videosat.com', password: 'fatura123', notes: 'Faturalandırma süreçleri.' },
+    { department: 'Personel Özlük İşleri', role: 'personel-ozluk-isleri', email: 'personelozluk@videosat.com', password: 'ozluk123', notes: 'Personel özlük dosyaları ve izin yönetimi.' },
+    { department: 'Reklam', role: 'reklam', email: 'reklam@videosat.com', password: 'reklam123', notes: 'Kampanya ve reklam yönetimi.' },
+    { department: 'İş Geliştirme', role: 'is-gelistirme', email: 'isgelistirme@videosat.com', password: 'gelistirme123', notes: 'Stratejik iş geliştirme projeleri.' },
+    { department: 'AR-GE', role: 'ar-ge', email: 'arge@videosat.com', password: 'arge12345', notes: 'Araştırma ve geliştirme çalışmaları.' },
+    { department: 'Yazılım-Donanım-Güvenlik', role: 'yazilim-donanim-guvenlik', email: 'yazilimdonanimguvenlik@videosat.com', password: 'ydg12345', notes: 'Teknoloji, altyapı ve güvenlik operasyonları.' }
+];
+
 let currentSearchTerm = '';
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -217,6 +238,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     renderSummaryCards();
     renderAuditTimeline();
+    renderDepartmentUsers();
     renderProcedureCards();
     renderChecklists();
     renderDocumentation();
@@ -334,6 +356,37 @@ function renderAuditTimeline() {
             </li>
         `;
     }).join('');
+}
+
+function renderDepartmentUsers() {
+    const tbody = document.getElementById('departmentUserTable');
+    if (!tbody) return;
+
+    tbody.innerHTML = DEPARTMENT_USERS.map(user => `
+        <tr>
+            <td>${escapeHtml(user.department)}</td>
+            <td>${escapeHtml(user.role)}</td>
+            <td>
+                <div class="table-cell-copy">
+                    <code>${escapeHtml(user.email)}</code>
+                    <button type="button" class="copy-button" data-copy="${escapeHtml(user.email)}" data-copy-label="E-posta">
+                        <i class="fas fa-copy"></i> Kopyala
+                    </button>
+                </div>
+            </td>
+            <td>
+                <div class="table-cell-copy">
+                    <code>${escapeHtml(user.password)}</code>
+                    <button type="button" class="copy-button" data-copy="${escapeHtml(user.password)}" data-copy-label="Şifre">
+                        <i class="fas fa-copy"></i> Kopyala
+                    </button>
+                </div>
+            </td>
+            <td>${escapeHtml(user.notes)}</td>
+        </tr>
+    `).join('');
+
+    attachCopyHandlers();
 }
 
 function renderProcedureCards() {
@@ -508,6 +561,27 @@ function bindActions() {
         });
     }
 
+    const copyDirectoryBtn = document.getElementById('copyUserDirectory');
+    if (copyDirectoryBtn) {
+        copyDirectoryBtn.addEventListener('click', async () => {
+            const original = copyDirectoryBtn.innerHTML;
+            copyDirectoryBtn.disabled = true;
+            const success = await copyToClipboard(getDepartmentUserTableText());
+            if (success) {
+                copyDirectoryBtn.innerHTML = '<i class="fas fa-check"></i> Kopyalandı';
+                setTimeout(() => {
+                    copyDirectoryBtn.innerHTML = original;
+                    copyDirectoryBtn.disabled = false;
+                }, 1600);
+            } else {
+                copyDirectoryBtn.disabled = false;
+                alert('Kopyalama başarısız oldu. Lütfen bilgileri manuel olarak kopyalayın.');
+            }
+        });
+    }
+
+    attachCopyHandlers();
+
     bindSummaryLinks();
 }
 
@@ -522,6 +596,85 @@ function bindSummaryLinks() {
             });
         }
     });
+}
+
+function attachCopyHandlers() {
+    document.querySelectorAll('[data-copy]').forEach(button => {
+        if (button.dataset.copyBound === 'true') {
+            return;
+        }
+
+        button.dataset.copyBound = 'true';
+        button.addEventListener('click', async () => {
+            const value = button.getAttribute('data-copy') || '';
+            if (!value) return;
+
+            const originalLabel = button.innerHTML;
+            button.disabled = true;
+
+            const success = await copyToClipboard(value);
+            if (success) {
+                button.innerHTML = '<i class="fas fa-check"></i> Kopyalandı';
+                setTimeout(() => {
+                    button.innerHTML = originalLabel;
+                    button.disabled = false;
+                }, 1500);
+            } else {
+                button.disabled = false;
+                alert('Kopyalama başarısız oldu. Lütfen değerleri manuel olarak kopyalayın.');
+            }
+        });
+    });
+}
+
+function getDepartmentUserTableText() {
+    const header = ['Departman', 'Rol', 'E-posta', 'Varsayılan Şifre', 'Not'];
+    const rows = DEPARTMENT_USERS.map(user => [
+        user.department,
+        user.role,
+        user.email,
+        user.password,
+        user.notes
+    ].join('\t'));
+    return [header.join('\t'), ...rows].join('\n');
+}
+
+async function copyToClipboard(text) {
+    if (!text) return false;
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (error) {
+            console.warn('Clipboard API yazma hatası:', error);
+        }
+    }
+
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const result = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return result;
+    } catch (error) {
+        console.warn('execCommand ile kopyalama başarısız:', error);
+        return false;
+    }
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function focusProcedureCard(id) {

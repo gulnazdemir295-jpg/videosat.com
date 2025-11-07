@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR-GE Paneli Girişi - VideoSat</title>
+    <meta name="description" content="VideoSat AR-GE paneline güvenli giriş yapın.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../styles-panel-access.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="panel-access-page" data-panel-name="AR-GE Paneli" data-required-role="ar-ge" data-redirect-url="../admin-dashboard.html" data-default-email="arge@videosat.com">
+    <main class="panel-access-wrapper" role="main">
+        <div class="panel-access-header">
+            <span class="panel-access-badge"><i class="fas fa-flask"></i> AR-GE Erişimi</span>
+            <h1 id="panelTitle">AR-GE Paneli</h1>
+            <p id="panelDescription">Araştırma ve geliştirme çalışmalarına erişmek için yetkilendirilmiş bilgilerle giriş yapın.</p>
+        </div>
+        <form id="panelAccessForm" class="panel-access-form" novalidate>
+            <div class="panel-field">
+                <label for="panelEmail">E-posta</label>
+                <input id="panelEmail" name="email" class="panel-input" type="email" inputmode="email" autocomplete="email" placeholder="arge@videosat.com" required>
+            </div>
+            <div class="panel-field password-field">
+                <label for="panelPassword">Şifre</label>
+                <div class="password-input-wrapper">
+                    <input id="panelPassword" name="password" class="panel-input" type="password" autocomplete="current-password" placeholder="AR-GE şifrenizi girin" required>
+                    <button type="button" class="password-toggle" data-target="panelPassword" aria-label="Şifreyi göster">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="panel-submit">
+                <i class="fas fa-sign-in-alt"></i> Panele Giriş Yap
+            </button>
+        </form>
+        <div class="panel-extra-actions">
+            <button type="button" id="panelChangePasswordToggle" class="panel-change-password-toggle" aria-expanded="false">
+                <i class="fas fa-key"></i> Şifre Değiştir
+            </button>
+            <form id="panelChangePasswordForm" class="panel-change-password-form" hidden novalidate>
+                <div class="panel-field">
+                    <label for="panelCurrentPassword">Mevcut Şifre</label>
+                    <input id="panelCurrentPassword" name="currentPassword" class="panel-input" type="password" autocomplete="current-password" placeholder="Mevcut şifrenizi girin" required>
+                </div>
+                <div class="panel-field">
+                    <label for="panelNewPassword">Yeni Şifre</label>
+                    <input id="panelNewPassword" name="newPassword" class="panel-input" type="password" autocomplete="new-password" placeholder="Yeni şifrenizi girin" required>
+                </div>
+                <div class="panel-field">
+                    <label for="panelConfirmPassword">Yeni Şifre (Tekrar)</label>
+                    <input id="panelConfirmPassword" name="confirmPassword" class="panel-input" type="password" autocomplete="new-password" placeholder="Yeni şifrenizi tekrar girin" required>
+                </div>
+                <button type="submit" class="panel-submit secondary">
+                    <i class="fas fa-save"></i> Şifreyi Güncelle
+                </button>
+            </form>
+            <div id="panelChangePasswordMessage" class="panel-message" hidden></div>
+        </div>
+        <div id="panelAccessMessage" class="panel-message" hidden></div>
+        <div class="panel-hint">
+            <span>Farklı bir panel mi arıyorsunuz?</span>
+            <a href="../index.html">Ana sayfaya dön</a>
+        </div>
+        <p id="panelSupportText" class="panel-support"></p>
+    </main>
+
+    <script src="../config/backend-config.js"></script>
+    <script src="../services/auth-service.js"></script>
+    <script src="../services/panel-access.js"></script>
+    <script src="../scripts/password-toggle.js"></script>
+</body>
+</html>

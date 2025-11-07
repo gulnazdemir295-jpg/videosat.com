@@ -286,12 +286,24 @@
 
         getFallbackUsers() {
             return [
-                { email: 'admin@videosat.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim' },
-                { email: 'admin@basvideo.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim' },
-                { email: 'hammaddeci@videosat.com', password: 'test123', role: 'hammaddeci', companyName: 'Hammadde Tedarik A.Ş.' },
-                { email: 'uretici@videosat.com', password: 'test123', role: 'uretici', companyName: 'Üretim Firma Ltd.' },
-                { email: 'toptanci@videosat.com', password: 'test123', role: 'toptanci', companyName: 'Toptan Satış A.Ş.' },
-                { email: 'satici@videosat.com', password: 'satici123', role: 'satici', companyName: 'Perakende Satış Ltd.' }
+                { email: 'admin@videosat.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', firstName: 'Admin', lastName: 'Kullanıcısı' },
+                { email: 'admin@basvideo.com', password: 'admin123', role: 'admin', companyName: 'VideoSat Yönetim', firstName: 'Admin', lastName: 'VideoSat' },
+                { email: 'hammaddeci@videosat.com', password: 'test123', role: 'hammaddeci', companyName: 'Hammadde Tedarik A.Ş.', firstName: 'Hammadde', lastName: 'Yetkilisi' },
+                { email: 'uretici@videosat.com', password: 'test123', role: 'uretici', companyName: 'Üretim Firma Ltd.', firstName: 'Üretim', lastName: 'Koordinatörü' },
+                { email: 'toptanci@videosat.com', password: 'test123', role: 'toptanci', companyName: 'Toptan Satış A.Ş.', firstName: 'Toptancı', lastName: 'Temsilcisi' },
+                { email: 'satici@videosat.com', password: 'satici123', role: 'satici', companyName: 'Perakende Satış Ltd.', firstName: 'Satış', lastName: 'Yetkilisi' },
+                { email: 'yonetim@videosat.com', password: 'yonetim123', role: 'yonetim', companyName: 'VideoSat Yönetim Birimi', firstName: 'Yönetim', lastName: 'Koordinatörü' },
+                { email: 'finans@videosat.com', password: 'finans123', role: 'finans', companyName: 'VideoSat Finans Departmanı', firstName: 'Finans', lastName: 'Uzmanı' },
+                { email: 'operasyon@videosat.com', password: 'operasyon123', role: 'operasyon', companyName: 'VideoSat Operasyon Ekibi', firstName: 'Operasyon', lastName: 'Sorumlusu' },
+                { email: 'musterihizmetleri@videosat.com', password: 'musteri123', role: 'musteri-hizmetleri', companyName: 'VideoSat Destek Merkezi', firstName: 'Müşteri', lastName: 'Temsilcisi' },
+                { email: 'insankaynaklari@videosat.com', password: 'ik123456', role: 'insan-kaynaklari', companyName: 'VideoSat İnsan Kaynakları', firstName: 'İK', lastName: 'Uzmanı' },
+                { email: 'muhasebe@videosat.com', password: 'muhasebe123', role: 'muhasebe', companyName: 'VideoSat Muhasebe', firstName: 'Muhasebe', lastName: 'Yetkilisi' },
+                { email: 'faturalandirma@videosat.com', password: 'fatura123', role: 'faturalandirma', companyName: 'VideoSat Faturalandırma', firstName: 'Faturalandırma', lastName: 'Uzmanı' },
+                { email: 'personelozluk@videosat.com', password: 'ozluk123', role: 'personel-ozluk-isleri', companyName: 'VideoSat Özlük İşleri', firstName: 'Özlük', lastName: 'Uzmanı' },
+                { email: 'reklam@videosat.com', password: 'reklam123', role: 'reklam', companyName: 'VideoSat Reklam ve Pazarlama', firstName: 'Reklam', lastName: 'Yöneticisi' },
+                { email: 'isgelistirme@videosat.com', password: 'gelistirme123', role: 'is-gelistirme', companyName: 'VideoSat İş Geliştirme', firstName: 'İş', lastName: 'Geliştirme' },
+                { email: 'arge@videosat.com', password: 'arge12345', role: 'ar-ge', companyName: 'VideoSat AR-GE', firstName: 'AR-GE', lastName: 'Uzmanı' },
+                { email: 'yazilimdonanimguvenlik@videosat.com', password: 'ydg12345', role: 'yazilim-donanim-guvenlik', companyName: 'VideoSat Teknoloji ve Güvenlik', firstName: 'Teknoloji', lastName: 'Uzmanı' }
             ];
         }
 

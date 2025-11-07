@@ -404,6 +404,116 @@
     display: none;
 }
 
+.user-directory-card {
+    margin-top: 2.5rem;
+    background: var(--panel-surface);
+    border-radius: var(--panel-radius);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    padding: 1.8rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.user-directory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.user-directory-header h2 {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+.user-directory-header p {
+    margin: 0.6rem 0 0 0;
+    color: var(--panel-muted);
+    line-height: 1.5;
+}
+
+.user-directory-table {
+    overflow-x: auto;
+}
+
+.user-directory-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.user-directory-table th,
+.user-directory-table td {
+    padding: 0.9rem 1rem;
+    text-align: left;
+}
+
+.user-directory-table thead th {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-directory-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-directory-table tbody tr:hover {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.user-directory-table td {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+}
+
+.user-directory-table td strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.copy-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    transition: var(--panel-transition);
+    font-size: 0.75rem;
+}
+
+.copy-button:hover {
+    background: rgba(220, 38, 38, 0.18);
+    color: white;
+    border-color: rgba(220, 38, 38, 0.55);
+}
+
+.table-cell-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.table-cell-copy code {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-family: 'Inter', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
 .timeline-title {
     font-weight: 600;
     font-size: 1rem;
