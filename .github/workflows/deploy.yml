@@ -43,8 +43,9 @@ jobs:
     name: Deploy Backend
     needs: determine-environment
     runs-on: ubuntu-latest
-    environment: ${{ needs.determine-environment.outputs.env-name }}
     if: ${{ needs.determine-environment.outputs.should-run == 'true' }}
+    env:
+      DEPLOY_ENV: ${{ needs.determine-environment.outputs.env-name }}
     
     steps:
       - name: Checkout code
@@ -99,8 +100,9 @@ jobs:
     name: Deploy Frontend to S3
     needs: determine-environment
     runs-on: ubuntu-latest
-    environment: ${{ needs.determine-environment.outputs.env-name }}
     if: ${{ needs.determine-environment.outputs.should-run == 'true' }}
+    env:
+      DEPLOY_ENV: ${{ needs.determine-environment.outputs.env-name }}
     
     steps:
       - name: Checkout code
@@ -143,6 +145,7 @@ jobs:
     steps:
       - name: Deployment Status
         run: |
+          echo "Environment: ${{ needs.determine-environment.outputs.env-name }}"
           if [ "${{ needs.deploy-backend.result }}" != "failure" ] && [ "${{ needs.deploy-frontend.result }}" != "failure" ]; then
             echo "✅ Deployment successful"
           else
