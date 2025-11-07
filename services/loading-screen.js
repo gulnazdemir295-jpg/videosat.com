@@ -73,9 +73,18 @@
     function checkPageLoaded() {
         if (document.readyState === 'complete') {
             // Wait for all critical scripts
-            if (window.scriptLoader && typeof window.scriptLoader.loadScripts === 'function') {
-                // Scripts are loading, wait for them
-                return;
+            if (window.scriptLoader && typeof window.scriptLoader.isLoading === 'function') {
+                if (window.scriptLoader.isLoading()) {
+                    if (typeof window.scriptLoader.onIdle === 'function') {
+                        window.scriptLoader.onIdle(() => {
+                            setTimeout(hide, 100);
+                        });
+                    } else {
+                        // Fallback: tekrar dene
+                        setTimeout(checkPageLoaded, 100);
+                    }
+                    return;
+                }
             }
             
             // Wait a bit more for async operations

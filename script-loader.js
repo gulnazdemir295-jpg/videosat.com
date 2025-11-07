@@ -6,6 +6,7 @@ class ScriptLoader {
         this.loadedScripts = new Set();
         this.failedScripts = new Set();
         this.loadingPromises = new Map();
+        this.idleCallbacks = new Set();
     }
 
     // Script yükleme fonksiyonu
@@ -28,11 +29,13 @@ class ScriptLoader {
             await loadPromise;
             this.loadedScripts.add(src);
             this.loadingPromises.delete(src);
+            this._notifyIdle();
             console.log(`✅ Script yüklendi: ${src}`);
         } catch (error) {
             this.failedScripts.add(src);
             this.loadingPromises.delete(src);
             console.error(`❌ Script yüklenemedi: ${src}`, error);
+            this._notifyIdle();
             throw error;
         }
 
@@ -85,12 +88,14 @@ class ScriptLoader {
             
             link.onerror = (error) => {
                 console.error(`CSS yükleme hatası: ${href}`, error);
+                this._notifyIdle();
                 reject(new Error(`Failed to load CSS: ${href}`));
             };
 
             link.onload = () => {
                 this.loadedScripts.add(href);
                 console.log(`✅ CSS yüklendi: ${href}`);
+                this._notifyIdle();
                 resolve();
             };
 
@@ -111,12 +116,15 @@ class ScriptLoader {
         try {
             await Promise.all(promises);
             console.log('✅ Tüm scriptler yüklendi');
+            this._notifyIdle();
         } catch (error) {
             console.error('❌ Bazı scriptler yüklenemedi:', error);
             // Kritik olmayan scriptler için devam et
             if (options.continueOnError) {
                 console.warn('Hata yönetimi: Kritik olmayan scriptler atlandı');
+                this._notifyIdle();
             } else {
+                this._notifyIdle();
                 throw error;
             }
         }
@@ -150,6 +158,44 @@ class ScriptLoader {
     // Tüm yüklenen scriptleri listele
     getLoadedScripts() {
         return Array.from(this.loadedScripts);
+    }
+
+    // Şu anda aktif yükleme var mı?
+    isLoading() {
+        return this.loadingPromises.size > 0;
+    }
+
+    // Script yüklemeleri bittiğinde çağrılacak callback ekle
+    onIdle(callback) {
+        if (typeof callback !== 'function') {
+            return;
+        }
+
+        if (!this.isLoading()) {
+            callback();
+        } else {
+            this.idleCallbacks.add(callback);
+        }
+    }
+
+    _notifyIdle() {
+        if (this.isLoading()) {
+            return;
+        }
+
+        if (this.idleCallbacks.size === 0) {
+            return;
+        }
+
+        const callbacks = Array.from(this.idleCallbacks);
+        this.idleCallbacks.clear();
+        callbacks.forEach((cb) => {
+            try {
+                cb();
+            } catch (error) {
+                console.error('ScriptLoader onIdle callback error:', error);
+            }
+        });
     }
 }
 
