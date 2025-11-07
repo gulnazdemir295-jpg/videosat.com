@@ -551,61 +551,40 @@
 }
 
 .directory-toggle {
+    margin-top: 1rem;
     display: flex;
     justify-content: flex-end;
-    margin-top: 0.5rem;
 }
 
 .directory-toggle-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
+    transition: var(--panel-transition);
+}
+
+.directory-toggle-label:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.45);
 }
 
 .directory-toggle-input {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: transparent;
-    position: relative;
-    transition: var(--panel-transition);
-}
-
-.directory-toggle-input:checked {
-    background: rgba(220, 38, 38, 0.65);
-    border-color: rgba(220, 38, 38, 0.85);
-}
-
-.directory-toggle-input:checked::after {
-    content: '\2713';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -56%);
-    font-size: 0.75rem;
-    color: white;
+    accent-color: #ef4444;
 }
 
 .directory-toggle-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.75);
-    transition: var(--panel-transition);
+    color: rgba(255, 255, 255, 0.65);
 }
 
-.directory-toggle-input:checked + .directory-toggle-icon {
-    background: rgba(220, 38, 38, 0.22);
-    color: #fee2e2;
+.directory-toggle-text {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .password-masked code {

@@ -600,6 +600,13 @@ function bindActions() {
         });
     }
 
+    const passwordToggle = document.getElementById('departmentPasswordVisibility');
+    if (passwordToggle) {
+        passwordToggle.addEventListener('change', () => {
+            setDepartmentPasswordVisibility(passwordToggle.checked);
+        });
+    }
+
     attachCopyHandlers();
     attachPasswordVisibilityHandlers();
 
@@ -741,6 +748,27 @@ function maskPassword(value) {
     }
     const repeat = Math.max(8, Math.min(length, 12));
     return '•'.repeat(repeat);
+}
+
+function setDepartmentPasswordVisibility(visible) {
+    document.querySelectorAll('.password-visibility').forEach(container => {
+        const button = container.querySelector('.password-visibility-toggle');
+        const span = container.querySelector('.masked-password');
+        if (!button || !span) return;
+
+        const password = button.getAttribute('data-password') || container.getAttribute('data-password') || '';
+        if (visible) {
+            span.textContent = password;
+            container.setAttribute('data-visible', 'true');
+            button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            button.setAttribute('aria-label', 'Şifreyi gizle');
+        } else {
+            span.textContent = maskPassword(password);
+            container.setAttribute('data-visible', 'false');
+            button.innerHTML = '<i class="fas fa-eye"></i>';
+            button.setAttribute('aria-label', 'Şifreyi göster');
+        }
+    });
 }
 
 function getStoredUsers() {
